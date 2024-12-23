@@ -1,20 +1,20 @@
 import axios from 'axios';
-import { IEvent } from '../interface/IDevice';
+import { IEvent } from '../interface/InterfaceCollection';
+
 
 const API_URL = "http://localhost:3000/event"; 
 
 export const getEventData = async (): Promise<IEvent[]> => {
     try {
       const response = await axios.get(API_URL);
-      console.log('Fetched Event Data:', response.data);  // Log the response to inspect it
+      console.log('Fetched Event Data:', response.data);  
   
-      // Assuming response.data contains an object with a 'data' property which is an array
       const eventData = response.data.data;
   
       if (Array.isArray(eventData)) {
-        return eventData;  // If data is an array, return it
+        return eventData;  
       } else if (eventData && eventData._id) {
-        return [eventData];  // If it's a single object, wrap it in an array
+        return [eventData];  
       } else {
         console.error('Invalid event format', eventData);
         throw new Error('Invalid event format');
