@@ -96,7 +96,7 @@ const DeviceDetailPage = () => {
             alignItems: "center",
             minHeight: "fit-content",
             marginBottom: 5,
-            padding: "24px",
+            padding: 3,
             height: 1,
             py: 3,
           }}
@@ -157,20 +157,10 @@ const DeviceDetailPage = () => {
             alignItems: "center",
             minHeight: "fit-content",
             marginBottom: 5,
+            padding: 3,
             py: 3,
           }}
         >
-          {windowSize.width < 1100 && (
-            <Typography
-              align="center"
-              sx={{
-                mt: "6rem",
-                mb: "2rem",
-              }}
-            >
-              {/* You can add any placeholder text here if necessary */}
-            </Typography>
-          )}
           {deviceData && <DeviceInterfaceComponent items={deviceData.items} />}
         </Box>
       </Box>
