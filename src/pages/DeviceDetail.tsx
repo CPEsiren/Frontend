@@ -96,6 +96,7 @@ const DeviceDetailPage = () => {
             alignItems: "center",
             minHeight: "fit-content",
             marginBottom: 5,
+            padding: "24px",
             height: 1,
             py: 3,
           }}
