@@ -26,10 +26,21 @@ import {
   InputLabel,
   Select,
   SelectChangeEvent,
+  FormHelperText,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IDevice } from "../interface/InterfaceCollection";
+
+// Add these interfaces at the top of your file
+interface FormErrors {
+  hostname?: string;
+  ip_address?: string;
+  snmp_port?: string;
+  snmp_version?: string;
+  snmp_community?: string;
+  hostgroup?: string;
+}
 
 interface ApiResponse {
   status: string;
@@ -61,6 +72,60 @@ const ManageComponent = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
+
+  // Add these to your component's state
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetFormState = () => {
+    setFormErrors({});
+    setIsSubmitting(false);
+  };
+
+  // Add this validation function
+  const validateForm = () => {
+    const errors: FormErrors = {};
+    let isValid = true;
+
+    // Validate hostname
+    if (!editForm.hostname.trim()) {
+      errors.hostname = "Hostname is required";
+      isValid = false;
+    }
+
+    // Validate IP address
+    if (!editForm.ip_address.trim()) {
+      errors.ip_address = "IP Address is required";
+      isValid = false;
+    }
+
+    // Validate SNMP port
+    if (!editForm.snmp_port.trim()) {
+      errors.snmp_port = "SNMP Port is required";
+      isValid = false;
+    }
+
+    // Validate SNMP version
+    if (!editForm.snmp_version) {
+      errors.snmp_version = "SNMP Version is required";
+      isValid = false;
+    }
+
+    // Validate SNMP community
+    if (!editForm.snmp_community.trim()) {
+      errors.snmp_community = "SNMP Community is required";
+      isValid = false;
+    }
+
+    // Validate host group
+    if (!editForm.hostgroup.trim()) {
+      errors.hostgroup = "Host Group is required";
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
 
   const [editForm, setEditForm] = useState<EditFormData>({
     hostname: "",
@@ -100,6 +165,7 @@ const ManageComponent = () => {
     fetchDevices();
   }, []);
 
+  // Modify the edit click handler
   const handleEditClick = (device: IDevice) => {
     setEditingDevice(device);
     setEditForm({
@@ -111,6 +177,7 @@ const ManageComponent = () => {
       hostgroup: device.hostgroup,
       status: device.status,
     });
+    resetFormState(); // Clear any previous errors
     setEditDialogOpen(true);
   };
 
@@ -121,6 +188,18 @@ const ManageComponent = () => {
 
   const handleEditSubmit = async () => {
     if (!editingDevice) return;
+
+    setIsSubmitting(true);
+
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      setSnackbar({
+        open: true,
+        message: "Please fill in all required fields",
+        severity: "error",
+      });
+      return;
+    }
 
     setFormLoading(true);
     try {
@@ -139,7 +218,6 @@ const ManageComponent = () => {
         throw new Error(`Failed to update device: ${response.statusText}`);
       }
 
-      // Update the device in local state
       setDevices(
         devices.map((device) =>
           device._id === editingDevice._id ? { ...device, ...editForm } : device
@@ -161,6 +239,7 @@ const ManageComponent = () => {
       });
     } finally {
       setFormLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -200,11 +279,17 @@ const ManageComponent = () => {
     }
   };
 
+  // Also modify handleTextFieldChange and handleSelectChange to clear errors
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({
       ...prev,
       [name]: value,
+    }));
+    // Clear error for the field being changed
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
     }));
   };
 
@@ -214,6 +299,17 @@ const ManageComponent = () => {
       ...prev,
       [name]: name === "status" ? Number(value) : value,
     }));
+    // Clear error for the field being changed
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }));
+  };
+
+  // Modify the dialog close handler
+  const handleCloseDialog = () => {
+    setEditDialogOpen(false);
+    resetFormState(); // Clear errors when closing
   };
 
   const handleCloseSnackbar = () => {
@@ -416,7 +512,7 @@ const ManageComponent = () => {
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
+        onClose={handleCloseDialog} // Use the new handler here
         maxWidth="sm"
         fullWidth
       >
@@ -430,7 +526,10 @@ const ManageComponent = () => {
               onChange={handleTextFieldChange}
               fullWidth
               required
+              error={!!formErrors.hostname}
+              helperText={formErrors.hostname}
             />
+
             <TextField
               label="IP Address"
               name="ip_address"
@@ -438,7 +537,10 @@ const ManageComponent = () => {
               onChange={handleTextFieldChange}
               fullWidth
               required
+              error={!!formErrors.ip_address}
+              helperText={formErrors.ip_address}
             />
+
             <TextField
               label="SNMP Port"
               name="snmp_port"
@@ -446,8 +548,11 @@ const ManageComponent = () => {
               onChange={handleTextFieldChange}
               fullWidth
               required
+              error={!!formErrors.snmp_port}
+              helperText={formErrors.snmp_port}
             />
-            <FormControl fullWidth required>
+
+            <FormControl fullWidth required error={!!formErrors.snmp_version}>
               <InputLabel>SNMP Version</InputLabel>
               <Select
                 label="SNMP Version"
@@ -459,7 +564,11 @@ const ManageComponent = () => {
                 <MenuItem value="v2c">SNMPv2</MenuItem>
                 <MenuItem value="v3">SNMPv3</MenuItem>
               </Select>
+              {formErrors.snmp_version && (
+                <FormHelperText>{formErrors.snmp_version}</FormHelperText>
+              )}
             </FormControl>
+
             <TextField
               label="SNMP Community"
               name="snmp_community"
@@ -467,7 +576,10 @@ const ManageComponent = () => {
               onChange={handleTextFieldChange}
               fullWidth
               required
+              error={!!formErrors.snmp_community}
+              helperText={formErrors.snmp_community}
             />
+
             <TextField
               label="Host Group"
               name="hostgroup"
@@ -475,12 +587,14 @@ const ManageComponent = () => {
               onChange={handleTextFieldChange}
               fullWidth
               required
+              error={!!formErrors.hostgroup}
+              helperText={formErrors.hostgroup}
             />
           </Box>
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setEditDialogOpen(false)}
+            onClick={handleCloseDialog} // Use the new handler here too
             disabled={formLoading}
             sx={{ color: "black" }}
           >
@@ -511,7 +625,12 @@ const ManageComponent = () => {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            sx={{ color: "black" }}
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
