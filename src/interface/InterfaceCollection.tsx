@@ -81,7 +81,6 @@ export interface ITrigger {
   ComparisonOperator: string;
   createdAt: string;
   enabled: boolean;
-}
 
 export interface IEvent {
   _id: string;
