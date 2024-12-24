@@ -56,15 +56,6 @@ export interface IGraph {
   detail: string | null;
 }
 
-export interface ITrigger {
-  trigger_name: string;
-  enabled: boolean;
-  severity: string;
-  valuetrigger: number;
-  comparisonOperator: string;
-  createAt: string;
-}
-
 export interface DataEntry {
   timestamp: string;
   value: string;
@@ -81,6 +72,7 @@ export interface ITrigger {
   ComparisonOperator: string;
   createdAt: string;
   enabled: boolean;
+}
 
 export interface IEvent {
   _id: string;

@@ -55,6 +55,7 @@ interface EditFormData {
   snmp_version: string;
   snmp_community: string;
   hostgroup: string;
+  details: { [key: string]: string };
   status: number;
 }
 
@@ -134,6 +135,7 @@ const ManageComponent = () => {
     snmp_version: "",
     snmp_community: "",
     hostgroup: "",
+    details: {}, // Initialize with empty object
     status: 1,
   });
 
@@ -175,6 +177,7 @@ const ManageComponent = () => {
       snmp_version: device.snmp_version,
       snmp_community: device.snmp_community,
       hostgroup: device.hostgroup,
+      details: device.details || {}, // Include details, fallback to empty object if null
       status: device.status,
     });
     resetFormState(); // Clear any previous errors
@@ -465,8 +468,8 @@ const ManageComponent = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">
-                    {device.details?.location ||
-                      device.details?.location ||
+                    {device.details?.Location ||
+                      device.details?.Location ||
                       "N/A"}
                   </Typography>
                 </TableCell>
@@ -589,6 +592,21 @@ const ManageComponent = () => {
               required
               error={!!formErrors.hostgroup}
               helperText={formErrors.hostgroup}
+            />
+            <TextField
+              label="Location"
+              name="details.Location" // Changed from "detail"
+              value={editForm.details?.Location || ""} // Changed from editForm.hostgroup
+              onChange={(e) => {
+                setEditForm((prev) => ({
+                  ...prev,
+                  details: {
+                    ...prev.details,
+                    Location: e.target.value,
+                  },
+                }));
+              }}
+              fullWidth
             />
           </Box>
         </DialogContent>
