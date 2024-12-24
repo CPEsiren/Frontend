@@ -25,8 +25,9 @@ import TableRow from "@mui/material/TableRow";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Pagination } from "@mui/material";
+import { createTheme } from "@mui/material/styles";
+import { Pagination, Fade } from "@mui/material";
+import { TransitionGroup } from "react-transition-group";
 
 const theme = createTheme({
   components: {
@@ -106,11 +107,24 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   const [templateOptions, setTemplateOptions] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  //Scan interfacs
+  const [ScanInterfacepage, setScanInterfacepage] = useState(1);
+  const itemsPerScanInterfacepage = 10;
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 100); // Match this with the Fade timeout
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning]);
+  const handleChangeScanInterfacepage = (
+    event: React.ChangeEvent<unknown>,
+    newScanInterfacepage: number
+  ) => {
+    setIsTransitioning(true);
+    setScanInterfacepage(newScanInterfacepage);
   };
 
   // Function to handle template selection
@@ -183,8 +197,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   ]);
 
   const paginatedItems = itemRows.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
+    (ScanInterfacepage - 1) * itemsPerScanInterfacepage,
+    ScanInterfacepage * itemsPerScanInterfacepage
   );
 
   const handleAddRow = () => {
@@ -795,86 +809,118 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {paginatedItems.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell>
-                          <TextField
-                            {...textFieldProps}
-                            value={row.item_name}
-                            onChange={(e) =>
-                              handleItemChange(
-                                row.id,
-                                "item_name",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            {...textFieldProps}
-                            value={row.oid}
-                            onChange={(e) =>
-                              handleItemChange(row.id, "oid", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            {...textFieldProps}
-                            value={row.type}
-                            onChange={(e) =>
-                              handleItemChange(row.id, "type", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            {...textFieldProps}
-                            value={row.unit}
-                            onChange={(e) =>
-                              handleItemChange(row.id, "unit", e.target.value)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField
-                            {...textFieldProps}
-                            value={row.interval}
-                            onChange={(e) =>
-                              handleItemChange(
-                                row.id,
-                                "interval",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <TextField {...textFieldProps} />
-                        </TableCell>
-                        <TableCell>
-                          <TextField {...textFieldProps} />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton
-                            onClick={() => handleDeleteRow(row.id)}
-                            disabled={itemRows.length === 1}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    <TransitionGroup component={null}>
+                      {paginatedItems.map((row) => (
+                        <Fade
+                          key={row.id}
+                          in={!isTransitioning}
+                          style={{ transformOrigin: "0 0 0" }}
+                          {...(isTransitioning ? { timeout: 100 } : {})}
+                        >
+                          <TableRow>
+                            <TableCell>
+                              <TextField
+                                {...textFieldProps}
+                                value={row.item_name}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    row.id,
+                                    "item_name",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                {...textFieldProps}
+                                value={row.oid}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    row.id,
+                                    "oid",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                {...textFieldProps}
+                                value={row.type}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    row.id,
+                                    "type",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                {...textFieldProps}
+                                value={row.unit}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    row.id,
+                                    "unit",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                {...textFieldProps}
+                                value={row.interval}
+                                onChange={(e) =>
+                                  handleItemChange(
+                                    row.id,
+                                    "interval",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField {...textFieldProps} />
+                            </TableCell>
+                            <TableCell>
+                              <TextField {...textFieldProps} />
+                            </TableCell>
+                            <TableCell>
+                              <IconButton
+                                onClick={() => handleDeleteRow(row.id)}
+                                disabled={itemRows.length === 1}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        </Fade>
+                      ))}
+                    </TransitionGroup>
                   </TableBody>
                 </Table>
               </TableContainer>
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                 <Pagination
-                  count={Math.ceil(itemRows.length / itemsPerPage)}
-                  page={page}
-                  onChange={handleChangePage}
+                  count={Math.ceil(itemRows.length / itemsPerScanInterfacepage)}
+                  showFirstButton
+                  showLastButton
+                  page={ScanInterfacepage}
+                  onChange={handleChangeScanInterfacepage}
                   color="primary"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      transition: "all 0.1s ease",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        transform: "scale(1.1)",
+                      },
+                    },
+                  }}
                 />
               </Box>
               {/* Action Buttons */}
