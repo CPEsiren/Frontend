@@ -147,7 +147,14 @@ const EventComponent = () => {
             },
           }}
         >
-          <TableHead>
+          <TableHead
+            sx={{
+              backgroundColor: "#242D5D",
+              "& .MuiTableCell-root": {
+                color: "white",
+              },
+            }}
+          >
             <TableRow>
               <TableCell align="center">
                 <Typography variant="subtitle1" fontWeight="medium">
