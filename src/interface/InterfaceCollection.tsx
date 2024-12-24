@@ -81,4 +81,3 @@ export interface ITrigger {
   ComparisonOperator: string;
   createdAt: string;
   enabled: boolean;
-}
