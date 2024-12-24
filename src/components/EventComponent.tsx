@@ -84,7 +84,6 @@ const EventComponent = () => {
     const day = date.getDate().toString().padStart(2, "0"); // Ensures two digits
     const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Month is 0-indexed, so add 1
     const year = date.getFullYear();
-
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const seconds = date.getSeconds().toString().padStart(2, "0");
@@ -145,6 +144,11 @@ const EventComponent = () => {
             "& .MuiTableRow-root:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.04)",
             },
+            "& .MuiTableRow-root": {
+              "&[data-status='PROBLEM']:hover": {
+                backgroundColor: "#fff5f8", 
+              },
+            },
           }}
         >
           <TableHead
@@ -179,32 +183,39 @@ const EventComponent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {devices.map((device) => {
-              const displayTime = device.status === "PROBLEM" ? device.createdAt : device.updatedAt;
+          {devices.map((device) => {
+            const displayTime = device.status === "PROBLEM" ? device.createdAt : device.updatedAt;
 
-              return (
-                <TableRow key={device._id} hover>
-                  <TableCell align="center">
-                    <Typography variant="body2">{formatTimeInThaiTimezone(displayTime)}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2">{device.trigger_id?.host_id?.hostname}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2">{device.message}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      label={getStatusLabel(device.status)}
-                      color={getStatusColor(device.status)}
-                      size="small"
-                      sx={{ minWidth: "80px" }}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
+            return (
+              <TableRow
+                key={device._id}
+                data-status={device.status} // เพิ่ม data-status
+                hover
+                sx={{
+                  backgroundColor: device.status === "PROBLEM" ? "#fff5f8" : "inherit",
+                }}
+              >
+                <TableCell align="center">
+                  <Typography variant="body2">{formatTimeInThaiTimezone(displayTime)}</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="body2">{device.trigger_id?.host_id?.hostname}</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="body2">{device.message}</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Chip
+                    label={getStatusLabel(device.status)}
+                    color={getStatusColor(device.status)}
+                    size="small"
+                    sx={{ minWidth: "80px" }}
+                  />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
         </Table>
       </TableContainer>
     </Container>
