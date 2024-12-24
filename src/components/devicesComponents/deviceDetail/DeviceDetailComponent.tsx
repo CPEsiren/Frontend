@@ -23,13 +23,14 @@ const DeviceDetailComponent = ({ deviceData }: { deviceData: IDevice }) => {
         <Typography variant="h6" fontWeight={600} gutterBottom>
           Device Details
         </Typography>
-        <Typography>Location: {deviceDetails.location}</Typography>
-        <Typography>Room: {deviceDetails.Room}</Typography>
-        <Typography>Serial Number: {deviceDetails.serialNo}</Typography>
-        <Typography>OS: {deviceDetails.os}</Typography>
-        <Typography>Type: {deviceDetails.type}</Typography>
-        <Typography>Vendor: {deviceDetails.vendor}</Typography>
-        <Typography>Hardware: {deviceDetails.hardware}</Typography>
+        {Object.entries(deviceDetails).map(
+          ([key, value]) =>
+            value !== "" && (
+              <Typography key={key}>
+                {key}: {value}
+              </Typography>
+            )
+        )}
       </Grid>
     </Grid>
   );

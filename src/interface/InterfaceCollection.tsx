@@ -6,19 +6,9 @@ export interface IDevice {
   snmp_version: string;
   snmp_community: string;
   hostgroup: string;
-  details: DeviceDetails;
+  details: { [key: string]: string };
   items: Item[];
   status: number;
-}
-
-export interface DeviceDetails {
-  location: string;
-  Room: string;
-  serialNo: string;
-  os: string;
-  type: string;
-  vendor: string;
-  hardware: string;
 }
 
 export interface Item {
@@ -60,7 +50,7 @@ export interface IUser {
 }
 
 export interface IGraph {
-  GID: String;
+  GID: string;
   DMACaddress: string;
   name: string | null;
   detail: string | null;

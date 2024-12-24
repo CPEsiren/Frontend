@@ -26,6 +26,7 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { Pagination } from "@mui/material";
 
 const theme = createTheme({
   components: {
@@ -105,6 +106,13 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   const [templateOptions, setTemplateOptions] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
   // Function to handle template selection
   const handleTemplateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedTemplateId = e.target.value;
@@ -138,7 +146,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           oid: "",
           type: "",
           unit: "",
-          interval: 0,
+          interval: 10,
         },
       ]);
     }
@@ -168,11 +176,16 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
       oid: "",
       type: "",
       unit: "",
-      interval: 0,
+      interval: 10,
       // history: "",
       // trend: "",
     },
   ]);
+
+  const paginatedItems = itemRows.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
 
   const handleAddRow = () => {
     const newRow: DeviceItems = {
@@ -181,7 +194,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
       oid: "",
       type: "",
       unit: "",
-      interval: 0,
+      interval: 10,
       // history: "",
       // trend: "",
     };
@@ -782,7 +795,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {itemRows.map((row) => (
+                    {paginatedItems.map((row) => (
                       <TableRow key={row.id}>
                         <TableCell>
                           <TextField
@@ -856,6 +869,14 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   </TableBody>
                 </Table>
               </TableContainer>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Pagination
+                  count={Math.ceil(itemRows.length / itemsPerPage)}
+                  page={page}
+                  onChange={handleChangePage}
+                  color="primary"
+                />
+              </Box>
               {/* Action Buttons */}
               <Box
                 sx={{
