@@ -1,4 +1,4 @@
-import AlertsComponent from "../components/AlertsComponent";
+import EventComponent from "../components/EventComponent";
 import useWindowSize from "../hooks/useWindowSize";
 import { Box, Typography } from "@mui/material";
 
@@ -64,7 +64,7 @@ const Event = () => {
               }}
             ></Typography>
           )}
-          <AlertsComponent />
+          <EventComponent />
         </Box>
       </Box>
     </>

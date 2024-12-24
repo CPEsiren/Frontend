@@ -81,3 +81,20 @@ export interface ITrigger {
   ComparisonOperator: string;
   createdAt: string;
   enabled: boolean;
+
+export interface IEvent {
+  _id: string;
+  trigger_id: {
+    host_id: {
+      _id: string;
+      hostname: string;
+    };
+  };
+  status: string;
+  message: string;
+  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
