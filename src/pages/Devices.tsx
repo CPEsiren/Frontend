@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import useWindowSize from "../hooks/useWindowSize";
 import DevicesComponents from "../components/devicesComponents/DevicesComponents";
 import { IDevice } from "../interface/InterfaceCollection";
-import AddDevice from "../components/Modules/AddDevice";
+import AddDevice from "../components/Modals/AddDevice";
 
 const Devices: React.FC = () => {
   const windowSize = useWindowSize();

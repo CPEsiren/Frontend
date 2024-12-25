@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Grid, Box, Typography, Pagination } from "@mui/material";
 import { Item } from "../../../interface/InterfaceCollection";
 
-const DeviceInterfaceComponent = ({ items }: { items: Item[] }) => {
+const DeviceItemComponent = ({ items }: { items: Item[] }) => {
   const [page, setPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
   const pageCount = Math.ceil(items.length / itemsPerPage);
 
   const handleChangePage = (
@@ -67,4 +67,4 @@ const DeviceInterfaceComponent = ({ items }: { items: Item[] }) => {
   );
 };
 
-export default DeviceInterfaceComponent;
+export default DeviceItemComponent;

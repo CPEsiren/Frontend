@@ -4,8 +4,9 @@ import { useLocation } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
 import { getDeviceData } from "../api/DeviceDetailApi";
 import DeviceDetailComponent from "../components/devicesComponents/deviceDetail/DeviceDetailComponent"; // Updated import
-import DeviceInterfaceComponent from "../components/devicesComponents/deviceDetail/DeviceInterfaceComponent";
+import DeviceItemComponent from "../components/devicesComponents/deviceDetail/DeviceItemComponent";
 import useWindowSize from "../hooks/useWindowSize";
+import DeviceInterfaceComponent from "../components/devicesComponents/deviceDetail/DeviceInterfaceComponent";
 
 const DeviceDetailPage = () => {
   const windowSize = useWindowSize();
@@ -103,9 +104,7 @@ const DeviceDetailPage = () => {
         >
           <DeviceDetailComponent deviceData={deviceData} />
         </Box>
-
-        <Divider sx={{ marginTop: 3, marginBottom: 3 }} />
-
+        <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
         <Box
           sx={{
             width: 1,
@@ -121,7 +120,7 @@ const DeviceDetailPage = () => {
             fontWeight={600}
             color={"#242D5D"}
           >
-            INTERFACE
+            INTERFACES
           </Typography>
           <Button
             type="submit"
@@ -162,6 +161,65 @@ const DeviceDetailPage = () => {
           }}
         >
           {deviceData && <DeviceInterfaceComponent items={deviceData.items} />}
+        </Box>
+        <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
+
+        <Box
+          sx={{
+            width: 1,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 3,
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight={600}
+            color={"#242D5D"}
+          >
+            ITEMS
+          </Typography>
+          <Button
+            type="submit"
+            sx={{
+              color: "#FFFFFB",
+              backgroundColor: "#F25A28",
+              fontSize: "1rem",
+              fontWeight: 600,
+              borderRadius: "70px",
+              width: "5.5rem",
+              height: "2.5rem",
+              "&:focus": {
+                outline: "none",
+                color: "#FFFFFB",
+              },
+              "&:hover": {
+                backgroundColor: "#F37E58",
+              },
+            }}
+          >
+            Graph
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            backgroundColor: "#FFFFFB",
+            flex: 1,
+            display: "flex",
+            borderRadius: 8,
+            flexDirection: "column",
+            justifyContent: windowSize.width >= 1100 ? "center" : "start",
+            alignItems: "center",
+            minHeight: "fit-content",
+            marginBottom: 5,
+            padding: 3,
+            py: 3,
+          }}
+        >
+          {deviceData && <DeviceItemComponent items={deviceData.items} />}
         </Box>
       </Box>
     </>
