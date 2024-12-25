@@ -8,6 +8,7 @@ const DeviceItemComponent = ({ items }: { items: Item[] }) => {
   const pageCount = Math.ceil(items.length / itemsPerPage);
 
 
+
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
     value: number

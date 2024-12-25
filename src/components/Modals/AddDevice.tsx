@@ -663,14 +663,18 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
               </Typography>
               <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
               <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                
-  
-                  <Box sx={{ width: "18%" ,display: "flex", justifyContent: "right", mt: 4 }}>
-                    <Typography sx={{ fontSize: 14 }}>description</Typography>
-                  </Box>
-             
-                <Box sx={{ textAlign: "left",width: "40%" }}>
-                  
+                <Box
+                  sx={{
+                    width: "18%",
+                    display: "flex",
+                    justifyContent: "right",
+                    mt: 4,
+                  }}
+                >
+                  <Typography sx={{ fontSize: 14 }}>d=Description</Typography>
+                </Box>
+
+                <Box sx={{ textAlign: "left", width: "40%" }}>
                   <TextField
                     multiline
                     rows={4}
@@ -678,7 +682,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     value={details_description}
                     onChange={(e) => setdetails_description(e.target.value)}
                     sx={{
-
                       width: 1,
                       "& .MuiInputBase-input": {
                         fontSize: 14,

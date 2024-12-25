@@ -432,11 +432,11 @@ const ManageComponent = () => {
                   Group
                 </Typography>
               </TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Location
                 </Typography>
-              </TableCell>
+              </TableCell> */}
               <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Status
@@ -466,13 +466,13 @@ const ManageComponent = () => {
                 <TableCell>
                   <Typography variant="body2">{device.hostgroup}</Typography>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <Typography variant="body2">
                     {device.details?.Location ||
                       device.details?.Location ||
                       "N/A"}
                   </Typography>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <Chip
                     label={getStatusLabel(device.status)}
@@ -594,15 +594,15 @@ const ManageComponent = () => {
               helperText={formErrors.hostgroup}
             />
             <TextField
-              label="Location"
-              name="details.Location" // Changed from "detail"
-              value={editForm.details?.Location || ""} // Changed from editForm.hostgroup
+              label="Description"
+              name="details.description" // Changed from "detail"
+              value={editForm.details?.description || ""} // Changed from editForm.hostgroup
               onChange={(e) => {
                 setEditForm((prev) => ({
                   ...prev,
                   details: {
                     ...prev.details,
-                    Location: e.target.value,
+                    description: e.target.value,
                   },
                 }));
               }}
