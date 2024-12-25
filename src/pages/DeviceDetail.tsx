@@ -160,7 +160,7 @@ const DeviceDetailPage = () => {
             py: 3,
           }}
         >
-          {deviceData && <DeviceInterfaceComponent items={deviceData.items} />}
+          {deviceData && <DeviceInterfaceComponent interfaces={deviceData.interfaces} />}
         </Box>
         <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
 
