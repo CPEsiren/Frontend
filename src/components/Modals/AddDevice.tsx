@@ -464,7 +464,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
                       *
                     </Typography>
-                    <Typography sx={{ fontSize: 14 }}>Host name</Typography>
+                    <Typography sx={{ fontSize: 14 }}>Device's name</Typography>
                   </Box>
                   <Typography sx={{ fontSize: 14, mt: 4 }}>
                     Templates
