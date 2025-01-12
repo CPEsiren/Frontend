@@ -37,7 +37,7 @@ const EventComponent = () => {
         }
 
         const result = await response.json();
-        console.log('Raw Response:', result);
+        console.log("Raw Response:", result);
 
         if (result.events && result.events.length > 0) {
           setDevices(result.events);
@@ -45,7 +45,8 @@ const EventComponent = () => {
           console.log("No events found");
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to fetch devices";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch devices";
         setError(errorMessage);
         console.error("Error fetching devices:", err);
       } finally {
@@ -94,7 +95,12 @@ const EventComponent = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -103,7 +109,12 @@ const EventComponent = () => {
   if (error) {
     return (
       <Container>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
           <Typography color="error" variant="h6">
             {`Error fetching devices: ${error}`}
           </Typography>
@@ -115,10 +126,15 @@ const EventComponent = () => {
   if (devices.length === 0) {
     return (
       <Container>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Typography align="center" sx={{ mt: 2 }}>
-          No events found
-        </Typography>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <Typography align="center" sx={{ mt: 2 }}>
+            No events found
+          </Typography>
         </Box>
       </Container>
     );
@@ -146,7 +162,7 @@ const EventComponent = () => {
             },
             "& .MuiTableRow-root": {
               "&[data-status='PROBLEM']:hover": {
-                backgroundColor: "#fff5f8", 
+                backgroundColor: "#fff5f8",
               },
             },
           }}
@@ -165,9 +181,9 @@ const EventComponent = () => {
                   Time
                 </Typography>
               </TableCell>
-              <TableCell align="center">
+              <TableCell align="center" sx={{ width: "17%" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
-                  Hostname
+                  Device's name
                 </Typography>
               </TableCell>
               <TableCell align="center">
@@ -183,39 +199,47 @@ const EventComponent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-          {devices.map((device) => {
-            const displayTime = device.status === "PROBLEM" ? device.createdAt : device.updatedAt;
+            {devices.map((device) => {
+              const displayTime =
+                device.status === "PROBLEM"
+                  ? device.createdAt
+                  : device.updatedAt;
 
-            return (
-              <TableRow
-                key={device._id}
-                data-status={device.status} 
-                hover
-                sx={{
-                  backgroundColor: device.status === "PROBLEM" ? "#fff5f8" : "inherit",
-                }}
-              >
-                <TableCell align="center">
-                  <Typography variant="body2">{formatTimeInThaiTimezone(displayTime)}</Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Typography variant="body2">{device.trigger_id?.host_id?.hostname}</Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Typography variant="body2">{device.message}</Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={getStatusLabel(device.status)}
-                    color={getStatusColor(device.status)}
-                    size="small"
-                    sx={{ minWidth: "80px" }}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+              return (
+                <TableRow
+                  key={device._id}
+                  data-status={device.status}
+                  hover
+                  sx={{
+                    backgroundColor:
+                      device.status === "PROBLEM" ? "#fff5f8" : "inherit",
+                  }}
+                >
+                  <TableCell align="center">
+                    <Typography variant="body2">
+                      {formatTimeInThaiTimezone(displayTime)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2">
+                      {device.trigger_id?.host_id?.hostname}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography variant="body2">{device.message}</Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={getStatusLabel(device.status)}
+                      color={getStatusColor(device.status)}
+                      size="small"
+                      sx={{ minWidth: "80px" }}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
         </Table>
       </TableContainer>
     </Container>

@@ -418,7 +418,7 @@ const ManageComponent = () => {
             <TableRow>
               <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
-                  Hostname
+                  Device's name
                 </Typography>
               </TableCell>
               <TableCell>
