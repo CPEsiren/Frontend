@@ -300,6 +300,7 @@ const TriggerComponent = () => {
                 color: "white",
                 p: 2,
                 borderRadius: "4px 4px 0 0",
+                fontWeight: "bold",
               }}
             >
               {hostname}
@@ -553,10 +554,15 @@ const TriggerComponent = () => {
       </Snackbar>
 
       {Object.keys(groupedTriggers).length === 0 && (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Typography align="center" sx={{ mt: 2 }}>
-          No triggers found
-        </Typography>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <Typography align="center" sx={{ mt: 2 }}>
+            No triggers found
+          </Typography>
         </Box>
       )}
     </Box>
