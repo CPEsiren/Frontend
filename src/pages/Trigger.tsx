@@ -1,8 +1,8 @@
 import TriggerComponent from "../components/TriggerComponent";
 import useWindowSize from "../hooks/useWindowSize";
 import { Box, Typography, Button, Dialog, DialogContent } from "@mui/material";
-import React, { useState } from "react"; 
-import AddTrigger from "../components/Modules/AddTrigger";
+import React, { useState } from "react";
+import AddTrigger from "../components/Modals/AddTrigger";
 
 const Triggers = () => {
   const windowSize = useWindowSize();
@@ -88,18 +88,15 @@ const Triggers = () => {
       </Box>
 
       <Dialog open={isModalOpen} onClose={toggleModal} fullWidth maxWidth="lg">
-        <Box 
-          sx={{ 
-            borderBottom: 1, 
-            borderColor: "#a9a9a9", 
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "#a9a9a9",
             px: 3,
-            py: 2
+            py: 2,
           }}
         >
-          <Typography 
-            component="div" 
-            variant="h6"
-          >
+          <Typography component="div" variant="h6">
             New Trigger
           </Typography>
         </Box>

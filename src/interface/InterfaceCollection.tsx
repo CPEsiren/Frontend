@@ -8,6 +8,7 @@ export interface IDevice {
   hostgroup: string;
   details: { [key: string]: string };
   items: Item[];
+  interfaces: IInterface[];
   status: number;
 }
 
@@ -20,12 +21,12 @@ export interface Item {
 }
 
 export interface IInterface {
-  ImacAddress: string;
-  Intname: string | null;
-  ipAddress: string | null;
-  speed: number;
-  status: boolean;
-  DMACaddress: string;
+  _id: string;
+  interface_name: string;
+  interface_type: string;
+  interface_speed: string;
+  interface_Adminstatus: string;
+  interface_Operstatus: string;
 }
 
 export interface IAlert {
@@ -54,15 +55,6 @@ export interface IGraph {
   DMACaddress: string;
   name: string | null;
   detail: string | null;
-}
-
-export interface ITrigger {
-  trigger_name: string;
-  enabled: boolean;
-  severity: string;
-  valuetrigger: number;
-  comparisonOperator: string;
-  createAt: string;
 }
 
 export interface DataEntry {
@@ -98,4 +90,3 @@ export interface IEvent {
   updatedAt: string;
   __v: number;
 }
-

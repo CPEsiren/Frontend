@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { Grid, Box, Typography, Pagination } from "@mui/material";
-import { IInterface } from "../../../interface/InterfaceCollection";
+import { Item } from "../../../interface/InterfaceCollection";
 
-const DeviceInterfaceComponent = ({
-  interfaces,
-}: {
-  interfaces: IInterface[];
-}) => {
+const DeviceItemComponent = ({ items }: { items: Item[] }) => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
-  const pageCount = Math.ceil(interfaces.length / itemsPerPage);
+  const pageCount = Math.ceil(items.length / itemsPerPage);
+
+
 
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
@@ -21,7 +19,7 @@ const DeviceInterfaceComponent = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        {interfaces
+        {items
           .slice((page - 1) * itemsPerPage, page * itemsPerPage)
           .map((item, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -49,14 +47,11 @@ const DeviceInterfaceComponent = ({
                     maxHeight: "3.6em", // 3 lines * 1.2em line-height
                   }}
                 >
-                  {item.interface_name}
+                  {item.item_name}
                 </Typography>
-                <Typography>Type: {item.interface_type}</Typography>
-                <Typography>Speed: {item.interface_speed} bps</Typography>
-                <Typography>
-                  Adminstatus: {item.interface_Adminstatus}
-                </Typography>
-                <Typography>Operstatus: {item.interface_Operstatus}</Typography>
+                <Typography>OID: {item.oid}</Typography>
+                <Typography>Type: {item.type}</Typography>
+                <Typography>Unit: {item.unit}</Typography>
               </Box>
             </Grid>
           ))}
@@ -74,4 +69,4 @@ const DeviceInterfaceComponent = ({
   );
 };
 
-export default DeviceInterfaceComponent;
+export default DeviceItemComponent;

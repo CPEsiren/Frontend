@@ -12,15 +12,18 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (device.status) {
-      navigate(`/devicedetail/${device._id}`, { state: { device } });
-    }
+    // if (device.status) {
+    navigate(`/devicedetail/${device._id}`, { state: { device } });
+    // }
   };
+
+  const numofInterface = device.interfaces.length;
+  const numofItem = device.items.length;
 
   return (
     <ButtonBase
       onClick={handleClick}
-      disabled={!device.status}
+      // disabled={!device.status}
       sx={{
         width: "18rem",
         height: "9.3rem",
@@ -32,7 +35,8 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
           outline: "none !important",
         },
         "&:hover": {
-          transform: device.status ? "scale(1.05)" : "none",
+          // transform: device.status ? "scale(1.05)" : "none",
+          transform: "scale(1.05)",
         },
       }}
     >
@@ -91,7 +95,8 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
               }}
             />
             <Box>
-              <Typography variant="h6" component="div" color={"#242D5D"}>
+              <Box sx={{}}>
+                {/* <Typography variant="h6" component="div" color={"#242D5D"}>
                 <Box
                   sx={{
                     display: "flex",
@@ -116,7 +121,47 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
                     {device.details?.type || "N/A"}
                   </Typography>
                 </Box>
-              </Typography>
+              </Typography> */}
+                <Typography variant="h6" component="div" color={"#242D5D"}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography>Interfaces:</Typography>
+                    <Typography style={{ marginLeft: 10 }}>
+                      {numofInterface}
+                    </Typography>
+                  </Box>
+                </Typography>
+                <Typography variant="h6" component="div" color={"#242D5D"}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography>Items :</Typography>
+                    <Typography style={{ marginLeft: 10 }}>
+                      {numofItem}
+                    </Typography>
+                  </Box>
+                </Typography>
+                <Typography variant="h6" component="div" color={"#242D5D"}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography>Status :</Typography>
+                    <Typography style={{ marginLeft: 10 }}>
+                      {device.status === 1 ? "on" : "off"}
+                    </Typography>
+                  </Box>
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Box>
