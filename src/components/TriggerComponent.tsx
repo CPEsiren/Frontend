@@ -553,9 +553,11 @@ const TriggerComponent = () => {
       </Snackbar>
 
       {Object.keys(groupedTriggers).length === 0 && (
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <Typography align="center" sx={{ mt: 2 }}>
           No triggers found
         </Typography>
+        </Box>
       )}
     </Box>
   );

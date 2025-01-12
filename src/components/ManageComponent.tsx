@@ -67,6 +67,7 @@ const ManageComponent = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<IDevice | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -141,15 +142,17 @@ const ManageComponent = () => {
     try {
       const response = await fetch("http://localhost:3000/host");
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.log("No devices found");
+        return; 
       }
-
+  
       const result: ApiResponse = await response.json();
-
-      if (result.status !== "success") {
-        throw new Error(result.message || "Failed to fetch devices");
+  
+      if (result.status !== "success" || !result.data.length) {
+        console.log("No devices found");
+        return; 
       }
-
+  
       setDevices(result.data);
     } catch (err) {
       const errorMessage =
@@ -160,6 +163,7 @@ const ManageComponent = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchDevices();

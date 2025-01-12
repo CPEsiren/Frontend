@@ -42,7 +42,7 @@ const EventComponent = () => {
         if (result.events && result.events.length > 0) {
           setDevices(result.events);
         } else {
-          throw new Error("No events found");
+          console.log("No events found");
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to fetch devices";
@@ -116,9 +116,9 @@ const EventComponent = () => {
     return (
       <Container>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-          <Typography color="textSecondary" variant="h6">
-            No devices found
-          </Typography>
+        <Typography align="center" sx={{ mt: 2 }}>
+          No events found
+        </Typography>
         </Box>
       </Container>
     );
@@ -189,7 +189,7 @@ const EventComponent = () => {
             return (
               <TableRow
                 key={device._id}
-                data-status={device.status} // เพิ่ม data-status
+                data-status={device.status} 
                 hover
                 sx={{
                   backgroundColor: device.status === "PROBLEM" ? "#fff5f8" : "inherit",
