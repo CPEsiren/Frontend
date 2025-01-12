@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Box, Typography, Divider, Button } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
 import { getDeviceData } from "../api/DeviceDetailApi";
 import DeviceDetailComponent from "../components/devicesComponents/deviceDetail/DeviceDetailComponent"; // Updated import
@@ -16,6 +16,11 @@ const DeviceDetailPage = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/graphs`);
+  };
 
   useEffect(() => {
     if (!deviceData) {
@@ -124,6 +129,7 @@ const DeviceDetailPage = () => {
           </Typography>
           <Button
             type="submit"
+            onClick={handleClick}
             sx={{
               color: "#FFFFFB",
               backgroundColor: "#F25A28",
@@ -160,7 +166,9 @@ const DeviceDetailPage = () => {
             py: 3,
           }}
         >
-          {deviceData && <DeviceInterfaceComponent interfaces={deviceData.interfaces} />}
+          {deviceData && (
+            <DeviceInterfaceComponent interfaces={deviceData.interfaces} />
+          )}
         </Box>
         <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
 
@@ -183,6 +191,7 @@ const DeviceDetailPage = () => {
           </Typography>
           <Button
             type="submit"
+            onClick={handleClick}
             sx={{
               color: "#FFFFFB",
               backgroundColor: "#F25A28",

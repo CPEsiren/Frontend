@@ -671,7 +671,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     mt: 4,
                   }}
                 >
-                  <Typography sx={{ fontSize: 14 }}>d=Description</Typography>
+                  <Typography sx={{ fontSize: 14 }}>Description</Typography>
                 </Box>
 
                 <Box sx={{ textAlign: "left", width: "40%" }}>
@@ -793,8 +793,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                       <TableCell>Type</TableCell>
                       <TableCell>Unit</TableCell>
                       <TableCell>Update Interval</TableCell>
-                      <TableCell>History</TableCell>
-                      <TableCell>Trend</TableCell>
+                      {/* <TableCell>History</TableCell>
+                      <TableCell>Trend</TableCell> */}
                       <TableCell></TableCell>
                     </TableRow>
                   </TableHead>
@@ -808,7 +808,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           {...(isTransitioning ? { timeout: 100 } : {})}
                         >
                           <TableRow>
-                            <TableCell>
+                            <TableCell sx={{ width: "25%" }}>
                               <TextField
                                 {...textFieldProps}
                                 value={row.item_name}
@@ -821,7 +821,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 }
                               />
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ width: "25%" }}>
                               <TextField
                                 {...textFieldProps}
                                 value={row.oid}
@@ -873,12 +873,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 }
                               />
                             </TableCell>
-                            <TableCell>
-                              <TextField {...textFieldProps} />
-                            </TableCell>
-                            <TableCell>
-                              <TextField {...textFieldProps} />
-                            </TableCell>
+
                             <TableCell>
                               <IconButton
                                 onClick={() => handleDeleteRow(row.id)}
