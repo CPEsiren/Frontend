@@ -164,6 +164,7 @@ const DeviceDetailPage = () => {
             marginBottom: 5,
             padding: 3,
             py: 3,
+           
           }}
         >
           {deviceData && (

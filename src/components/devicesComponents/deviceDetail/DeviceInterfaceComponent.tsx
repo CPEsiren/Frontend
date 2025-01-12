@@ -62,7 +62,7 @@ const DeviceInterfaceComponent = ({
           ))}
       </Grid>
       {pageCount > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", marginTop: 6,mb:2 }}>
           <Pagination
             count={pageCount}
             page={page}
