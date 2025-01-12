@@ -35,7 +35,7 @@ interface AddTemplateProps {
 
 const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
   const windowSize = useWindowSize();
-  const [name_template, setname_template] = useState<string>("");
+  const [template_name, settemplate_name] = useState<string>("");
   const [description, setdescription] = useState<string>("");
   const [itemRows, setItemRows] = useState<TemplateItems[]>([
     {
@@ -52,10 +52,10 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const success = await StoreNewtemplate(name_template);
+    const success = await StoreNewtemplate(template_name);
     if (success) {
       // Clear form fields after successful submission
-      setname_template("");
+      settemplate_name("");
       setdescription("");
       setItemRows([
         {
@@ -87,16 +87,16 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
     fontSize: 14,
   };
 
-  const StoreNewtemplate = async (name_template: string): Promise<boolean> => {
+  const StoreNewtemplate = async (template_name: string): Promise<boolean> => {
     try {
-      if (!name_template.trim()) {
+      if (!template_name.trim()) {
         alert("Template name is required");
         return false;
       }
 
       // Create request body with just the template name
       const requestBody: any = {
-        name_template,
+        template_name,
         description,
       };
 
@@ -215,9 +215,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
             </Box>
             <TextField
               {...textFieldProps}
-              value={name_template}
+              value={template_name}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setname_template(e.target.value)
+                settemplate_name(e.target.value)
               }
             />
           </Box>
