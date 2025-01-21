@@ -18,6 +18,7 @@ export interface Item {
   oid: string;
   type: string;
   unit: string;
+  interval: number;
 }
 
 export interface IInterface {

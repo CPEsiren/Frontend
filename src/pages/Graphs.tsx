@@ -303,25 +303,21 @@ const Graphs = () => {
   };
 
   const handleSelectAll = () => {
-    const allItems = sortedItems.reduce(
-      (acc, item) => ({
-        ...acc,
-        [item.item_id.item_name]: true,
-      }),
-      {}
-    );
-    setSelectedItems(allItems);
+    const newSelectedItems = { ...selectedItems };
+    // Only update items that match the search term
+    filteredItemsForSearch.forEach((item) => {
+      newSelectedItems[item.item_id.item_name] = true;
+    });
+    setSelectedItems(newSelectedItems);
   };
-
+  
   const handleDeselectAll = () => {
-    const noItems = sortedItems.reduce(
-      (acc, item) => ({
-        ...acc,
-        [item.item_id.item_name]: false,
-      }),
-      {}
-    );
-    setSelectedItems(noItems);
+    const newSelectedItems = { ...selectedItems };
+    // Only update items that match the search term
+    filteredItemsForSearch.forEach((item) => {
+      newSelectedItems[item.item_id.item_name] = false;
+    });
+    setSelectedItems(newSelectedItems);
   };
 
   const selectedHostData = hosts.find((host) => host._id._id === selectedHost);
