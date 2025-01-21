@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Box, Typography, Divider, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
 import { getDeviceData } from "../api/DeviceDetailApi";
@@ -7,6 +15,7 @@ import DeviceDetailComponent from "../components/devicesComponents/deviceDetail/
 import DeviceItemComponent from "../components/devicesComponents/deviceDetail/DeviceItemComponent";
 import useWindowSize from "../hooks/useWindowSize";
 import DeviceInterfaceComponent from "../components/devicesComponents/deviceDetail/DeviceInterfaceComponent";
+import AddItemOnly from "../components/Modals/AddItemOnly";
 
 const DeviceDetailPage = () => {
   const windowSize = useWindowSize();
@@ -17,10 +26,15 @@ const DeviceDetailPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
 
-  const handleClick = () => {
-    navigate(`/graphs`);
+  const toggleModal = () => {
+    setModalOpen(!isModalOpen);
   };
+
+  // const handleClick = () => {
+  //   navigate(`/graphs`);
+  // };
 
   useEffect(() => {
     if (!deviceData) {
@@ -127,7 +141,7 @@ const DeviceDetailPage = () => {
           >
             INTERFACES
           </Typography>
-          <Button
+          {/* <Button
             type="submit"
             onClick={handleClick}
             sx={{
@@ -148,7 +162,7 @@ const DeviceDetailPage = () => {
             }}
           >
             Graph
-          </Button>
+          </Button> */}
         </Box>
 
         <Box
@@ -164,7 +178,6 @@ const DeviceDetailPage = () => {
             marginBottom: 5,
             padding: 3,
             py: 3,
-           
           }}
         >
           {deviceData && (
@@ -192,14 +205,14 @@ const DeviceDetailPage = () => {
           </Typography>
           <Button
             type="submit"
-            onClick={handleClick}
+            onClick={toggleModal}
             sx={{
               color: "#FFFFFB",
-              backgroundColor: "#F25A28",
+              backgroundColor: "blue",
               fontSize: "1rem",
               fontWeight: 600,
               borderRadius: "70px",
-              width: "5.5rem",
+              width: "6rem",
               height: "2.5rem",
               "&:focus": {
                 outline: "none",
@@ -210,7 +223,7 @@ const DeviceDetailPage = () => {
               },
             }}
           >
-            Graph
+            Add Item
           </Button>
         </Box>
 
@@ -232,6 +245,15 @@ const DeviceDetailPage = () => {
           {deviceData && <DeviceItemComponent items={deviceData.items} />}
         </Box>
       </Box>
+
+      <Dialog open={isModalOpen} onClose={toggleModal} fullWidth maxWidth="lg">
+        <DialogTitle sx={{ borderBottom: 1, borderColor: "#a9a9a9" }}>
+          <Typography variant="h6">New Item</Typography>
+        </DialogTitle>
+        <DialogContent>
+  <AddItemOnly onClose={toggleModal} deviceId={deviceData._id} />
+</DialogContent>
+      </Dialog>
     </>
   );
 };

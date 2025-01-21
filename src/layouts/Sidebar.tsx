@@ -116,19 +116,28 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
       : null
   );
 
+  // const handleItemClick = (item: any) => {
+  //   if (item.subItems) {
+  //     if (expandedItem === item.id) {
+  //       setExpandedItem(null);
+  //     } else {
+  //       setExpandedItem(item.id);
+  //       navigate(item.subItems[0].path);
+  //     }
+  //   } else {
+  //     setExpandedItem(null);
+  //     navigate(item.path);
+  //   }
+  // };
+
   const handleItemClick = (item: any) => {
-      if (item.subItems) {
-        if (expandedItem === item.id) {
-          setExpandedItem(null);
-        } else {
-          setExpandedItem(item.id);
-          navigate(item.subItems[0].path);
-        }
-      } else {
-        setExpandedItem(null);
-        navigate(item.path);
-      }
-    
+    if (item.subItems) {
+      // Only toggle the expanded state without navigating
+      setExpandedItem(expandedItem === item.id ? null : item.id);
+    } else {
+      setExpandedItem(null);
+      navigate(item.path);
+    }
   };
 
   return (
