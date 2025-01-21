@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.5",
-    "@emotion/styled": "^11.13.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fontsource/roboto": "^5.0.13",
     "@mui/icons-material": "^6.1.8",
     "@mui/lab": "^6.0.0-beta.17",
-    "@mui/material": "^6.1.9",
+    "@mui/material": "^6.4.1",
+    "@mui/x-date-pickers": "^7.24.0",
     "axios": "^1.7.7",
     "chart.js": "^4.4.7",
     "chartjs-adapter-date-fns": "^3.0.0",
