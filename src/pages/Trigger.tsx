@@ -30,7 +30,7 @@ const Triggers = () => {
             fontWeight={600}
             color={"#242D5D"}
           >
-            Triggers
+            TRIGGER
           </Typography>
           <Button
             onClick={toggleModal}

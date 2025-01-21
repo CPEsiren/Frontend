@@ -15,7 +15,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import DevicesIcon from "@mui/icons-material/Devices";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import EventIcon from "@mui/icons-material/Event";
-import PersonIcon from '@mui/icons-material/Person';
+import PersonIcon from "@mui/icons-material/Person";
 
 interface SidebarProps {
   isHideSidebar: boolean;
@@ -118,9 +118,13 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
   const location = useLocation();
   const [expandedItem, setExpandedItem] = useState<number | null>(
     location.pathname.includes("/devices") ||
-      location.pathname.includes("/templates") 
-      // || location.pathname.includes("/alerts")
-      ? 1
+      location.pathname.includes("/templates") ||
+      location.pathname.includes("trigger") ||
+      location.pathname.includes("event")
+      ? location.pathname.includes("/devices") ||
+        location.pathname.includes("/templates")
+        ? 1
+        : 6
       : null
   );
 
@@ -164,14 +168,18 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               m: 0,
               backgroundColor:
                 location.pathname === item.path ||
-                item.subItems?.some((sub) => sub.path === location.pathname) 
-                // || (item.id === 6 && expandedItem === item.id)
+                item.subItems?.some((sub) => sub.path === location.pathname) ||
+                (item.id === 6 &&
+                  (location.pathname.includes("trigger") ||
+                    location.pathname.includes("event")))
                   ? "#F25A28"
                   : "transparent",
               color:
                 location.pathname === item.path ||
-                item.subItems?.some((sub) => sub.path === location.pathname) 
-                // || (item.id === 6 && expandedItem === item.id)
+                item.subItems?.some((sub) => sub.path === location.pathname) ||
+                (item.id === 6 &&
+                  (location.pathname.includes("trigger") ||
+                    location.pathname.includes("event")))
                   ? "#FFFFFB"
                   : "#242D5D",
               transition: "background-color 0.3s ease",
