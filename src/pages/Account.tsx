@@ -45,11 +45,9 @@ const Account = () => {
               justifyContent: "flex-start",
               alignItems: "flex-start",
               minHeight: "fit-content",
-              // marginBottom: 5,
-              // height: 1,
+              marginBottom: 5,
+              height: 1,
               py: 3,
-              // pt: windowSize.width >= 1100 ? "15vh" : "0vh",
-              // pb: "15vh",
               px: 3,
             }}
           >
@@ -60,8 +58,8 @@ const Account = () => {
                   color: "#242D5D",
                   fontWeight: 400,
                   fontSize: 25,
-                  // mt: "6rem",
-                  // mb: "2rem",
+                  mt: "6rem",
+                  mb: "2rem",
                 }}
               ></Typography>
             )}
