@@ -37,7 +37,7 @@ const EventComponent = () => {
         }
 
         const result = await response.json();
-        console.log("Raw Response:", result);
+        // console.log("Raw Response:", result);
 
         if (result.events && result.events.length > 0) {
           setDevices(result.events);

@@ -15,6 +15,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import DevicesIcon from "@mui/icons-material/Devices";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import EventIcon from "@mui/icons-material/Event";
+import PersonIcon from '@mui/icons-material/Person';
 
 interface SidebarProps {
   isHideSidebar: boolean;
@@ -31,6 +32,13 @@ export const SlideBarItems = [
   },
   {
     id: 1,
+    icon: <PersonIcon sx={{ fontSize: 20 }} />,
+    name: "Account",
+    path: "/account",
+    newIcon: "",
+  },
+  {
+    id: 2,
     icon: <DatabaseIcon sx={{ fontSize: 20 }} />,
     name: "Data Collection",
     newIcon: "",
@@ -52,7 +60,7 @@ export const SlideBarItems = [
     ],
   },
   {
-    id: 2,
+    id: 3,
     icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Graphs",
     path: "/graphs",
@@ -83,14 +91,14 @@ export const SlideBarItems = [
         id: "sub-1",
         icon: <NewReleasesIcon sx={{ fontSize: 20 }} />,
         name: "Trigger",
-        path: "trigger",
+        path: "/trigger",
         newIcon: "",
       },
       {
         id: "sub-2",
         icon: <EventIcon sx={{ fontSize: 20 }} />,
         name: "Event",
-        path: "event",
+        path: "/event",
         newIcon: "",
       },
     ],
@@ -110,8 +118,8 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
   const location = useLocation();
   const [expandedItem, setExpandedItem] = useState<number | null>(
     location.pathname.includes("/devices") ||
-      location.pathname.includes("/templates") ||
-      location.pathname.includes("/alerts")
+      location.pathname.includes("/templates") 
+      // || location.pathname.includes("/alerts")
       ? 1
       : null
   );
@@ -156,14 +164,14 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               m: 0,
               backgroundColor:
                 location.pathname === item.path ||
-                item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 6 && expandedItem === item.id)
+                item.subItems?.some((sub) => sub.path === location.pathname) 
+                // || (item.id === 6 && expandedItem === item.id)
                   ? "#F25A28"
                   : "transparent",
               color:
                 location.pathname === item.path ||
-                item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 6 && expandedItem === item.id)
+                item.subItems?.some((sub) => sub.path === location.pathname) 
+                // || (item.id === 6 && expandedItem === item.id)
                   ? "#FFFFFB"
                   : "#242D5D",
               transition: "background-color 0.3s ease",

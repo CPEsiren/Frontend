@@ -10,6 +10,7 @@ import MobileLayout from "./mobilelayout/MobileLayout";
 export const getPageName = (pathname: string): string => {
   const pageName = [
     "Dashboard",
+    "Account",
     "Devices",
     "Graphs",
     "Storages",
