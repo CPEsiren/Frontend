@@ -32,9 +32,28 @@ const DeviceDetailPage = () => {
     setModalOpen(!isModalOpen);
   };
 
-  // const handleClick = () => {
-  //   navigate(`/graphs`);
-  // };
+  const refreshDeviceData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:3000/host/${deviceData?._id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch device data");
+      }
+      const result = await response.json();
+      if (result.status === "success") {
+        setDeviceData(result.data);
+      }
+    } catch (error) {
+      console.error("Error refreshing device data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    refreshDeviceData(); // Refresh data after modal closes
+  };
 
   useEffect(() => {
     if (!deviceData) {
@@ -242,17 +261,17 @@ const DeviceDetailPage = () => {
             py: 3,
           }}
         >
-          {deviceData && <DeviceItemComponent items={deviceData.items} />}
+          {deviceData && <DeviceItemComponent deviceData={deviceData} />}
         </Box>
       </Box>
 
-      <Dialog open={isModalOpen} onClose={toggleModal} fullWidth maxWidth="lg">
+      <Dialog open={isModalOpen} onClose={handleModalClose} fullWidth maxWidth="lg">
         <DialogTitle sx={{ borderBottom: 1, borderColor: "#a9a9a9" }}>
           <Typography variant="h6">New Item</Typography>
         </DialogTitle>
         <DialogContent>
-  <AddItemOnly onClose={toggleModal} deviceId={deviceData._id} />
-</DialogContent>
+          <AddItemOnly onClose={handleModalClose} deviceId={deviceData._id} />
+        </DialogContent>
       </Dialog>
     </>
   );

@@ -22,7 +22,7 @@ const Event = () => {
             fontWeight={600}
             color={"#242D5D"}
           >
-            Event
+            EVENT
           </Typography>
         </Box>
       )}

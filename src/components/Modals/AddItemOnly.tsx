@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Typography,
-  TextField,
-  FormControl,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Paper,
-} from "@mui/material";
+import { Box, Button, Typography, TextField, Paper } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
-import Tab from "@mui/material/Tab";
-import TabContext from "@mui/lab/TabContext";
-import TabList from "@mui/lab/TabList";
-import TabPanel from "@mui/lab/TabPanel";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -56,11 +42,6 @@ const theme = createTheme({
   },
 });
 
-interface DeviceDetails {
-  location: string;
-  description: string;
-}
-
 interface DeviceItems {
   id: number;
   item_name: string;
@@ -72,21 +53,6 @@ interface DeviceItems {
   // trend: string;
 }
 
-interface TemplateItem {
-  item_name: string;
-  type: string;
-  unit: string;
-  _id: string;
-  oid?: string;
-  interval: number;
-}
-
-interface Template {
-  _id: string;
-  name_template: string;
-  items: TemplateItem[];
-  description: string;
-}
 interface AddDeviceProps {
   onClose: () => void;
   deviceId: string;
@@ -94,15 +60,6 @@ interface AddDeviceProps {
 
 const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
   const windowSize = useWindowSize();
-  const [hostname, sethostname] = useState<string>("");
-  const [ip_address, setip_address] = useState<string>("");
-  const [snmp_port, setsnmp_port] = useState<string>("");
-  const [snmp_version, setsnmp_version] = useState<string>("");
-  const [snmp_community, setsnmp_community] = useState<string>("");
-  const [hostgroup, sethostgroup] = useState<string>("");
-  const [templates, settemplates] = useState<string>("");
-  const [details_location, setdetails_location] = useState<string>("");
-  const [details_description, setdetails_description] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   //Scan interfacs
@@ -166,25 +123,24 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
     );
   };
 
-  const details = {
-    location: details_location,
-    description: details_description,
-  };
-
   const StoreNewItem = async (itemRows: DeviceItems[]): Promise<boolean> => {
     try {
-      const requestBody = {
-        items: itemRows.map((item) => ({
+      // Map each item to the format expected by the API
+      const promises = itemRows.map((item) => {
+        const itemData = {
+          host_id: deviceId,
           item_name: item.item_name,
           oid: item.oid,
           type: item.type,
           unit: item.unit,
-          interval: item.interval,
-        })),
-      };
+          interval: item.interval.toString(), // Convert to string as per API format
+        };
 
-      //Pls change to update with item path and post deviceid**************
-      await axios.post(`http://127.0.0.1:3000/${deviceId}/items`, requestBody);
+        return axios.post("http://localhost:3000/item", itemData);
+      });
+
+      // Wait for all items to be added
+      await Promise.all(promises);
       return true;
     } catch (error) {
       console.error("Error recording New Item:", error);
@@ -401,3 +357,5 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
 };
 
 export default AddItemOnly;
+
+//Pls change to update with item path and post deviceid**************
