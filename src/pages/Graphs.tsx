@@ -52,15 +52,29 @@ interface SelectedItems {
 const STORAGE_KEY = "graph-filter-state";
 
 const Graphs = () => {
-  const [url, setUrl] = useState<string>("http://127.0.0.1:3000/data");
+  //DateTime Range
+  const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
+    () => {
+      const now = new Date();
+      return new Date(now.setMinutes(now.getMinutes() - 15));
+    }
+  );
+
+  const [selectedDateTimeEnd, setSelectedDateTimeEnd] = useState<Date>(
+    new Date()
+  );
+  const [url, setUrl] = useState<string>(
+    `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
+  );
   const handleApplyClick = () => {
     setUrl(
       `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
     );
+    setIsAuto(false);
   };
 
   const handleResetClick = () => {
-    setUrl(`http://127.0.0.1:3000/data`);
+    setIsAuto(true);
     setSelectedDateTimeEnd(new Date());
     setSelectedDateTimeStart(() => {
       const now = selectedDateTimeEnd;
@@ -68,6 +82,9 @@ const Graphs = () => {
     });
 
     setSelectedLastTime(lastTime[0]);
+    setUrl(
+      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
+    );
   };
 
   const [hosts, setHosts] = useState<Host[]>([]);
@@ -77,15 +94,6 @@ const Graphs = () => {
   const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  //DateTime Range
-  const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
-    new Date()
-  );
-
-  const [selectedDateTimeEnd, setSelectedDateTimeEnd] = useState<Date>(
-    new Date()
-  );
 
   //Set Last Time
   const lastTime: string[] = [
@@ -257,10 +265,28 @@ const Graphs = () => {
     }
   };
 
+  const [isAuto, setIsAuto] = useState(true);
+
+  useEffect(() => {
+    const updateUrlAndFetch = () => {
+      if (isAuto) {
+        setSelectedDateTimeEnd(new Date());
+        setSelectedDateTimeStart(() => {
+          const now = selectedDateTimeEnd;
+          return new Date(now.setMinutes(now.getMinutes() - 15));
+        });
+        const newUrl = `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${new Date().toISOString()}`;
+        setUrl(newUrl);
+      }
+    };
+
+    updateUrlAndFetch();
+    const interval = setInterval(updateUrlAndFetch, 10000);
+    return () => clearInterval(interval);
+  }, [isAuto]);
+
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
   }, [url, selectedHost]);
 
   const handleHostChange = (event: SelectChangeEvent<string>) => {
@@ -310,7 +336,7 @@ const Graphs = () => {
     });
     setSelectedItems(newSelectedItems);
   };
-  
+
   const handleDeselectAll = () => {
     const newSelectedItems = { ...selectedItems };
     // Only update items that match the search term
@@ -619,13 +645,26 @@ const Graphs = () => {
               <Paper
                 elevation={3}
                 sx={{
-                  p: 3,
-                  minHeight: "500px",
+                  p: 2,
+                  minheight: "500px",
                   display: "flex",
                   flexDirection: "column",
+                  transition: "box-shadow 0.3s ease-in-out",
+                  "&:hover": {
+                    boxShadow: 6,
+                  },
                 }}
               >
-                <MetricGraph item={item} />
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontWeight: "bold" }}
+                >
+                  {item.item_id.item_name}
+                </Typography>
+                <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
+                  <MetricGraph item={item} />
+                </Box>
               </Paper>
             </Grid>
           ))}
