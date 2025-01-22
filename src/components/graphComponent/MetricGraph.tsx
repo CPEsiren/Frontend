@@ -67,7 +67,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
             {
               data: yAxis,
               label: item.item_id.item_name,
-              curve: "natural",
+              curve: "linear",
               color: "#2196f3",
             },
           ]}
