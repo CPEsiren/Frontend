@@ -1,57 +1,102 @@
-import React, { useState, useEffect } from "react";
 import {
   Box,
-  Container,
-  FormControl,
-  Select,
-  MenuItem,
-  Paper,
-  Grid,
-  SelectChangeEvent,
-  Typography,
-  Alert,
-  IconButton,
-  Popover,
-  Checkbox,
-  FormGroup,
-  FormControlLabel,
   Button,
+  Checkbox,
+  Container,
   Divider,
-  TextField,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  IconButton,
   InputAdornment,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Paper,
+  Popover,
+  Select,
+  SelectChangeEvent,
+  TextField,
+  Typography,
 } from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import SearchIcon from "@mui/icons-material/Search";
-import MetricGraph, { Items } from "../components/graphComponent/MetricGraph";
-
-//Date and Time Picker
-import { LocalizationProvider } from "@mui/x-date-pickers";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFnsV3";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import React, { useEffect, useState } from "react";
+import MetricGraph, { Items } from "../components/graphComponent/MetricGraph";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import { SearchIcon } from "lucide-react";
 
-interface HostId {
-  _id: string;
+interface IHost {
+  host_id: string;
   hostname: string;
-}
-
-interface Host {
-  _id: HostId;
-  items: Items[];
-}
-
-interface ApiResponse {
-  status: string;
-  message: string;
-  data: Host[];
 }
 
 interface SelectedItems {
   [key: string]: boolean;
 }
 
-const STORAGE_KEY = "graph-filter-state";
+const Graphs: React.FC = () => {
+  // Loading State
+  const [isLoading, setIsLoading] = useState(true);
 
-const Graphs = () => {
+  //Select Host
+  const [hosts, setHosts] = useState<IHost[]>([]);
+  const [selectedHost, setSelectedHost] = useState("");
+
+  const handleHostChange = (event: SelectChangeEvent<string>) => {
+    setSelectedHost(event.target.value);
+  };
+  useEffect(() => {
+    const fetchHosts = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/host", {
+          method: "GET",
+        });
+
+        if (res.status === 404) {
+          setHosts([{ host_id: "not-found", hostname: "Host Not Found" }]);
+          setSelectedHost("not-found");
+          return;
+        }
+
+        const result = await res.json();
+        if (result.status === "success" && Array.isArray(result.data)) {
+          const listHost = result.data.map(
+            (host: { _id: string; hostname: string }) => {
+              return {
+                host_id: host._id,
+                hostname: host.hostname,
+              };
+            }
+          );
+          setHosts(listHost);
+          setSelectedHost(listHost[0].hostname);
+          setUrl(
+            `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+              listHost[0].host_id
+            }`
+          );
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        console.log(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHosts();
+  }, []);
+  useEffect(() => {
+    const hostNow = hosts.find((host) => host.hostname === selectedHost);
+    setUrl(
+      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+        hostNow?.host_id
+      }`
+    );
+  }, [selectedHost]);
+
   //DateTime Range
   const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
     () => {
@@ -59,41 +104,9 @@ const Graphs = () => {
       return new Date(now.setMinutes(now.getMinutes() - 15));
     }
   );
-
   const [selectedDateTimeEnd, setSelectedDateTimeEnd] = useState<Date>(
     new Date()
   );
-  const [url, setUrl] = useState<string>(
-    `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
-  );
-  const handleApplyClick = () => {
-    setUrl(
-      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
-    );
-    setIsAuto(false);
-  };
-
-  const handleResetClick = () => {
-    setIsAuto(true);
-    setSelectedDateTimeEnd(new Date());
-    setSelectedDateTimeStart(() => {
-      const now = selectedDateTimeEnd;
-      return new Date(now.setMinutes(now.getMinutes() - 15));
-    });
-
-    setSelectedLastTime(lastTime[0]);
-    setUrl(
-      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}`
-    );
-  };
-
-  const [hosts, setHosts] = useState<Host[]>([]);
-  const [selectedHost, setSelectedHost] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
   //Set Last Time
   const lastTime: string[] = [
@@ -164,119 +177,52 @@ const Graphs = () => {
     setLastTime();
   }, [selectedLastTime]);
 
-  // Load saved filter state
-  useEffect(() => {
-    const loadSavedState = () => {
-      try {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) {
-          const { hostId, selections } = JSON.parse(savedState);
-          if (hostId && selections) {
-            setSelectedHost(hostId);
-            setSelectedItems(selections);
-          }
-        }
-      } catch (error) {
-        console.error("Error loading saved filter state:", error);
-      }
-    };
-
-    loadSavedState();
-  }, []);
-
-  // Save filter state whenever it changes
-  useEffect(() => {
-    if (selectedHost && Object.keys(selectedItems).length > 0) {
-      try {
-        const stateToSave = {
-          hostId: selectedHost,
-          selections: selectedItems,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-      } catch (error) {
-        console.error("Error saving filter state:", error);
-      }
-    }
-  }, [selectedHost, selectedItems]);
-
-  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
+  //Apply Button
+  const handleApplyClick = () => {
+    setUrl(
+      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+        hosts[0].host_id
+      }`
+    );
+    setIsAuto(false);
   };
 
-  const handleFilterClose = () => {
-    setAnchorEl(null);
+  //Reset Button
+  const handleResetClick = () => {
+    setSelectedDateTimeEnd(new Date());
+    setSelectedDateTimeStart(() => {
+      const now = selectedDateTimeEnd;
+      return new Date(now.setMinutes(now.getMinutes() - 15));
+    });
+    setSelectedLastTime(lastTime[0]);
+    setGraphsPerPage(5);
+    setColumnsPerRow(1);
+    setIsAuto(true);
   };
 
-  const open = Boolean(anchorEl);
-
-  const fetchData = async () => {
-    try {
-      setError(null);
-      const response = await fetch(url, {
-        method: "GET",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: ApiResponse = await response.json();
-
-      if (result.status === "success" && Array.isArray(result.data)) {
-        const sortedData = result.data
-          .filter((host): host is Host => Boolean(host?._id?._id))
-          .map((host: Host) => ({
-            ...host,
-            items: [...(host.items || [])].sort((a: Items, b: Items) =>
-              a.item_id.item_name.localeCompare(b.item_id.item_name)
-            ),
-          }));
-
-        setHosts(sortedData);
-
-        // Only initialize if no saved state exists
-        if (!selectedHost && sortedData.length > 0) {
-          const firstHost = sortedData[0]._id._id;
-          setSelectedHost(firstHost);
-
-          // Check if we have saved selections for this host
-          const savedState = localStorage.getItem(STORAGE_KEY);
-          if (!savedState && sortedData[0].items) {
-            const initialSelectedItems = sortedData[0].items.reduce(
-              (acc, item) => ({
-                ...acc,
-                [item.item_id.item_name]: true,
-              }),
-              {}
-            );
-            setSelectedItems(initialSelectedItems);
-          }
-        }
-      } else {
-        throw new Error("Invalid data format received from server");
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
-      setError(errorMessage);
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  //Fetch Data
   const [isAuto, setIsAuto] = useState(true);
-
+  const [url, setUrl] = useState<string>("");
+  const [data, setData] = useState<Items[]>([]);
   useEffect(() => {
     const updateUrlAndFetch = () => {
       if (isAuto) {
-        setSelectedDateTimeEnd(new Date());
-        setSelectedDateTimeStart(() => {
-          const now = selectedDateTimeEnd;
-          return new Date(now.setMinutes(now.getMinutes() - 15));
-        });
-        const newUrl = `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${new Date().toISOString()}`;
-        setUrl(newUrl);
+        const now = new Date();
+        setSelectedDateTimeEnd(now);
+        setSelectedDateTimeStart(new Date(now.getTime() - 15 * 60000)); // 15 minutes ago
+
+        // Check if hosts array is not empty before accessing the first element
+        if (hosts.length > 0) {
+          const host: IHost = hosts[0];
+          setUrl(
+            `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${now.toISOString()}&host_id=${
+              host.host_id
+            }`
+          );
+        } else {
+          console.warn("No hosts available");
+          // Optionally, you can set a default URL or handle this case differently
+        }
       }
     };
 
@@ -286,48 +232,62 @@ const Graphs = () => {
   }, [isAuto]);
 
   useEffect(() => {
-    fetchData();
-  }, [url, selectedHost]);
+    const fetchData = async () => {
+      try {
+        const res = await fetch(url, { method: "GET" });
 
-  const handleHostChange = (event: SelectChangeEvent<string>) => {
-    const newHostId = event.target.value;
-    setSelectedHost(newHostId);
-
-    // Load saved selections for the new host if they exist
-    try {
-      const savedState = localStorage.getItem(STORAGE_KEY);
-      if (savedState) {
-        const { hostId, selections } = JSON.parse(savedState);
-        if (hostId === newHostId) {
-          setSelectedItems(selections);
+        if (res.status === 404) {
+          setData([]);
           return;
         }
+
+        const result = await res.json();
+
+        if (result.status === "success" && Array.isArray(result.data)) {
+          const sortedData = result.data[0].items.sort((a: Items, b: Items) => {
+            return a.item_id.item_name.localeCompare(b.item_id.item_name);
+          });
+          setData(sortedData);
+        } else {
+          setData([]);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred";
+        console.error(errorMessage);
       }
-    } catch (error) {
-      console.error("Error loading saved selections:", error);
+    };
+
+    if (url) {
+      fetchData();
     }
+  }, [url]);
 
-    // If no saved selections, initialize with all selected
-    const newHost = hosts.find((host) => host._id._id === newHostId);
-    if (newHost?.items) {
-      const newSelectedItems = newHost.items.reduce(
-        (acc, item) => ({
-          ...acc,
-          [item.item_id.item_name]: true,
-        }),
-        {}
-      );
-      setSelectedItems(newSelectedItems);
-    }
+  //Filter Date
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
   };
-
-  const handleCheckboxChange = (itemName: string) => {
-    setSelectedItems((prev) => ({
-      ...prev,
-      [itemName]: !prev[itemName],
-    }));
+  // Initialize selectedItems with all items selected
+  useEffect(() => {
+    const initialSelectedItems: SelectedItems = {};
+    data.forEach((item) => {
+      initialSelectedItems[item.item_id.item_name] = true;
+    });
+    setSelectedItems(initialSelectedItems);
+  }, []);
+  const handleFilterClose = () => {
+    setAnchorEl(null);
   };
-
+  const open = Boolean(anchorEl);
+  const filteredItems = data.filter(
+    (item) => selectedItems[item.item_id.item_name]
+  );
+  const filteredItemsForSearch = data.filter((item) =>
+    item.item_id.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const handleSelectAll = () => {
     const newSelectedItems = { ...selectedItems };
     // Only update items that match the search term
@@ -336,7 +296,6 @@ const Graphs = () => {
     });
     setSelectedItems(newSelectedItems);
   };
-
   const handleDeselectAll = () => {
     const newSelectedItems = { ...selectedItems };
     // Only update items that match the search term
@@ -345,49 +304,46 @@ const Graphs = () => {
     });
     setSelectedItems(newSelectedItems);
   };
+  const handleCheckboxChange = (itemName: string) => {
+    setSelectedItems((prev) => ({
+      ...prev,
+      [itemName]: !prev[itemName],
+    }));
+  };
 
-  const selectedHostData = hosts.find((host) => host._id._id === selectedHost);
-
-  const sortedItems = React.useMemo(() => {
-    if (!selectedHostData?.items) return [];
-    return [...selectedHostData.items].sort((a: Items, b: Items) =>
-      a.item_id.item_name.localeCompare(b.item_id.item_name)
-    );
-  }, [selectedHostData]);
-
-  const filteredItems = sortedItems.filter(
-    (item) => selectedItems[item.item_id.item_name]
+  //Graph
+  const [graphsPerPage, setGraphsPerPage] = useState(5);
+  const [columnsPerRow, setColumnsPerRow] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  // Calculate the current graphs to display
+  const indexOfLastGraph = currentPage * graphsPerPage;
+  const indexOfFirstGraph = indexOfLastGraph - graphsPerPage;
+  const currentGraphs = filteredItems.slice(
+    indexOfFirstGraph,
+    indexOfLastGraph
   );
+  // Change page
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setCurrentPage(value);
+  };
+  // Add these new handlers
+  const handleGraphsPerPageChange = (event: SelectChangeEvent<number>) => {
+    setGraphsPerPage(event.target.value as number);
+    setCurrentPage(1); // Reset to first page when changing graphs per page
+  };
+  const handleColumnsPerRowChange = (event: SelectChangeEvent<number>) => {
+    setColumnsPerRow(event.target.value as number);
+  };
 
-  const filteredItemsForSearch = sortedItems.filter((item) =>
-    item.item_id.item_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  //Loading State
   if (isLoading) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ mt: 4 }}>
           <Typography>Loading data...</Typography>
-        </Box>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error">Error loading data: {error}</Alert>
-        </Box>
-      </Container>
-    );
-  }
-
-  if (hosts.length === 0) {
-    return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info">No host data available</Alert>
         </Box>
       </Container>
     );
@@ -405,6 +361,7 @@ const Graphs = () => {
               alignItems: "center",
             }}
           >
+            {/* Select Host */}
             <FormControl size="small">
               <Select
                 value={selectedHost}
@@ -417,14 +374,18 @@ const Graphs = () => {
                   },
                 }}
               >
-                {hosts.map((host: Host) => (
-                  <MenuItem key={host._id._id} value={host._id._id}>
-                    {host._id.hostname}
+                {hosts.map((host: IHost) => (
+                  <MenuItem
+                    key={host.host_id}
+                    value={host.hostname}
+                    disabled={host.host_id === "not-found"}
+                  >
+                    {host.hostname}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
+            {/* Filter */}
             <IconButton
               onClick={handleFilterClick}
               size="large"
@@ -549,6 +510,7 @@ const Graphs = () => {
               </FormGroup>
             </Popover>
           </Box>
+
           {/* Date and Time */}
           <Box
             sx={{
@@ -560,7 +522,7 @@ const Graphs = () => {
           >
             <DateTimePicker
               label="Start"
-              sx={{ pr: "10px" }}
+              sx={{ mr: 1, backgroundColor: "white" }}
               format="dd/MM/yyyy HH:mm"
               ampm={false}
               value={selectedDateTimeStart}
@@ -570,6 +532,7 @@ const Graphs = () => {
             ></DateTimePicker>
             <DateTimePicker
               label="End"
+              sx={{ backgroundColor: "white" }}
               format="dd/MM/yyyy HH:mm"
               ampm={false}
               value={selectedDateTimeEnd}
@@ -577,6 +540,18 @@ const Graphs = () => {
                 if (newValue) setSelectedDateTimeEnd(newValue);
               }}
             ></DateTimePicker>
+            {/* Cheack Box For Auto */}
+            {/* <FormControlLabel
+              sx={{ ml: 1 }}
+              control={
+                <Checkbox
+                  checked={isAuto}
+                  onChange={(e) => setIsAuto(e.target.checked)}
+                  color="secondary"
+                />
+              }
+              label="Auto"
+            /> */}
           </Box>
 
           <Box
@@ -587,17 +562,57 @@ const Graphs = () => {
               pt: "10px",
             }}
           >
-            <FormControl size="small">
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 150,
+                backgroundColor: "white",
+                mr: 1,
+              }}
+            >
+              <InputLabel>Graphs per page</InputLabel>
+              <Select
+                value={graphsPerPage}
+                label="Graphs per page"
+                onChange={handleGraphsPerPageChange}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 100,
+                backgroundColor: "white",
+                mr: 1,
+              }}
+            >
+              <InputLabel>Columns</InputLabel>
+              <Select
+                value={columnsPerRow}
+                label="Columns"
+                onChange={handleColumnsPerRowChange}
+              >
+                <MenuItem value={1}>1</MenuItem>
+                <MenuItem value={2}>2</MenuItem>
+                <MenuItem value={3}>3</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl
+              size="small"
+              sx={{
+                minWidth: 20,
+                backgroundColor: "white",
+              }}
+            >
+              <InputLabel>Presets</InputLabel>
               <Select
                 value={selectedLastTime}
                 onChange={handleLastTimeChange}
-                sx={{
-                  minWidth: 20,
-                  backgroundColor: "white",
-                  "& .MuiSelect-select": {
-                    fontSize: 14,
-                  },
-                }}
+                label="Presets"
               >
                 {lastTime.map((time) => (
                   <MenuItem key={time} value={time}>
@@ -638,37 +653,69 @@ const Graphs = () => {
             </Button>
           </Box>
         </Box>
-
+        {/* Graph */}
         <Grid container spacing={3}>
-          {filteredItems.map((item: Items) => (
-            <Grid item xs={12} key={item.item_id.item_name}>
+          {data.length === 0 ? (
+            <Grid item xs={12}>
               <Paper
                 elevation={3}
                 sx={{
                   p: 2,
-                  minheight: "500px",
+                  minHeight: "200px",
                   display: "flex",
-                  flexDirection: "column",
-                  transition: "box-shadow 0.3s ease-in-out",
-                  "&:hover": {
-                    boxShadow: 6,
-                  },
+                  justifyContent: "center",
+                  alignItems: "center",
                 }}
               >
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  sx={{ fontWeight: "bold" }}
-                >
-                  {item.item_id.item_name}
-                </Typography>
-                <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                  <MetricGraph item={item} />
-                </Box>
+                <Typography variant="h6">No data available</Typography>
               </Paper>
             </Grid>
-          ))}
+          ) : (
+            currentGraphs.map((item: Items) => (
+              <Grid
+                item
+                xs={12}
+                sm={12 / columnsPerRow}
+                key={item.item_id.item_name}
+              >
+                <Paper
+                  elevation={3}
+                  sx={{
+                    p: 2,
+                    minheight: "500px",
+                    display: "flex",
+                    flexDirection: "column",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: "bold" }}
+                  >
+                    {item.item_id.item_name}
+                  </Typography>
+                  <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
+                    <MetricGraph item={item} />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))
+          )}
         </Grid>
+        {filteredItems.length > graphsPerPage && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, mb: 2 }}>
+            <Pagination
+              count={Math.ceil(filteredItems.length / graphsPerPage)}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
+        )}
       </Container>
     </LocalizationProvider>
   );
