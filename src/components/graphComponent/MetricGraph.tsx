@@ -26,13 +26,11 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
       );
 
     const DateXAxis = item.data.map((entry) => {
-      const date = new Date(entry.timestamp).toISOString().split("T")[0];
-      const time = new Date(entry.timestamp)
-        .toISOString()
-        .split("T")[1]
-        .split(".")[0]
-        .slice(0, 5);
-      return `${date}\n${time}`;
+      const date = new Date(entry.timestamp);
+      // Set timezone to ICT (Indochina Time, UTC+7)
+      const formattedDate = date.toISOString().split("T")[0];
+      const formattedTime = date.toTimeString().split(" ")[0].slice(0, 5);
+      return `${formattedDate}\n${formattedTime}`;
     });
     setXAxis(DateXAxis);
     const Change_per_seconds = sortedData.map((entry) =>
