@@ -8,10 +8,12 @@ import {
   MenuItem,
   MenuList,
   ClickAwayListener,
+  Button,
 } from "@mui/material";
 import Grow from "@mui/material/Grow";
 import useWindowSize from "../hooks/useWindowSize";
 import { SignOutButton } from "../components/SignOutButton";
+import { useNavigate } from "react-router-dom";
 
 interface FooterProps {
   isHideSidebar: boolean;
@@ -21,6 +23,12 @@ export default function Footer({ isHideSidebar }: FooterProps) {
   const [openSignout, setOpenSignout] = useState(false);
   const windowSize = useWindowSize();
   const anchorRef = useRef<HTMLDivElement>(null); // Ref type assertion for anchorRef
+
+  const navigate = useNavigate();
+
+  const handleclick = () => {
+    navigate(`/account`);
+  };
 
   const handleOpenSignout = () => {
     if (isHideSidebar || windowSize.width <= 1100) {
@@ -46,56 +54,59 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         whiteSpace: "nowrap",
       }}
     >
-      <Avatar
-        ref={anchorRef}
-        sx={{ width: "30px", height: "30px" }}
-        alt="userProfile"
-        src={
-          "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
-        }
-        onClick={handleOpenSignout}
-      />
-      <Popper
-        open={openSignout}
-        anchorEl={anchorRef.current}
-        placement="right"
-        transition
-        disablePortal={true}
-      >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin:
-                placement === "bottom-start" ? "left top" : "left bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem={openSignout}>
-                  <MenuItem>Signout</MenuItem>
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
+      <Button onClick={handleclick}>
+        <Avatar
+          ref={anchorRef}
+          sx={{ width: "30px", height: "30px" }}
+          alt="userProfile"
+          src={
+            "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
+          }
+          onClick={handleOpenSignout}
+        />
+        <Popper
+          open={openSignout}
+          anchorEl={anchorRef.current}
+          placement="right"
+          transition
+          disablePortal={true}
+        >
+          {({ TransitionProps, placement }) => (
+            <Grow
+              {...TransitionProps}
+              style={{
+                transformOrigin:
+                  placement === "bottom-start" ? "left top" : "left bottom",
+              }}
+            >
+              <Paper>
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MenuList autoFocusItem={openSignout}>
+                    <MenuItem>Signout</MenuItem>
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )}
+        </Popper>
+        {!(isHideSidebar || windowSize.width < 1100) && (
+          <>
+            <Typography
+              noWrap={true}
+              sx={{
+                m: 0,
+                marginLeft: "10px",
+                fontSize: 15,
+                fontWeight: 400,
+                color: "black",
+              }}
+            >
+              Name
+            </Typography>
+          </>
         )}
-      </Popper>
-      {!(isHideSidebar || windowSize.width < 1100) && (
-        <>
-          <Typography
-            noWrap={true}
-            sx={{
-              m: 0,
-              marginLeft: "10px",
-              fontSize: 15,
-              fontWeight: 400,
-            }}
-          >
-            Name
-          </Typography>
-          <SignOutButton />
-        </>
-      )}
+      </Button>
+      <SignOutButton />
     </Stack>
   );
 }

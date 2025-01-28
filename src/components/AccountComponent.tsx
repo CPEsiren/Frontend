@@ -44,8 +44,10 @@ const AccountComponent = () => {
               <Typography sx={{ fontWeight: "bold" }}>Firstname</Typography>
               <Typography sx={{ fontWeight: "bold" }}>Lastname</Typography>
             </Box>
-            <Typography sx={{ mb: 0.4 , color: "#888888"}}>xxxxxx@gmail.com</Typography>
-            <Typography sx={{ mb: 0.4 , color: "#888888"}}>Admin</Typography>
+            <Typography sx={{ mb: 0.4, color: "#888888" }}>
+              xxxxxx@gmail.com
+            </Typography>
+            <Typography sx={{ mb: 0.4, color: "#888888" }}>Admin</Typography>
           </Box>
         </Box>
       </Box>
@@ -69,21 +71,19 @@ const AccountComponent = () => {
             padding: 3,
           }}
         >
-          <Typography
-            sx={{ fontWeight: "medium", fontSize: "18px", mb: 2 }}
-          >
+          <Typography sx={{ fontWeight: "medium", fontSize: "18px", mb: 2 }}>
             Personal information
           </Typography>
 
           <Box
             sx={{
               display: "flex",
-              flexDirection: "row", 
+              flexDirection: "row",
               alignItems: "flex-start",
-              gap: 17, 
+              gap: 17,
             }}
           >
-            <Box sx={{mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
               <Typography sx={{ color: "#000000" }}>Firstname</Typography>
               <Typography sx={{ color: "#888888" }}>Smith</Typography>
             </Box>
@@ -97,39 +97,39 @@ const AccountComponent = () => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: "row", 
+              flexDirection: "row",
               alignItems: "flex-start",
-              gap: 8.5, 
-              mb: 2 
+              gap: 8.5,
+              mb: 2,
             }}
           >
-
             <Box>
               <Typography sx={{ color: "#000000" }}>Email Address</Typography>
-              <Typography sx={{ color: "#888888" }}>xxxxxx@gmail.com</Typography>
+              <Typography sx={{ color: "#888888" }}>
+                xxxxxx@gmail.com
+              </Typography>
             </Box>
 
             <Box>
               <Typography sx={{ color: "#000000" }}>Phone</Typography>
               <Typography sx={{ color: "#888888" }}>095-5284568</Typography>
             </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              gap: 8.5,
+            }}
+          >
+            <Box>
+              <Typography sx={{ color: "#000000" }}>Role</Typography>
+              <Typography sx={{ color: "#888888" }}>Admin</Typography>
             </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row", 
-                alignItems: "flex-start",
-                gap: 8.5, 
-              }}
-            >
-              <Box>
-                <Typography sx={{ color: "#000000" }}>Bio</Typography>
-                <Typography sx={{ color: "#888888" }}>Admin</Typography>
-              </Box>
-            </Box>
+          </Box>
         </Box>
       </Box>
-
     </>
   );
 };

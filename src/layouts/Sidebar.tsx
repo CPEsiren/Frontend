@@ -30,15 +30,15 @@ export const SlideBarItems = [
     path: "/dashboard",
     newIcon: "",
   },
+  // {
+  //   id: 1,
+  //   icon: <PersonIcon sx={{ fontSize: 20 }} />,
+  //   name: "Account",
+  //   path: "/account",
+  //   newIcon: "",
+  // },
   {
     id: 1,
-    icon: <PersonIcon sx={{ fontSize: 20 }} />,
-    name: "Account",
-    path: "/account",
-    newIcon: "",
-  },
-  {
-    id: 2,
     icon: <DatabaseIcon sx={{ fontSize: 20 }} />,
     name: "Data Collection",
     newIcon: "",
@@ -60,28 +60,28 @@ export const SlideBarItems = [
     ],
   },
   {
-    id: 3,
+    id: 2,
     icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Graphs",
     path: "/graphs",
     newIcon: "",
   },
   {
-    id: 4,
+    id: 3,
     icon: <CloudUploadIcon sx={{ fontSize: 20 }} />,
     name: "Storage",
     path: "/storage",
     newIcon: "",
   },
   {
-    id: 5,
+    id: 4,
     icon: <SettingsIcon sx={{ fontSize: 20 }} />,
     name: "Management",
     path: "/management",
     newIcon: "",
   },
   {
-    id: 6,
+    id: 5,
     icon: <ErrorIcon sx={{ fontSize: 22 }} />,
     name: "Alerts",
     // path: "/alerts",
@@ -104,7 +104,7 @@ export const SlideBarItems = [
     ],
   },
   {
-    id: 7,
+    id: 6,
     icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Contact Us",
     path: "/contactus",
@@ -124,7 +124,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
       ? location.pathname.includes("/devices") ||
         location.pathname.includes("/templates")
         ? 1
-        : 6
+        : 5
       : null
   );
 
@@ -169,7 +169,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               backgroundColor:
                 location.pathname === item.path ||
                 item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 6 &&
+                (item.id === 5 &&
                   (location.pathname.includes("trigger") ||
                     location.pathname.includes("event")))
                   ? "#F25A28"
@@ -177,7 +177,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               color:
                 location.pathname === item.path ||
                 item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 6 &&
+                (item.id === 5 &&
                   (location.pathname.includes("trigger") ||
                     location.pathname.includes("event")))
                   ? "#FFFFFB"
@@ -251,7 +251,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
                       ml: "50px",
                       backgroundColor:
                         location.pathname === subItem.path ||
-                        (expandedItem === 6 &&
+                        (expandedItem === 5 &&
                           location.pathname.includes("/alerts"))
                           ? "transparent"
                           : "transparent",

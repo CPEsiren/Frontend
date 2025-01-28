@@ -1,6 +1,10 @@
 import { Button } from "@mui/material";
 
 export const SignOutButton = () => {
+  const handleclick = () => {
+    //do remove token
+  };
+
   return (
     <Button
       color="secondary"
