@@ -68,7 +68,7 @@ const ManageComponent = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<IDevice | null>(null);
   const [formLoading, setFormLoading] = useState(false);
-  
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -145,16 +145,16 @@ const ManageComponent = () => {
       const response = await fetch("http://localhost:3000/host");
       if (!response.ok) {
         console.log("No devices found");
-        return; 
+        return;
       }
-  
+
       const result: ApiResponse = await response.json();
-  
+
       if (result.status !== "success" || !result.data.length) {
         console.log("No devices found");
-        return; 
+        return;
       }
-  
+
       setDevices(result.data);
     } catch (err) {
       const errorMessage =
@@ -165,7 +165,6 @@ const ManageComponent = () => {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     fetchDevices();
@@ -414,24 +413,24 @@ const ManageComponent = () => {
             },
           }}
         >
-          <TableHead>
-            <TableRow>
-              <TableCell>
+          <TableHead sx={{ backgroundColor: "#242d5d",  }}>
+            <TableRow >
+              <TableCell sx={{color: "white"}} >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Device's name
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{color: "white"}}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   IP Address
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{color: "white"}}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   SNMP Version
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{color: "white"}}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Group
                 </Typography>
@@ -441,12 +440,12 @@ const ManageComponent = () => {
                   Location
                 </Typography>
               </TableCell> */}
-              <TableCell>
+              <TableCell sx={{color: "white"}}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Status
                 </Typography>
               </TableCell>
-              <TableCell width={120} align="center">
+              <TableCell width={120} align="center" sx={{color: "white"}}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Actions
                 </Typography>

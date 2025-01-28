@@ -48,24 +48,10 @@ const Dashboard = () => {
             marginBottom: 5,
             height: 1,
             py: 3,
-            pt: windowSize.width >= 1100 ? "15vh" : "0vh",
+            pt: windowSize.width >= 1100 ? 2 : 0,
             pb: "15vh",
           }}
         >
-          {windowSize.width < 1100 && (
-            <Typography
-              align="center"
-              sx={{
-                color: "#242D5D",
-                fontWeight: 400,
-                fontSize: 25,
-                mt: "6rem",
-                mb: "2rem",
-              }}
-            >
-              Welcome to CPE SIREN
-            </Typography>
-          )}
           <DashboardComponents />
         </Box>
       </Box>
