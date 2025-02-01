@@ -1,10 +1,210 @@
-import { Typography } from "@mui/material";
-import { Box } from "@mui/system";
+import React, { useState, useEffect } from "react";
+import {
+  Typography,
+  Box,
+  IconButton,
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Tooltip,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
-import DashboardComponents from "../components/DashboardComponents";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DoneIcon from "@mui/icons-material/Done";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import AnalogClock from "../components/DashBoardWidgets/AnalogClock";
+import DigitalClock from "../components/DashBoardWidgets/DigitalClock";
+import TableComponent from "../components/DashBoardWidgets/TableComponent";
+import Graph1 from "../components/DashBoardWidgets/Graph1";
+
+interface ComponentConfig {
+  id: string;
+  name: string;
+  icon: JSX.Element;
+  component: React.ComponentType;
+  defaultSize: {
+    xs: number;
+    sm?: number;
+    md?: number;
+  };
+  allowMultiple: boolean;
+}
+
+interface ActiveComponent {
+  id: string;
+  position: number;
+}
+
+interface SnackbarState {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error';
+}
+
+const DASHBOARD_STORAGE_KEY = 'dashboard_layout';
+
+const availableComponents: ComponentConfig[] = [
+  {
+    id: "digitalClock",
+    name: "Digital Clock",
+    icon: <AccessTimeIcon />,
+    component: DigitalClock,
+    defaultSize: { xs: 12, sm: 6, md: 4 },
+    allowMultiple: false,
+  },
+  {
+    id: "analogClock",
+    name: "Analog Clock",
+    icon: <AccessTimeIcon />,
+    component: AnalogClock,
+    defaultSize: { xs: 12, sm: 6, md: 4 },
+    allowMultiple: false,
+  },
+  {
+    id: "table",
+    name: "Table",
+    icon: <TableChartIcon />,
+    component: TableComponent,
+    defaultSize: { xs: 12, md: 8 },
+    allowMultiple: false,
+  },
+  {
+    id: "graph1",
+    name: "Graph 1",
+    icon: <ShowChartIcon />,
+    component: Graph1,
+    defaultSize: { xs: 12, md: 6 },
+    allowMultiple: true,
+  },
+];
 
 const Dashboard = () => {
   const windowSize = useWindowSize();
+  const [isEditing, setIsEditing] = useState(false);
+  const [componentDialog, setComponentDialog] = useState(false);
+  const [snackbar, setSnackbar] = useState<SnackbarState>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const [activeComponents, setActiveComponents] = useState<ActiveComponent[]>(() => {
+    try {
+      const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+      return savedLayout ? JSON.parse(savedLayout) : [
+        { id: "digitalClock", position: 0 },
+        { id: "graph1", position: 1 },
+      ];
+    } catch (error) {
+      console.error("Error loading layout:", error);
+      return [
+        { id: "digitalClock", position: 0 },
+        { id: "graph1", position: 1 },
+      ];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(activeComponents));
+    } catch (error) {
+      console.error("Error saving layout:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to save dashboard layout",
+        severity: "error",
+      });
+    }
+  }, [activeComponents]);
+
+  const handleAddComponent = (componentId: string) => {
+    const componentConfig = availableComponents.find(
+      (c) => c.id === componentId
+    );
+    if (!componentConfig) return;
+
+    const isAlreadyAdded = activeComponents.some(
+      (comp) => comp.id === componentId
+    );
+    if (isAlreadyAdded && !componentConfig.allowMultiple) return;
+
+    setActiveComponents((prev) => {
+      const newLayout = [
+        ...prev,
+        { id: componentId, position: prev.length },
+      ];
+      return newLayout;
+    });
+    setComponentDialog(false);
+    setSnackbar({
+      open: true,
+      message: "Widget added successfully",
+      severity: "success",
+    });
+  };
+
+  const handleRemoveComponent = (position: number) => {
+    setActiveComponents((prev) => {
+      const newLayout = prev
+        .filter((comp) => comp.position !== position)
+        .map((comp, index) => ({
+          ...comp,
+          position: index,
+        }));
+      return newLayout;
+    });
+    setSnackbar({
+      open: true,
+      message: "Widget removed successfully",
+      severity: "success",
+    });
+  };
+
+  const toggleEdit = () => {
+    if (isEditing) {
+      try {
+        localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(activeComponents));
+        setSnackbar({
+          open: true,
+          message: "Dashboard layout saved successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: "Failed to save dashboard layout",
+          severity: "error",
+        });
+      }
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+  const canAddComponent = (componentId: string) => {
+    const componentConfig = availableComponents.find(
+      (c) => c.id === componentId
+    );
+    if (!componentConfig) return false;
+
+    if (componentConfig.allowMultiple) return true;
+
+    return !activeComponents.some((comp) => comp.id === componentId);
+  };
 
   return (
     <>
@@ -13,7 +213,8 @@ const Dashboard = () => {
           sx={{
             width: 1,
             display: "flex",
-            justifyContent: "flex-start",
+            justifyContent: "space-between",
+            alignItems: "center",
             marginTop: 5,
           }}
         >
@@ -25,36 +226,152 @@ const Dashboard = () => {
           >
             DASHBOARD
           </Typography>
+          <Box>
+            <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
+              <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
+                {isEditing ? <DoneIcon /> : <EditIcon />}
+              </IconButton>
+            </Tooltip>
+            {isEditing && (
+              <Button
+                startIcon={<AddIcon />}
+                variant="contained"
+                onClick={() => setComponentDialog(true)}
+                sx={{
+                  backgroundColor: "#F25A28",
+                  "&:hover": {
+                    backgroundColor: "#F37E58",
+                  },
+                }}
+              >
+                Add Widget
+              </Button>
+            )}
+          </Box>
         </Box>
       )}
+
       <Box
         sx={{
           width: 1,
           marginTop: 2,
-          height: "auto",
-          display: "flex",
+          minHeight: "calc(100vh - 200px)",
+          backgroundColor: "#FFFFFB",
+          borderRadius: 3,
+          p: 3,
         }}
       >
-        <Box
-          sx={{
-            backgroundColor: "#FFFFFB",
-            flex: 1,
-            display: "flex",
-            borderRadius: 3,
-            flexDirection: "column",
-            justifyContent: windowSize.width >= 1100 ? "center" : "start",
-            alignItems: "center",
-            minHeight: "fit-content",
-            marginBottom: 5,
-            height: 1,
-            py: 3,
-            pt: windowSize.width >= 1100 ? 2 : 0,
-            pb: "15vh",
-          }}
+        <Grid 
+          container 
+          rowSpacing={3}
+          columnSpacing={2}
         >
-          <DashboardComponents />
-        </Box>
+          {activeComponents.map((activeComp) => {
+            const componentConfig = availableComponents.find(
+              c => c.id === activeComp.id
+            );
+            if (!componentConfig) return null;
+
+            const Component = componentConfig.component;
+            return (
+              <Grid 
+                item 
+                key={activeComp.position} 
+                {...componentConfig.defaultSize}
+                sx={{ mb: 3 }}
+              >
+                <Box
+                  sx={{
+                    position: 'relative',
+                    height: '100%',
+                    backgroundColor: 'white',
+                    borderRadius: 2,
+                    p: 2,
+                    border: '1px solid #eee',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                      transform: 'translateY(-2px)',
+                    }
+                  }}
+                >
+                  {isEditing && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemoveComponent(activeComp.position)}
+                      sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        zIndex: 1,
+                      }}
+                    >
+                      <AddIcon sx={{ transform: 'rotate(45deg)' }} />
+                    </IconButton>
+                  )}
+                  <Component />
+                </Box>
+              </Grid>
+            );
+          })}
+        </Grid>
       </Box>
+
+      {/* Add Component Dialog */}
+      <Dialog 
+        open={componentDialog} 
+        onClose={() => setComponentDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Add Widget</DialogTitle>
+        <DialogContent>
+          <List>
+            {availableComponents.map((component) => {
+              const canAdd = canAddComponent(component.id);
+              return (
+                <ListItem
+                  key={component.id}
+                  onClick={() => canAdd && handleAddComponent(component.id)}
+                  component="div"
+                  sx={{
+                    cursor: canAdd ? "pointer" : "not-allowed",
+                    opacity: canAdd ? 1 : 0.5,
+                    "&:hover": {
+                      backgroundColor: canAdd ? "action.hover" : undefined,
+                    },
+                    pointerEvents: canAdd ? "auto" : "none",
+                  }}
+                >
+                  <ListItemIcon>{component.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={component.name}
+                    secondary={!canAdd ? "Already added" : undefined}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </DialogContent>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
