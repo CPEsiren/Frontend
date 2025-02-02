@@ -1,5 +1,6 @@
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"; 
 import { Box } from "@mui/system";
+import { useNavigate } from "react-router-dom";
 
 // Define your custom styles here
 const customStyle = {
@@ -17,20 +18,30 @@ const customStyle = {
 
 const clientId = "262664249105-7nqhq3e2hh9ls0k4s29k5veia9u6ung6.apps.googleusercontent.com";
 
-const LoginAuthen = () => {
-    const onSuccess = (credentialResponse: any) => {
+interface LoginAuthenProps {
+  onSuccess: () => void;
+  onError: (errorMessage: string) => void;
+}
+
+const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
+    const navigate = useNavigate();
+
+    const handleSuccess = (credentialResponse: any) => {
         console.log("Login Success:", credentialResponse);
+        localStorage.setItem("isAuthenticated", "true");
+        onSuccess();  // Call the onSuccess handler passed from Login
     };
 
-    const onError = () => {
+    const handleError = () => {
         console.log("Login Failed");
+        onError("Failed to authenticate with Google");  // Call the onError handler
     };
 
     return (
         <GoogleOAuthProvider clientId={clientId}>
             <GoogleLogin
-                onSuccess={onSuccess}
-                onError={onError}
+                onSuccess={handleSuccess}
+                onError={handleError}
                 useOneTap
                 text="continue_with"
                 width="350px"

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Stack, Box, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
@@ -24,11 +24,13 @@ export const getPageName = (pathname: string): string => {
     : pageName.find((i) => pathname.includes(i.toLowerCase())) ?? "Dashboard";
 };
 
-export default function MainLayout() {
+interface MainLayoutProps {
+  children: ReactNode;  // Explicitly type children as ReactNode
+}
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const windowSize = useWindowSize();
   const [isHideSidebar, setIsHideSidebar] = useState(false);
 
-  // Function to toggle sidebar visibility
   const handleHideSidebar = (width: number) => {
     if (width >= 1100) setIsHideSidebar((state) => !state);
   };
@@ -60,7 +62,6 @@ export default function MainLayout() {
             isHideSidebar={isHideSidebar}
             handleHideSidebar={handleHideSidebar}
           />
-          {/* Pass both isHideSidebar and handleHideSidebar to Sidebar */}
           <Sidebar
             isHideSidebar={isHideSidebar}
             toggleSidebar={() => setIsHideSidebar(!isHideSidebar)}
@@ -93,9 +94,10 @@ export default function MainLayout() {
             mx: "auto",
           }}
         >
-          <Outlet />
+          <Outlet /> 
         </Box>
       </Box>
     </Stack>
   );
 }
+export default MainLayout;

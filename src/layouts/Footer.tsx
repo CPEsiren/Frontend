@@ -12,8 +12,9 @@ import {
 } from "@mui/material";
 import Grow from "@mui/material/Grow";
 import useWindowSize from "../hooks/useWindowSize";
-import { SignOutButton } from "../components/SignOutButton";
+// import { SignOutButton } from "../components/SignOutButton";
 import { useNavigate } from "react-router-dom";
+import LogoutAuthen from "../authenticated/LogoutAuthen";
 
 interface FooterProps {
   isHideSidebar: boolean;
@@ -105,7 +106,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
           >
             Name
           </Typography>
-          <SignOutButton />
+          <LogoutAuthen />
         </>
       )}
     </Stack>

@@ -1,26 +1,26 @@
 import { useState } from "react";
-import { Typography, Button, Alert } from "@mui/material";
+import { Typography, Alert } from "@mui/material";
 import { Box } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import NewLogo from "../assets/NewLogo.svg";
 import LoginLeftside from "../assets/LoginLeftside.svg";
 import useWindowSize from "../hooks/useWindowSize";
-import LoginAuthen from "../authenticated/LoginAuthen";
-// ✅ นำเข้า Component ที่แยกออกมา
+import LoginAuthen from "../authenticated/LoginAuthen"; // ✅ นำเข้า Component ที่แยกออกมา
 
 const Login = () => {
   const windowSize = useWindowSize();
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const handleSignIn = () => {
-    const isAuthenticated = true;
-    if (isAuthenticated) {
-      localStorage.setItem("isAuthenticated", "true");
-      navigate("/dashboard");
-    } else {
-      setError("Failed to sign in with CMU account");
-    }
+  // Function to handle successful login
+  const handleLoginSuccess = () => {
+    localStorage.setItem("isAuthenticated", "true");
+    navigate("/dashboard"); // Redirect to dashboard after successful login
+  };
+
+  // Function to handle login failure
+  const handleLoginFailure = (errorMessage: string) => {
+    setError(errorMessage); // Display error message if login fails
   };
 
   // Screen is too small (smaller than iPad mini)
@@ -87,7 +87,7 @@ const Login = () => {
         }}
       />
 
-      {/* Left Section */}
+      {/* Left Section */} 
       <Box
         sx={{
           flex: 100,
@@ -147,8 +147,11 @@ const Login = () => {
           Sign in to your Account
         </Typography>
 
-        <Box sx={{ mt: 2  }}>
-          <LoginAuthen />
+        <Box >
+          <LoginAuthen  
+            onSuccess={handleLoginSuccess}
+            onError={handleLoginFailure}
+          />
         </Box>
       </Box>
     </Box>
