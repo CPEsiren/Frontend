@@ -259,7 +259,7 @@ const DashboardComponents = () => {
             justifyContent: "center",
           }}
         >
-          <DigitalClock />
+          <AnalogClock />
         </Box>
         {/* <Box sx={{ width: "30%", textAlign: "center" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -270,6 +270,7 @@ const DashboardComponents = () => {
           <CalendarWithNowButton />
         </Box>
         <Box sx={{ width: "45%", textAlign: "center" }}>
+          <DigitalClock/>
           <TableContainer component={Paper}>
             <Table
               sx={{ minWidth: 300 }}

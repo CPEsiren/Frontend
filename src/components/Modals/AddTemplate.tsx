@@ -24,16 +24,14 @@ interface TemplateItems {
   oid: string;
   type: string;
   unit: string;
-  // updateInterval: string;
-  // history: string;
-  // trend: string;
 }
 
 interface AddTemplateProps {
   onClose: () => void;
+  onSuccess: () => void; // Add onSuccess prop
 }
 
-const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
+const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
   const windowSize = useWindowSize();
   const [template_name, settemplate_name] = useState<string>("");
   const [description, setdescription] = useState<string>("");
@@ -44,9 +42,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
       oid: "",
       type: "",
       unit: "",
-      // updateInterval: "",
-      // history: "",
-      // trend: "",
     },
   ]);
 
@@ -66,7 +61,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
           unit: "",
         },
       ]);
+      await onSuccess(); // Refresh the templates list
       alert("Template added successfully!");
+      onClose(); // Close the modal after successful submission
     } else {
       alert("Failed to add template. Please try again.");
     }
@@ -154,9 +151,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
       oid: "",
       type: "",
       unit: "",
-      // updateInterval: "",
-      // history: "",
-      // trend: "",
     };
     setItemRows([...itemRows, newRow]);
   };
@@ -258,7 +252,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose }) => {
                 color: "black",
                 cursor: "pointer",
                 border: "2px solid",
-                // borderRadius: "50%", // Optional for rounded borders
                 padding: 0.5,
                 "&:hover": {
                   backgroundColor: "#f5f5f5",
