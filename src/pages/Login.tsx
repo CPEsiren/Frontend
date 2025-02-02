@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import NewLogo from "../assets/NewLogo.svg";
 import LoginLeftside from "../assets/LoginLeftside.svg";
 import useWindowSize from "../hooks/useWindowSize";
+import LoginAuthen from "../authenticated/LoginAuthen";
+// ✅ นำเข้า Component ที่แยกออกมา
 
 const Login = () => {
   const windowSize = useWindowSize();
@@ -145,32 +147,9 @@ const Login = () => {
           Sign in to your Account
         </Typography>
 
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: "#3e51c7",
-            color: "white",
-            fontSize: "16px",
-            fontWeight: "bold",
-            padding: "10px 20px",
-            borderRadius: "50px",
-            maxWidth: "350px",
-            width: "100%",
-            outline: "none",
-            "&:hover": {
-              bgcolor: "#2c3a99",
-            },
-            "&:focus": {
-              outline: "none",
-            },
-            "&:active": {
-              outline: "none",
-            },
-          }}
-          onClick={handleSignIn}
-        >
-          Sign in With CMU Account
-        </Button>
+        <Box sx={{ mt: 2  }}>
+          <LoginAuthen />
+        </Box>
       </Box>
     </Box>
   );

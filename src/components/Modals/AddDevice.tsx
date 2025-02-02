@@ -397,7 +397,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <TabList
             sx={{
-              minHeight: 0, // Removes default TabList height
+              minHeight: 0,
             }}
             onChange={handleChange}
             aria-label="Tabview"
@@ -435,9 +435,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
               value="item"
             />
           </TabList>
-        </Box>
+        </Box >
         <TabPanel value="host">
           <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
+            <Box>
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -445,7 +446,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
             >
               <Typography
                 sx={{
-                  mt: 0,
                   mb: -2,
                   fontSize: "1.1rem",
                   color: "#a9a9a9",
@@ -533,38 +533,33 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     gap: 2.5,
                   }}
                 >
-                  {/* <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ fontSize: 14, mt: 6.6 }}
-                  >
-                    Select
-                  </Button>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ fontSize: 14 }}
-                  >
-                    Select
-                  </Button> */}
                 </Box>
               </Box>
-
-              {/* Interface Section */}
+              </Box>
+              
+              <Box sx={{padding: 3}}>
               <Typography
                 sx={{
-                  mb: -2,
                   fontSize: "1.1rem",
                   color: "#a9a9a9",
                   fontWeight: "semibold",
-                  mt: 0.5,
                 }}
                 {...typographyProps}
               >
                 SNMP INTERFACE
               </Typography>
-              <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  mt: 2,
+                  // backgroundColor: "#ebf1ff",
+                  borderRadius: 2, 
+                  border: "4px solid #ebf1ff",
+                }}
+              >
+              {/* Interface Section */}
+              <Box sx={{ display: "flex", flexDirection: "row", gap: 3 , mt: 3,mb: 3 }}>
                 <Box sx={{ textAlign: "right", mt: 1, width: "18%" }}>
                   <Box sx={{ display: "flex", justifyContent: "right" }}>
                     <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
@@ -646,9 +641,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     }}
                   />
                 </Box>
+                </Box>
+              </Box>
               </Box>
 
               {/* Details Section */}
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 , mt: 2}}>
               <Typography
                 sx={{
                   mb: -2,
@@ -690,7 +688,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   />
                 </Box>
               </Box>
-
+              </Box>
+ 
               {/* Action Buttons */}
               <Box
                 sx={{
