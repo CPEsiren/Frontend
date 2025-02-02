@@ -3,12 +3,9 @@ import { googleLogout } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 
 const LogoutAuthen = () => {
-    const navigate = useNavigate(); // Initialize navigate function
-    
-    const clientId = "262664249105-7nqhq3e2hh9ls0k4s29k5veia9u6ung6.apps.googleusercontent.com";
+    const navigate = useNavigate(); 
 
     const onLogoutSuccess = () => {
-        // Remove authentication data from localStorage
         localStorage.removeItem("isAuthenticated");
         console.log("Logout Success and LocalStorage Cleared");
 

@@ -16,7 +16,7 @@ const customStyle = {
     cursor: "pointer",
 };
 
-const clientId = "262664249105-7nqhq3e2hh9ls0k4s29k5veia9u6ung6.apps.googleusercontent.com";
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 interface LoginAuthenProps {
   onSuccess: () => void;
@@ -29,12 +29,12 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
     const handleSuccess = (credentialResponse: any) => {
         console.log("Login Success:", credentialResponse);
         localStorage.setItem("isAuthenticated", "true");
-        onSuccess();  // Call the onSuccess handler passed from Login
+        onSuccess();  
     };
 
     const handleError = () => {
         console.log("Login Failed");
-        onError("Failed to authenticate with Google");  // Call the onError handler
+        onError("Failed to authenticate with Google");  
     };
 
     return (
