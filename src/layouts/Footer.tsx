@@ -9,12 +9,12 @@ import {
   MenuList,
   ClickAwayListener,
   Button,
+  Box,
 } from "@mui/material";
 import Grow from "@mui/material/Grow";
 import useWindowSize from "../hooks/useWindowSize";
-// import { SignOutButton } from "../components/SignOutButton";
-import { useNavigate } from "react-router-dom";
 import LogoutAuthen from "../authenticated/LogoutAuthen";
+import { useNavigate } from "react-router-dom";
 
 interface FooterProps {
   isHideSidebar: boolean;
@@ -83,11 +83,11 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             }}
           >
             <Paper>
+              <Box sx={{ marginBlockEnd:1 ,width: "100%" }}>
               <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem={openSignout}>
-                  <MenuItem>Signout</MenuItem>
-                </MenuList>
-              </ClickAwayListener>
+                  <LogoutAuthen />
+              </ClickAwayListener>   
+              </Box>
             </Paper>
           </Grow>
         )}
@@ -98,13 +98,12 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             noWrap={true}
             sx={{
               m: 0,
-              marginLeft: "10px",
+              marginLeft: "70px",
               fontSize: 15,
               fontWeight: 400,
               color: "black",
             }}
           >
-            Name
           </Typography>
           <LogoutAuthen />
         </>
