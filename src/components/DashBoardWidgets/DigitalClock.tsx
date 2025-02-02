@@ -23,18 +23,20 @@ const DigitalClock = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 2,
+        px: 2,
+        py: 4,
         backgroundColor: '#f5f5f5',
         borderRadius: 2,
         minHeight: '150px',
+        height:"71%"
       }}
     >
-      <Typography variant="h2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+      <Typography variant="h3" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
         {`${formatNumber(time.getHours())}:${formatNumber(time.getMinutes())}:${formatNumber(
           time.getSeconds()
         )}`}
       </Typography>
-      <Typography variant="subtitle1" sx={{ mt: 1, color: 'text.secondary' }}>
+      <Typography variant="h6" sx={{ mt: 1, color: 'text.secondary' }}>
         {time.toLocaleDateString('en-US', {
           weekday: 'long',
           year: 'numeric',

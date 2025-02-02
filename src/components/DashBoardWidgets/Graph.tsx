@@ -13,7 +13,7 @@ const data = [
   { name: '24:00', value: 100 },
 ];
 
-const Graph1 = () => {
+const Graph = () => {
   const theme = useTheme();
 
   return (
@@ -21,4 +21,4 @@ const Graph1 = () => {
   );
 };
 
-export default Graph1;
+export default Graph;

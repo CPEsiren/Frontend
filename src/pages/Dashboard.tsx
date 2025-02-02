@@ -26,7 +26,12 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import AnalogClock from "../components/DashBoardWidgets/AnalogClock";
 import DigitalClock from "../components/DashBoardWidgets/DigitalClock";
 import TableComponent from "../components/DashBoardWidgets/TableComponent";
-import Graph1 from "../components/DashBoardWidgets/Graph1";
+import Graph from "../components/DashBoardWidgets/Graph";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import Calendar from "../components/DashBoardWidgets/Calendar";
+import EventBlock from "../components/DashBoardWidgets/EventBlock";
+import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
+import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 
 interface ComponentConfig {
   id: string;
@@ -49,18 +54,18 @@ interface ActiveComponent {
 interface SnackbarState {
   open: boolean;
   message: string;
-  severity: 'success' | 'error';
+  severity: "success" | "error";
 }
 
-const DASHBOARD_STORAGE_KEY = 'dashboard_layout';
+const DASHBOARD_STORAGE_KEY = "dashboard_layout";
 
 const availableComponents: ComponentConfig[] = [
   {
     id: "digitalClock",
     name: "Digital Clock",
-    icon: <AccessTimeIcon />,
+    icon: <AccessTimeFilledIcon />,
     component: DigitalClock,
-    defaultSize: { xs: 12, sm: 6, md: 4 },
+    defaultSize: { xs: 10, sm: 5, md: 4 },
     allowMultiple: false,
   },
   {
@@ -76,16 +81,32 @@ const availableComponents: ComponentConfig[] = [
     name: "Table",
     icon: <TableChartIcon />,
     component: TableComponent,
-    defaultSize: { xs: 12, md: 8 },
+    defaultSize: { xs: 12, md: 6 },
     allowMultiple: false,
   },
   {
-    id: "graph1",
-    name: "Graph 1",
+    id: "graph",
+    name: "Graph",
     icon: <ShowChartIcon />,
-    component: Graph1,
+    component: Graph,
     defaultSize: { xs: 12, md: 6 },
     allowMultiple: true,
+  },
+  {
+    id: "calendar",
+    name: "Calendar",
+    icon: <CalendarTodayIcon />,
+    component: Calendar,
+    defaultSize: { xs: 12, sm: 6, md: 4 },
+    allowMultiple: false,
+  },
+  {
+    id: "eventblock",
+    name: "Event",
+    icon: <NotificationImportantIcon />,
+    component: EventBlock,
+    defaultSize: { xs: 12, sm: 6, md: 6 },
+    allowMultiple: false,
   },
 ];
 
@@ -99,25 +120,32 @@ const Dashboard = () => {
     severity: "success",
   });
 
-  const [activeComponents, setActiveComponents] = useState<ActiveComponent[]>(() => {
-    try {
-      const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
-      return savedLayout ? JSON.parse(savedLayout) : [
-        { id: "digitalClock", position: 0 },
-        { id: "graph1", position: 1 },
-      ];
-    } catch (error) {
-      console.error("Error loading layout:", error);
-      return [
-        { id: "digitalClock", position: 0 },
-        { id: "graph1", position: 1 },
-      ];
+  const [activeComponents, setActiveComponents] = useState<ActiveComponent[]>(
+    () => {
+      try {
+        const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+        return savedLayout
+          ? JSON.parse(savedLayout)
+          : [
+              { id: "digitalClock", position: 0 },
+              { id: "graph1", position: 1 },
+            ];
+      } catch (error) {
+        console.error("Error loading layout:", error);
+        return [
+          { id: "digitalClock", position: 0 },
+          { id: "graph1", position: 1 },
+        ];
+      }
     }
-  });
+  );
 
   useEffect(() => {
     try {
-      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(activeComponents));
+      localStorage.setItem(
+        DASHBOARD_STORAGE_KEY,
+        JSON.stringify(activeComponents)
+      );
     } catch (error) {
       console.error("Error saving layout:", error);
       setSnackbar({
@@ -140,10 +168,7 @@ const Dashboard = () => {
     if (isAlreadyAdded && !componentConfig.allowMultiple) return;
 
     setActiveComponents((prev) => {
-      const newLayout = [
-        ...prev,
-        { id: componentId, position: prev.length },
-      ];
+      const newLayout = [...prev, { id: componentId, position: prev.length }];
       return newLayout;
     });
     setComponentDialog(false);
@@ -174,7 +199,10 @@ const Dashboard = () => {
   const toggleEdit = () => {
     if (isEditing) {
       try {
-        localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(activeComponents));
+        localStorage.setItem(
+          DASHBOARD_STORAGE_KEY,
+          JSON.stringify(activeComponents)
+        );
         setSnackbar({
           open: true,
           message: "Dashboard layout saved successfully",
@@ -244,7 +272,7 @@ const Dashboard = () => {
                   },
                 }}
               >
-                Add Widget
+                Add Component
               </Button>
             )}
           </Box>
@@ -261,39 +289,35 @@ const Dashboard = () => {
           p: 3,
         }}
       >
-        <Grid 
-          container 
-          rowSpacing={3}
-          columnSpacing={2}
-        >
+        <Grid container rowSpacing={1} columnSpacing={2}>
           {activeComponents.map((activeComp) => {
             const componentConfig = availableComponents.find(
-              c => c.id === activeComp.id
+              (c) => c.id === activeComp.id
             );
             if (!componentConfig) return null;
 
             const Component = componentConfig.component;
             return (
-              <Grid 
-                item 
-                key={activeComp.position} 
+              <Grid
+                item
+                key={activeComp.position}
                 {...componentConfig.defaultSize}
-                sx={{ mb: 3 }}
+                sx={{ mb: 1 }}
               >
                 <Box
                   sx={{
-                    position: 'relative',
-                    height: '100%',
-                    backgroundColor: 'white',
+                    position: "relative",
+                    height: "100%",
+                    backgroundColor: "white",
                     borderRadius: 2,
-                    p: 2,
-                    border: '1px solid #eee',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                      transform: 'translateY(-2px)',
-                    }
+                    p: 0,
+                    border: "1px solid #eee",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                      transform: "translateY(-2px)",
+                    },
                   }}
                 >
                   {isEditing && (
@@ -301,13 +325,23 @@ const Dashboard = () => {
                       size="small"
                       onClick={() => handleRemoveComponent(activeComp.position)}
                       sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        zIndex: 1,
+                        position: "absolute",
+                        right: 2,
+                        top: 2,
+                        zIndex: 10, // Increased z-index
+                        backgroundColor: "white", // Added background color to make it stand out
+                        "&:hover": {
+                          backgroundColor: "rgba(255, 255, 255, 0.9)", // Slightly transparent on hover
+                        },
+                        boxShadow: "0 0 4px rgba(0,0,0,0.1)", // Added subtle shadow
                       }}
                     >
-                      <AddIcon sx={{ transform: 'rotate(45deg)' }} />
+                      <AddIcon
+                        sx={{
+                          transform: "rotate(45deg)",
+                          zIndex: 11, // Higher z-index than the button
+                        }}
+                      />
                     </IconButton>
                   )}
                   <Component />
@@ -319,13 +353,13 @@ const Dashboard = () => {
       </Box>
 
       {/* Add Component Dialog */}
-      <Dialog 
-        open={componentDialog} 
+      <Dialog
+        open={componentDialog}
         onClose={() => setComponentDialog(false)}
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Add Widget</DialogTitle>
+        <DialogTitle>Add Component</DialogTitle>
         <DialogContent>
           <List>
             {availableComponents.map((component) => {
@@ -367,7 +401,7 @@ const Dashboard = () => {
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

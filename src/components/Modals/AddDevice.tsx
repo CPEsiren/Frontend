@@ -87,7 +87,7 @@ interface TemplateItem {
 
 interface Template {
   _id: string;
-  name_template: string;
+  template_name: string;
   items: TemplateItem[];
   description: string;
 }
@@ -508,7 +508,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     </MenuItem>
                     {templateOptions.map((template) => (
                       <MenuItem key={template._id} value={template._id}>
-                        {template.name_template}
+                        {template.template_name}
                       </MenuItem>
                     ))}
                   </TextField>
