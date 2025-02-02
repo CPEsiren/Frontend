@@ -1,58 +1,20 @@
 import React, { useState } from "react";
-import { Box, Typography, IconButton, Button, styled } from "@mui/material";
+import { Box, Typography, IconButton, Button } from "@mui/material";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
 } from "@mui/icons-material";
-import { grey } from "@mui/material/colors";
 
-const CalendarHeader = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: theme.spacing(0.25),
-  marginBottom: theme.spacing(0.5),
-}));
+// Types for our custom components
+interface DayCellProps {
+  date: Date;
+  isToday: boolean;
+  isSelected: boolean;
+  isCurrentMonth: boolean;
+  onClick: () => void;
+}
 
-const DaysGrid = styled(Box)(({ theme }) => ({
-  display: "grid",
-  gridTemplateColumns: "repeat(7, 1fr)",
-  gap: theme.spacing(0.25),
-  textAlign: "center",
-}));
-
-const DayCell = styled(Box)<{
-  isToday?: boolean;
-  isSelected?: boolean;
-  isCurrentMonth?: boolean;
-}>(({ theme, isToday, isSelected, isCurrentMonth = true }) => ({
-  padding: 0,
-  borderRadius: "50%", // Changed to 50% for circular shape
-  cursor: "pointer",
-  backgroundColor: isSelected
-    ? theme.palette.primary.main
-    : isToday
-    ? "blue"
-    : "transparent",
-  color: isSelected
-    ? theme.palette.primary.contrastText
-    : isToday
-    ? "white"
-    : !isCurrentMonth
-    ? theme.palette.text.disabled
-    : theme.palette.text.primary,
-  "&:hover": {
-    backgroundColor: !isSelected && theme.palette.action.hover,
-  },
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  height: "20px", // Made equal to width for perfect circle
-  width: "20px", // Made equal to height for perfect circle
-  margin: "auto", // Center the circle in its grid cell
-  fontSize: "0.65rem",
-}));
-
+// Styled components moved to component-specific sx props
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -141,9 +103,61 @@ const Calendar = () => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+  // Separate DayCell component
+  const DayCell: React.FC<DayCellProps> = ({
+    date,
+    isToday,
+    isSelected,
+    isCurrentMonth,
+    onClick,
+  }) => {
+    return (
+      <Box
+        onClick={onClick}
+        sx={{
+          p: 0,
+          borderRadius: "50%",
+          cursor: "pointer",
+          backgroundColor: isSelected
+            ? "primary.main"
+            : isToday
+            ? "blue"
+            : "transparent",
+          color: isSelected
+            ? "primary.contrastText"
+            : isToday
+            ? "white"
+            : !isCurrentMonth
+            ? "text.disabled"
+            : "text.primary",
+          "&:hover": {
+            backgroundColor: !isSelected ? "action.hover" : undefined,
+          },
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "20px",
+          width: "20px",
+          margin: "auto",
+          fontSize: "0.65rem",
+        }}
+      >
+        {date.getDate()}
+      </Box>
+    );
+  };
+
   return (
     <Box sx={{ p: 3 }}>
-      <CalendarHeader>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          p: 0.25,
+          mb: 0.5,
+        }}
+      >
         <IconButton size="small" onClick={handlePrevMonth} sx={{ p: 0.25 }}>
           <ChevronLeftIcon sx={{ fontSize: "1rem" }} />
         </IconButton>
@@ -168,7 +182,6 @@ const Calendar = () => {
             size="small"
             onClick={handleNowClick}
             sx={{
-              right:-40,
               ml: 0.25,
               color: "blue",
               padding: "0px 4px",
@@ -187,9 +200,16 @@ const Calendar = () => {
         <IconButton size="small" onClick={handleNextMonth} sx={{ p: 0.25 }}>
           <ChevronRightIcon sx={{ fontSize: "1rem" }} />
         </IconButton>
-      </CalendarHeader>
+      </Box>
 
-      <DaysGrid>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: 0.25,
+          textAlign: "center",
+        }}
+      >
         {weekDays.map((day) => (
           <Typography
             key={day}
@@ -199,21 +219,20 @@ const Calendar = () => {
               fontSize: "0.65rem",
             }}
           >
-            {day.slice(0, 1)} {/* Show only first letter */}
+            {day.slice(0, 1)}
           </Typography>
         ))}
         {generateCalendarDays().map(({ date, isCurrentMonth }, index) => (
           <DayCell
             key={index}
+            date={date}
             isToday={isToday(date)}
             isSelected={date.getTime() === selectedDate.getTime()}
             isCurrentMonth={isCurrentMonth}
             onClick={() => handleDateClick(date)}
-          >
-            {date.getDate()}
-          </DayCell>
+          />
         ))}
-      </DaysGrid>
+      </Box>
     </Box>
   );
 };

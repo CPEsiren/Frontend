@@ -91,3 +91,10 @@ export interface IEvent {
   updatedAt: string;
   __v: number;
 }
+
+export interface ITemplate {
+  _id: string;
+  template_name: string;
+  description: string;
+  items: Item[];
+}

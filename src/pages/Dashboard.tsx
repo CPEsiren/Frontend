@@ -26,7 +26,7 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import AnalogClock from "../components/DashBoardWidgets/AnalogClock";
 import DigitalClock from "../components/DashBoardWidgets/DigitalClock";
 import TableComponent from "../components/DashBoardWidgets/TableComponent";
-import Graph from "../components/DashBoardWidgets/Graph";
+import Graph from "../components/DashBoardWidgets/GraphInDashboard";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import Calendar from "../components/DashBoardWidgets/Calendar";
 import EventBlock from "../components/DashBoardWidgets/EventBlock";

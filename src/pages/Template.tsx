@@ -20,23 +20,19 @@ import AddTemplate from "../components/Modals/AddTemplate";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
-
-interface Template {
-  _id: string;
-  template_name: string;
-  description: string;
-  items: any[];
-}
+import { ITemplate } from "../interface/InterfaceCollection";
+import { Item } from "../interface/InterfaceCollection";
 
 interface EditFormData {
   template_name: string;
   description: string;
+  items: Item[];
 }
 
 const Templates: React.FC = () => {
   const windowSize = useWindowSize();
   const [isModalOpen, setModalOpen] = useState(false);
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<ITemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
@@ -44,8 +40,10 @@ const Templates: React.FC = () => {
   // Edit/Delete states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
-  const [templateToDelete, setTemplateToDelete] = useState<Template | null>(
+  const [editingTemplate, setEditingTemplate] = useState<ITemplate | null>(
+    null
+  );
+  const [templateToDelete, setTemplateToDelete] = useState<ITemplate | null>(
     null
   );
   const [formLoading, setFormLoading] = useState(false);
@@ -57,6 +55,7 @@ const Templates: React.FC = () => {
   const [editForm, setEditForm] = useState<EditFormData>({
     template_name: "",
     description: "",
+    items: [],
   });
 
   const fetchTemplates = async () => {
@@ -84,11 +83,12 @@ const Templates: React.FC = () => {
     fetchTemplates();
   }, []);
 
-  const handleEditClick = (template: Template) => {
+  const handleEditClick = (template: ITemplate) => {
     setEditingTemplate(template);
     setEditForm({
       template_name: template.template_name,
       description: template.description,
+      items: [...template.items], // Create a deep copy of items
     });
     setEditDialogOpen(true);
   };
@@ -99,7 +99,7 @@ const Templates: React.FC = () => {
     setFormLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/template/${editingTemplate._id}`,
+        `http://localhost:3000/template/edit/${editingTemplate._id}`,
         editForm,
         {
           headers: {
@@ -136,7 +136,27 @@ const Templates: React.FC = () => {
     }
   };
 
-  const handleDeleteClick = (template: Template) => {
+  const handleRemoveItem = (index: number) => {
+    setEditForm((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleItemChange = (
+    index: number,
+    field: keyof Item,
+    value: string
+  ) => {
+    setEditForm((prev) => ({
+      ...prev,
+      items: prev.items.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const handleDeleteClick = (template: ITemplate) => {
     setTemplateToDelete(template);
     setDeleteDialogOpen(true);
   };
@@ -341,7 +361,7 @@ const Templates: React.FC = () => {
       <Dialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>Edit Template</DialogTitle>
@@ -363,6 +383,54 @@ const Templates: React.FC = () => {
               fullWidth
               required
             />
+            {editForm.items.length > 0 && (
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Items
+              </Typography>
+            )}
+
+            {editForm.items.map((item, index) => (
+              <Box
+                key={index}
+                sx={{ display: "flex", gap: 2, alignItems: "center" }}
+              >
+                <TextField
+                  label="OID"
+                  value={item.oid}
+                  onChange={(e) =>
+                    handleItemChange(index, "oid", e.target.value)
+                  }
+                  size="small"
+                  required
+                />
+                <TextField
+                  label="Type"
+                  value={item.type}
+                  onChange={(e) =>
+                    handleItemChange(index, "type", e.target.value)
+                  }
+                  size="small"
+                  required
+                />
+                <TextField
+                  label="Unit"
+                  value={item.unit}
+                  onChange={(e) =>
+                    handleItemChange(index, "unit", e.target.value)
+                  }
+                  size="small"
+                  required
+                />
+                {/* Add more items detail upper this sections */}
+                <IconButton
+                  onClick={() => handleRemoveItem(index)}
+                  color="error"
+                  size="small"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            ))}
           </Box>
         </DialogContent>
         <DialogActions>
