@@ -80,6 +80,7 @@ const LogoutAuthen = () => {
               backgroundColor: "#f25a28", 
               fontSize: "14px", 
               padding: "8px 12px", 
+              color: "white",
               width: "130px",
               borderRadius: "20px", 
               '&:hover': {
