@@ -29,7 +29,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
       const date = new Date(entry.timestamp);
       // Set timezone to ICT (Indochina Time, UTC+7)
       const formattedDate = date.toISOString().split("T")[0];
-      const formattedTime = date.toTimeString().split(" ")[0].slice(0, 5);
+      const formattedTime = date.toTimeString().split(" ")[0].slice(0, 8);
       return `${formattedDate}\n${formattedTime}`;
     });
     setXAxis(DateXAxis);

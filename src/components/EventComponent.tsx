@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -16,12 +16,6 @@ import {
 
 import { IEvent } from "../interface/InterfaceCollection";
 
-interface ApiResponse {
-  status: string;
-  message: string;
-  data: IEvent[];
-}
-
 const EventComponent = () => {
   const [devices, setDevices] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +31,6 @@ const EventComponent = () => {
         }
 
         const result = await response.json();
-        // console.log("Raw Response:", result);
 
         if (result.events && result.events.length > 0) {
           setDevices(result.events);
@@ -221,9 +214,7 @@ const EventComponent = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <Typography variant="body2">
-                      {device.trigger_id?.host_id?.hostname}
-                    </Typography>
+                    <Typography variant="body2">{device.hostname}</Typography>
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="body2">{device.message}</Typography>

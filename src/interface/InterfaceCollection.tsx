@@ -78,12 +78,7 @@ export interface ITrigger {
 
 export interface IEvent {
   _id: string;
-  trigger_id: {
-    host_id: {
-      _id: string;
-      hostname: string;
-    };
-  };
+  hostname: string;
   status: string;
   message: string;
   timestamp: string;
