@@ -17,7 +17,7 @@ import {
 import { IEvent } from "../interface/InterfaceCollection";
 
 const EventComponent = () => {
-  const [devices, setDevices] = useState<IEvent[]>([]);
+  const [events, setevents] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,15 +33,15 @@ const EventComponent = () => {
         const result = await response.json();
 
         if (result.events && result.events.length > 0) {
-          setDevices(result.events);
+          setevents(result.events);
         } else {
           console.log("No events found");
         }
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch devices";
+          err instanceof Error ? err.message : "Failed to fetch events";
         setError(errorMessage);
-        console.error("Error fetching devices:", err);
+        console.error("Error fetching events:", err);
       } finally {
         setLoading(false);
       }
@@ -109,14 +109,14 @@ const EventComponent = () => {
           minHeight="200px"
         >
           <Typography color="error" variant="h6">
-            {`Error fetching devices: ${error}`}
+            {`Error fetching events: ${error}`}
           </Typography>
         </Box>
       </Container>
     );
   }
 
-  if (devices.length === 0) {
+  if (events.length === 0) {
     return (
       <Container>
         <Box
@@ -192,20 +192,20 @@ const EventComponent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {devices.map((device) => {
+            {events.map((event) => {
               const displayTime =
-                device.status === "PROBLEM"
-                  ? device.createdAt
-                  : device.updatedAt;
+              event.status === "PROBLEM"
+                  ? event.createdAt
+                  : event.updatedAt;
 
               return (
                 <TableRow
-                  key={device._id}
-                  data-status={device.status}
+                  key={event._id}
+                  data-status={event.status}
                   hover
                   sx={{
                     backgroundColor:
-                      device.status === "PROBLEM" ? "#fff5f8" : "inherit",
+                    event.status === "PROBLEM" ? "#fff5f8" : "inherit",
                   }}
                 >
                   <TableCell align="center">
@@ -214,15 +214,15 @@ const EventComponent = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <Typography variant="body2">{device.hostname}</Typography>
+                    <Typography variant="body2">{event.hostname}</Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <Typography variant="body2">{device.message}</Typography>
+                    <Typography variant="body2">{event.message}</Typography>
                   </TableCell>
                   <TableCell align="center">
                     <Chip
-                      label={getStatusLabel(device.status)}
-                      color={getStatusColor(device.status)}
+                      label={getStatusLabel(event.status)}
+                      color={getStatusColor(event.status)}
                       size="small"
                       sx={{ minWidth: "80px" }}
                     />

@@ -395,6 +395,15 @@ const Templates: React.FC = () => {
                 sx={{ display: "flex", gap: 2, alignItems: "center" }}
               >
                 <TextField
+                  label="Item's name"
+                  value={item.item_name}
+                  onChange={(e) =>
+                    handleItemChange(index, "item_name", e.target.value)
+                  }
+                  size="small"
+                  required
+                />
+                <TextField
                   label="OID"
                   value={item.oid}
                   onChange={(e) =>
@@ -417,6 +426,15 @@ const Templates: React.FC = () => {
                   value={item.unit}
                   onChange={(e) =>
                     handleItemChange(index, "unit", e.target.value)
+                  }
+                  size="small"
+                  required
+                />
+                <TextField
+                  label="Interval"
+                  value={item.interval}
+                  onChange={(e) =>
+                    handleItemChange(index, "interval", e.target.value)
                   }
                   size="small"
                   required

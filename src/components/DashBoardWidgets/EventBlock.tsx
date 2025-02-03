@@ -109,19 +109,19 @@ const EventBlock = () => {
 
   return (
     <Box padding={1}>
-      <Box sx={{ display: "flex", flexDirection: "row", px: 1, pt: 1, mb: 1 }}>
+      <Box sx={{ display: "flex", flexDirection: "row", px: 1, pt: 0, mb: 1 }}>
         <Typography variant="h6" sx={{ mr: 2, fontWeight: "medium" }}>
           Event
         </Typography>
         <Chip
-          label="RESOLVED"
-          size="small"
-          sx={{ m: 0.5, backgroundColor: "#2E7D32", color: "white" }}
-        />
-        <Chip
           label="PROBLEM"
           size="small"
           sx={{ m: 0.5, color: "white", backgroundColor: "red" }}
+        />
+        <Chip
+          label="RESOLVED"
+          size="small"
+          sx={{ m: 0.5, backgroundColor: "#2E7D32", color: "white" }}
         />
       </Box>
       <Box
