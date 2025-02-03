@@ -1,6 +1,7 @@
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google"; 
 import { Box } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+import { AuthenSignIn } from "../api/AuthenSignIn";
 
 // Define your custom styles here
 const customStyle = {
@@ -26,16 +27,29 @@ interface LoginAuthenProps {
 const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
     const navigate = useNavigate();
 
-    const handleSuccess = (credentialResponse: any) => {
-        console.log("Login Success:", credentialResponse);
+    const handleSuccess = async  (credentialResponse: any) => {
+        // console.log("Login Success:", credentialResponse);
+
         localStorage.setItem("isAuthenticated", "true");
-        onSuccess();  
+        localStorage.setItem("token", credentialResponse.credential);
+
+        try {
+            const serverResponse = await AuthenSignIn();
+            // console.log("Signup Success:", serverResponse);
+        } catch (error) {
+            console.error("Signup Failed:", error);
+        }
+
+        setTimeout(() => {
+            onSuccess();  
+        }, 2000);
     };
 
     const handleError = () => {
         console.log("Login Failed");
         onError("Failed to authenticate with Google");  
     };
+   
 
     return (
         <GoogleOAuthProvider clientId={clientId}>
@@ -55,3 +69,5 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
 };
 
 export default LoginAuthen;
+
+

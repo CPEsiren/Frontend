@@ -10,6 +10,9 @@ const LogoutAuthen = () => {
 
   const onLogoutSuccess = () => {
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("dashboard_layout");
+    localStorage.removeItem("token");
+
     console.log("Logout Success and LocalStorage Cleared");
 
     navigate("/login");  
