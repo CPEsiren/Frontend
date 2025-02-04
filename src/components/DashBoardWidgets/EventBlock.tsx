@@ -14,6 +14,7 @@ const EventBlock = () => {
   const [events, setEvents] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState("ALL");
 
   useEffect(() => {
     const fetchLatestEvents = async () => {
@@ -25,16 +26,9 @@ const EventBlock = () => {
         }
 
         const result = await response.json();
-        if (result.events && result.events.length > 0) {
-          setEvents(result.events.slice(0, 5)); // Get only the latest 5 events
-        } else {
-          console.log("No events found");
-        }
+        setEvents(result.events || []);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch events";
-        setError(errorMessage);
-        console.error("Error fetching events:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch events");
       } finally {
         setLoading(false);
       }
@@ -43,15 +37,9 @@ const EventBlock = () => {
     fetchLatestEvents();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "RESOLVED":
-        return "success";
-      case "PROBLEM":
-        return "error";
-      default:
-        return "default";
-    }
+  const getFilteredEvents = () => {
+    if (filter === "ALL") return events.slice(0, 5);
+    return events.filter((event) => event.status === filter);
   };
 
   const formatTimeInThaiTimezone = (dateString: string) => {
@@ -97,16 +85,6 @@ const EventBlock = () => {
     );
   }
 
-  if (events.length === 0) {
-    return (
-      <Container>
-        <Typography align="center" sx={{ mt: 2 }}>
-          No recent events found
-        </Typography>
-      </Container>
-    );
-  }
-
   return (
     <Box padding={1}>
       <Box sx={{ display: "flex", flexDirection: "row", px: 1, pt: 0, mb: 1 }}>
@@ -114,48 +92,48 @@ const EventBlock = () => {
           Event
         </Typography>
         <Chip
+          label="ALL"
+          size="small"
+          sx={{ px: 2, m: 0.5, color: "white", backgroundColor: "blue" }}
+          onClick={() => setFilter("ALL")}
+        />
+        <Chip
           label="PROBLEM"
           size="small"
           sx={{ m: 0.5, color: "white", backgroundColor: "red" }}
+          onClick={() => setFilter("PROBLEM")}
         />
         <Chip
           label="RESOLVED"
           size="small"
           sx={{ m: 0.5, backgroundColor: "#2E7D32", color: "white" }}
+          onClick={() => setFilter("RESOLVED")}
         />
       </Box>
-      <Box
-        sx={{
-          overflow: "auto",
-          maxHeight: "200px",
-        }}
-      >
-        {events.map((event) => (
-          <Card key={event._id} sx={{ mb: 0.5, p: 0 }}>
-            <CardContent
-              sx={{
-                backgroundColor:
-                  event.status === "RESOLVED" ? "#2E7D32" : "red",
-              }}
-            >
-              <Typography variant="body2" sx={{ color: "white" }}>
-                {formatTimeInThaiTimezone(event.createdAt)}
-              </Typography>
-              <Typography variant="h6" sx={{ color: "white" }}>
-                {event.trigger_id?.host_id?.hostname}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "white" }}>
-                {event.message}
-              </Typography>
-              {/* <Chip
-              label={event.status}
-              color={getStatusColor(event.status)}
-              size="small"
-              sx={{ mt: 1 }}
-            /> */}
-            </CardContent>
-          </Card>
-        ))}
+      <Box sx={{ overflow: "auto", maxHeight: "200px" }}>
+        {getFilteredEvents().length === 0 ? (
+          <Typography align="center" sx={{ mt: 2 }}>
+            No events found
+          </Typography>
+        ) : (
+          getFilteredEvents().map((event) => (
+            <Card key={event._id} sx={{ mb: 0.5, p: 0 }}>
+              <CardContent
+                sx={{
+                  backgroundColor:
+                    event.status === "RESOLVED" ? "#2E7D32" : "red",
+                }}
+              >
+                <Typography variant="body2" sx={{ color: "white" }}>
+                  {formatTimeInThaiTimezone(event.createdAt)}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "white" }}>
+                  {event.message}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </Box>
     </Box>
   );
