@@ -3,9 +3,14 @@ import { Box } from "@mui/material";
 import { DataEntry } from "../../interface/InterfaceCollection";
 import { Item } from "../../interface/InterfaceCollection";
 import { LineChart } from "@mui/x-charts/LineChart";
+import { ChartContainer } from "@mui/x-charts/ChartContainer";
+import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 
 export interface Items {
   item_id: Item;
+  avg_change_per_second: number;
+  max_change_per_second: number;
+  min_change_per_second: number;
   data: DataEntry[];
 }
 
@@ -44,6 +49,10 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
     setYAxis(Change_per_seconds);
   }, [item]);
 
+  const createConstantArray = (value: number, length: number) => {
+    return Array(length).fill(value);
+  };
+
   return (
     <Box
       sx={{
@@ -75,6 +84,39 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               label: hideLegendLabel ? "" : item.item_id.item_name,
               curve: "linear",
               color: "#2196f3",
+            },
+            {
+              data: createConstantArray(
+                item.max_change_per_second,
+                yAxis.length
+              ),
+              label: "Maximum ",
+              curve: "linear",
+              color: "#ff9800",
+              showMark: false,
+              id: "max",
+            },
+            {
+              data: createConstantArray(
+                item.avg_change_per_second,
+                yAxis.length
+              ),
+              label: "Average",
+              curve: "linear",
+              color: "#4caf50",
+              showMark: false,
+              id: "avg",
+            },
+            {
+              data: createConstantArray(
+                item.min_change_per_second,
+                yAxis.length
+              ),
+              label: "Minimum",
+              curve: "linear",
+              color: "#f44336",
+              showMark: false,
+              id: "min",
             },
           ]}
           xAxis={[
@@ -113,6 +155,18 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               stroke: "#fff",
               scale: isSmall ? "0.5" : "0.6",
               fill: "#2196f3",
+            },
+            " .MuiLineElement-series-max": {
+              strokeDasharray: "5 5",
+              strokeWidth: isSmall ? 0.5 : 1,
+            },
+            " .MuiLineElement-series-avg": {
+              strokeWidth: isSmall ? 0.5 : 1,
+              strokeDasharray: "5 5",
+            },
+            " .MuiLineElement-series-min": {
+              strokeWidth: isSmall ? 0.5 : 1,
+              strokeDasharray: "5 5",
             },
           }}
           slotProps={{
