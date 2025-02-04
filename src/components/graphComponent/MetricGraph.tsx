@@ -11,9 +11,15 @@ export interface Items {
 
 interface MetricGraphProps {
   item: Items;
+  hideLegendLabel?: boolean;
+  isSmall?: boolean; // Add new prop for size
 }
 
-const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
+const MetricGraph: React.FC<MetricGraphProps> = ({
+  item,
+  hideLegendLabel = false,
+  isSmall = false, // Default to normal size
+}) => {
   const [xAxis, setXAxis] = useState<string[]>([]);
   const [yAxis, setYAxis] = useState<number[]>([]);
 
@@ -27,7 +33,6 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
 
     const DateXAxis = item.data.map((entry) => {
       const date = new Date(entry.timestamp);
-      // Set timezone to ICT (Indochina Time, UTC+7)
       const formattedDate = date.toISOString().split("T")[0];
       const formattedTime = date.toTimeString().split(" ")[0].slice(0, 8);
       return `${formattedDate}\n${formattedTime}`;
@@ -44,8 +49,11 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
       sx={{
         position: "relative",
         width: "100%",
-        height: "450px",
-        p: 2,
+        height: isSmall ? "220px" : "450px",
+        mt: isSmall ? -1 : 0,
+        pb: isSmall ? 5 : 0,
+        pt: isSmall ? 1 : 2,
+        px: isSmall ? 0 : 0,
         bgcolor: "#f5f5f5",
         borderRadius: 2,
       }}
@@ -55,16 +63,16 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
           width: "100%",
           height: "100%",
           "& canvas": {
-            height: "400px !important", // Force consistent height
+            height: isSmall ? "250px !important" : "400px !important",
           },
         }}
       >
         <LineChart
-          height={400}
+          height={isSmall ? 250 : 400}
           series={[
             {
               data: yAxis,
-              label: item.item_id.item_name,
+              label: hideLegendLabel ? "" : item.item_id.item_name,
               curve: "linear",
               color: "#2196f3",
             },
@@ -74,34 +82,49 @@ const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
               scaleType: "point",
               data: xAxis,
               label: "Date\nTime",
-              labelStyle: { fontSize: 12, fill: "#666" },
-              tickLabelStyle: { fontSize: 10, fill: "#666" },
+              labelStyle: {
+                fontSize: isSmall ? 10 : 12,
+                fill: "#666",
+              },
+              tickLabelStyle: {
+                fontSize: isSmall ? 8 : 10,
+                fill: "#666",
+              },
             },
           ]}
           yAxis={[
             {
               label: `${item.item_id.unit}/s`,
-              labelStyle: { fontSize: 12, fill: "#666" },
-              tickLabelStyle: { fontSize: 10, fill: "#666" },
+              labelStyle: {
+                fontSize: isSmall ? 10 : 12,
+                fill: "#666",
+              },
+              tickLabelStyle: {
+                fontSize: isSmall ? 8 : 10,
+                fill: "#666",
+              },
             },
           ]}
           sx={{
             "& .MuiLineElement-root": {
-              strokeWidth: 2,
+              strokeWidth: isSmall ? 1.5 : 2,
             },
             "& .MuiMarkElement-root": {
               stroke: "#fff",
-              scale: "0.6",
+              scale: isSmall ? "0.5" : "0.6",
               fill: "#2196f3",
             },
           }}
           slotProps={{
             legend: {
-              hidden: false,
-              itemMarkWidth: 10,
-              itemMarkHeight: 10,
-              markGap: 5,
-              itemGap: 10,
+              hidden: hideLegendLabel,
+              itemMarkWidth: isSmall ? 8 : 10,
+              itemMarkHeight: isSmall ? 8 : 10,
+              markGap: isSmall ? 3 : 5,
+              itemGap: isSmall ? 8 : 10,
+              labelStyle: {
+                fontSize: isSmall ? 8 : 15,
+              },
             },
           }}
         />

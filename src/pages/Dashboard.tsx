@@ -15,6 +15,8 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  InputAdornment,
+  TextField,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
@@ -32,12 +34,129 @@ import Calendar from "../components/DashBoardWidgets/Calendar";
 import EventBlock from "../components/DashBoardWidgets/EventBlock";
 import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
+import { SearchIcon } from "lucide-react";
+
+// Add new interfaces for graph selection
+interface GraphSelection {
+  graphName: string;
+}
+
+interface ActiveComponentWithGraph extends ActiveComponent {
+  graphSelection?: GraphSelection;
+}
+
+const GraphSelectionDialog: React.FC<{
+  open: boolean;
+  onClose: () => void;
+  onSelect: (graphName: string) => void;
+}> = ({ open, onClose, onSelect }) => {
+  const [availableGraphs, setAvailableGraphs] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchGraphs = async () => {
+      if (!open) return;
+      
+      try {
+        const res = await fetch('http://localhost:3000/host', { method: 'GET' });
+        if (!res.ok) throw new Error('Failed to fetch hosts');
+        
+        const result = await res.json();
+        if (result.status === 'success' && Array.isArray(result.data) && result.data.length > 0) {
+          const host = result.data[0];
+          
+          const now = new Date();
+          const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
+          
+          const dataRes = await fetch(
+            `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${host._id}`
+          );
+          
+          if (!dataRes.ok) throw new Error('Failed to fetch graph data');
+          
+          const dataResult = await dataRes.json();
+          if (dataResult.status === 'success' && Array.isArray(dataResult.data)) {
+            const sortedData = dataResult.data[0].items
+              .sort((a: any, b: any) => 
+                a.item_id.item_name.localeCompare(b.item_id.item_name)
+              );
+            setAvailableGraphs(sortedData);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching graphs:', error);
+      }
+    };
+
+    fetchGraphs();
+  }, [open]);
+
+  const filteredGraphs = availableGraphs.filter(graph =>
+    graph.item_id.item_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+      <DialogTitle>Select Graph</DialogTitle>
+      <DialogContent>
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Search graphs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ mt: 1 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+        <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+          {filteredGraphs.length > 0 ? (
+            filteredGraphs.map((graph) => (
+              <ListItem
+                key={graph.item_id.item_name}
+                onClick={() => onSelect(graph.item_id.item_name)}
+                sx={{
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <ShowChartIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={graph.item_id.item_name}
+                  secondary={`Unit: ${graph.item_id.unit}`}
+                />
+              </ListItem>
+            ))
+          ) : (
+            <ListItem>
+              <ListItemText 
+                primary="No matching graphs found"
+                sx={{ textAlign: 'center', color: 'text.secondary' }}
+              />
+            </ListItem>
+          )}
+        </List>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 interface ComponentConfig {
   id: string;
   name: string;
   icon: JSX.Element;
-  component: React.ComponentType;
+  component: React.ComponentType<any>; // Update to accept props
   defaultSize: {
     xs: number;
     sm?: number;
@@ -49,6 +168,9 @@ interface ComponentConfig {
 interface ActiveComponent {
   id: string;
   position: number;
+  graphSelection?: {
+    graphName: string;
+  };
 }
 
 interface SnackbarState {
@@ -120,25 +242,25 @@ const Dashboard = () => {
     severity: "success",
   });
 
-  const [activeComponents, setActiveComponents] = useState<ActiveComponent[]>(
-    () => {
-      try {
-        const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
-        return savedLayout
-          ? JSON.parse(savedLayout)
-          : [
-              { id: "digitalClock", position: 0 },
-              { id: "graph1", position: 1 },
-            ];
-      } catch (error) {
-        console.error("Error loading layout:", error);
-        return [
-          { id: "digitalClock", position: 0 },
-          { id: "graph1", position: 1 },
-        ];
-      }
+  const [graphSelectionOpen, setGraphSelectionOpen] = useState(false);
+  const [pendingGraphAdd, setPendingGraphAdd] = useState(false);
+  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>(() => {
+    try {
+      const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
+      return savedLayout
+        ? JSON.parse(savedLayout)
+        : [
+            { id: "digitalClock", position: 0 },
+            { id: "graph1", position: 1 },
+          ];
+    } catch (error) {
+      console.error("Error loading layout:", error);
+      return [
+        { id: "digitalClock", position: 0 },
+        { id: "graph1", position: 1 },
+      ];
     }
-  );
+  });
 
   useEffect(() => {
     try {
@@ -163,9 +285,16 @@ const Dashboard = () => {
     if (!componentConfig) return;
 
     const isAlreadyAdded = activeComponents.some(
-      (comp) => comp.id === componentId
+      (comp) => comp.id === componentId && !componentConfig.allowMultiple
     );
     if (isAlreadyAdded && !componentConfig.allowMultiple) return;
+
+    // If it's a graph component, show selection dialog
+    if (componentId === 'graph') {
+      setPendingGraphAdd(true);
+      setGraphSelectionOpen(true);
+      return;
+    }
 
     setActiveComponents((prev) => {
       const newLayout = [...prev, { id: componentId, position: prev.length }];
@@ -177,6 +306,40 @@ const Dashboard = () => {
       message: "Widget added successfully",
       severity: "success",
     });
+  };
+
+  const handleGraphSelection = (graphName: string) => {
+    
+    setActiveComponents((prev) => {
+      const newComponent = {
+        id: "graph",
+        position: prev.length,
+        graphSelection: { graphName }
+      };
+      return [...prev, newComponent];
+    });
+
+    setGraphSelectionOpen(false);
+    setComponentDialog(false);
+    setPendingGraphAdd(false);
+
+    setSnackbar({
+      open: true,
+      message: "Graph widget added successfully",
+      severity: "success",
+    });
+
+    // Save to localStorage after updating
+    try {
+      const updatedLayout = [...activeComponents, {
+        id: "graph",
+        position: activeComponents.length,
+        graphSelection: { graphName }
+      }];
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(updatedLayout));
+    } catch (error) {
+      console.error('Error saving layout:', error);
+    }
   };
 
   const handleRemoveComponent = (position: number) => {
@@ -289,71 +452,85 @@ const Dashboard = () => {
           p: 3,
         }}
       >
-        <Grid container rowSpacing={1} columnSpacing={2}>
-          {activeComponents.map((activeComp) => {
-            const componentConfig = availableComponents.find(
-              (c) => c.id === activeComp.id
-            );
-            if (!componentConfig) return null;
+         <Grid container rowSpacing={1} columnSpacing={2}>
+        {activeComponents.map((activeComp) => {
+          const componentConfig = availableComponents.find(
+            (c) => c.id === activeComp.id
+          );
+          if (!componentConfig) return null;
 
-            const Component = componentConfig.component;
-            return (
-              <Grid
-                item
-                key={activeComp.position}
-                {...componentConfig.defaultSize}
-                sx={{ mb: 1 }}
+          const Component = componentConfig.component;
+
+          return (
+            <Grid
+              item
+              key={activeComp.position}
+              {...componentConfig.defaultSize}
+              sx={{ mb: 1 }}
+            >
+              <Box
+                sx={{
+                  position: "relative",
+                  height: "100%",
+                  backgroundColor: "white",
+                  borderRadius: 2,
+                  p: 0,
+                  border: "1px solid #eee",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                    transform: "translateY(-2px)",
+                  },
+                }}
               >
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: "100%",
-                    backgroundColor: "white",
-                    borderRadius: 2,
-                    p: 0,
-                    border: "1px solid #eee",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease-in-out",
-                    "&:hover": {
-                      boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                      transform: "translateY(-2px)",
-                    },
-                  }}
-                >
-                  {isEditing && (
-                    <IconButton
-                      size="small"
-                      onClick={() => handleRemoveComponent(activeComp.position)}
+                {isEditing && (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveComponent(activeComp.position)}
+                    sx={{
+                      position: "absolute",
+                      right: 2,
+                      top: 2,
+                      zIndex: 10,
+                      backgroundColor: "white",
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      },
+                      boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <AddIcon
                       sx={{
-                        position: "absolute",
-                        right: 2,
-                        top: 2,
-                        zIndex: 10, // Increased z-index
-                        backgroundColor: "white", // Added background color to make it stand out
-                        "&:hover": {
-                          backgroundColor: "rgba(255, 255, 255, 0.9)", // Slightly transparent on hover
-                        },
-                        boxShadow: "0 0 4px rgba(0,0,0,0.1)", // Added subtle shadow
+                        transform: "rotate(45deg)",
+                        zIndex: 11,
                       }}
-                    >
-                      <AddIcon
-                        sx={{
-                          transform: "rotate(45deg)",
-                          zIndex: 11, // Higher z-index than the button
-                        }}
-                      />
-                    </IconButton>
-                  )}
-                  <Component />
-                </Box>
-              </Grid>
-            );
-          })}
-        </Grid>
+                    />
+                  </IconButton>
+                )}
+                <Component 
+                  graphKey={`graph-${activeComp.position}`}
+                  graphSelection={activeComp.graphSelection} 
+                />
+              </Box>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+       {/* Graph Selection Dialog */}
+       <GraphSelectionDialog
+        open={graphSelectionOpen}
+        onClose={() => {
+          setGraphSelectionOpen(false);
+          setPendingGraphAdd(false);
+        }}
+        onSelect={handleGraphSelection}
+      />
       </Box>
 
-      {/* Add Component Dialog */}
-      <Dialog
+       {/* Add Component Dialog */}
+       <Dialog
         open={componentDialog}
         onClose={() => setComponentDialog(false)}
         maxWidth="xs"
@@ -390,6 +567,8 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
+     
+
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
@@ -406,6 +585,7 @@ const Dashboard = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
     </>
   );
 };
