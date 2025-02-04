@@ -187,7 +187,18 @@ const Graphs: React.FC = () => {
     setIsAuto(false);
   };
 
-  //Reset Button
+
+  // Add a reset filters function
+  const handleResetFilters = () => {
+    const initialSelectedItems: SelectedItems = {};
+    data.forEach((item) => {
+      initialSelectedItems[item.item_id.item_name] = true;
+    });
+    setSelectedItems(initialSelectedItems);
+    localStorage.setItem('graphFilters', JSON.stringify(initialSelectedItems));
+  };
+
+  // Modify the reset button click handler to include filter reset
   const handleResetClick = () => {
     setSelectedDateTimeEnd(new Date());
     setSelectedDateTimeStart(() => {
@@ -198,6 +209,7 @@ const Graphs: React.FC = () => {
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
+    handleResetFilters(); // Reset filters to initial state
   };
 
   //Fetch Data
@@ -270,14 +282,22 @@ const Graphs: React.FC = () => {
   const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  // Initialize selectedItems with all items selected
+  // Load saved filters from localStorage on component mount
   useEffect(() => {
-    const initialSelectedItems: SelectedItems = {};
-    data.forEach((item) => {
-      initialSelectedItems[item.item_id.item_name] = true;
-    });
-    setSelectedItems(initialSelectedItems);
-  }, []);
+    const savedFilters = localStorage.getItem('graphFilters');
+    if (savedFilters) {
+      setSelectedItems(JSON.parse(savedFilters));
+    } else {
+      // If no saved filters, initialize with all items selected
+      const initialSelectedItems: SelectedItems = {};
+      data.forEach((item) => {
+        initialSelectedItems[item.item_id.item_name] = true;
+      });
+      setSelectedItems(initialSelectedItems);
+      localStorage.setItem('graphFilters', JSON.stringify(initialSelectedItems));
+    }
+  }, [data]); // Add data as dependency to update when items change
+
   const handleFilterClose = () => {
     setAnchorEl(null);
   };
@@ -288,27 +308,32 @@ const Graphs: React.FC = () => {
   const filteredItemsForSearch = data.filter((item) =>
     item.item_id.item_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+   // Update localStorage whenever filters change
+   const handleCheckboxChange = (itemName: string) => {
+    const newSelectedItems = {
+      ...selectedItems,
+      [itemName]: !selectedItems[itemName],
+    };
+    setSelectedItems(newSelectedItems);
+    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
+  };
+
   const handleSelectAll = () => {
     const newSelectedItems = { ...selectedItems };
-    // Only update items that match the search term
     filteredItemsForSearch.forEach((item) => {
       newSelectedItems[item.item_id.item_name] = true;
     });
     setSelectedItems(newSelectedItems);
+    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
   };
+
   const handleDeselectAll = () => {
     const newSelectedItems = { ...selectedItems };
-    // Only update items that match the search term
     filteredItemsForSearch.forEach((item) => {
       newSelectedItems[item.item_id.item_name] = false;
     });
     setSelectedItems(newSelectedItems);
-  };
-  const handleCheckboxChange = (itemName: string) => {
-    setSelectedItems((prev) => ({
-      ...prev,
-      [itemName]: !prev[itemName],
-    }));
+    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
   };
 
   //Graph
