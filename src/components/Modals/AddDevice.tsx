@@ -370,8 +370,17 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           })
         );
 
+        // Combine existing items with new interface items
+        const combinedItems = [...itemRows, ...interfaceItems];
+
+        // Assign new IDs to ensure uniqueness
+        const updatedItems = combinedItems.map((item, index) => ({
+          ...item,
+          id: index + 1,
+        }));
+
         // Update the item rows with the scanned interface data
-        setItemRows(interfaceItems);
+        setItemRows(updatedItems);
 
         // Switch to items tab to show the results
         setTabvalue("item");
@@ -435,187 +444,271 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
               value="item"
             />
           </TabList>
-        </Box >
+        </Box>
         <TabPanel value="host">
           <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
             <Box>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-            >
-              <Typography
-                sx={{
-                  mb: -2,
-                  fontSize: "1.1rem",
-                  color: "#a9a9a9",
-                  fontWeight: "semibold",
-                }}
-                {...typographyProps}
-              >
-                HOST
-              </Typography>
-              <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-
-              {/* Host Section */}
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
-                  <Box sx={{ display: "flex", justifyContent: "right" }}>
-                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                      *
-                    </Typography>
-                    <Typography sx={{ fontSize: 14 }}>Device's name</Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: 14, mt: 4 }}>
-                    Templates
-                  </Typography>
-                  <Box sx={{ display: "flex", justifyContent: "right", mt: 4 }}>
-                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                      *
-                    </Typography>
-                    <Typography sx={{ fontSize: 14 }}>Host groups</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ textAlign: "left" }}>
-                  <TextField
-                    {...textFieldProps}
-                    value={hostname}
-                    onChange={(e) => sethostname(e.target.value)}
-                    sx={{
-                      mb: 2,
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                  <TextField
-                    {...textFieldProps}
-                    select
-                    value={templates}
-                    onChange={handleTemplateChange}
-                    disabled={loading}
-                    sx={{
-                      mb: 2,
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {templateOptions.map((template) => (
-                      <MenuItem key={template._id} value={template._id}>
-                        {template.template_name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    {...textFieldProps}
-                    value={hostgroup}
-                    onChange={(e) => sethostgroup(e.target.value)}
-                    sx={{
-                      mb: 0,
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    textAlign: "left",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2.5,
-                  }}
-                >
-                </Box>
-              </Box>
-              </Box>
-              
-              <Box sx={{padding: 3}}>
-              <Typography
-                sx={{
-                  fontSize: "1.1rem",
-                  color: "#a9a9a9",
-                  fontWeight: "semibold",
-                }}
-                {...typographyProps}
-              >
-                SNMP INTERFACE
-              </Typography>
               <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  mt: 2,
-                  // backgroundColor: "#ebf1ff",
-                  borderRadius: 2, 
-                  border: "4px solid #ebf1ff",
-                }}
+                component="form"
+                onSubmit={handleSubmit}
+                sx={{ display: "flex", flexDirection: "column", gap: 2 }}
               >
-              {/* Interface Section */}
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 3 , mt: 3,mb: 3 }}>
-                <Box sx={{ textAlign: "right", mt: 1, width: "18%" }}>
-                  <Box sx={{ display: "flex", justifyContent: "right" }}>
-                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                      *
+                <Typography
+                  sx={{
+                    mb: -2,
+                    fontSize: "1.1rem",
+                    color: "#a9a9a9",
+                    fontWeight: "semibold",
+                  }}
+                  {...typographyProps}
+                >
+                  HOST
+                </Typography>
+                <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+
+                {/* Host Section */}
+                <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+                  <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
+                    <Box sx={{ display: "flex", justifyContent: "right" }}>
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>
+                        Device's name
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: 14, mt: 4 }}>
+                      Templates
                     </Typography>
-                    <Typography sx={{ fontSize: 14 }}>IP address</Typography>
+                    <Box
+                      sx={{ display: "flex", justifyContent: "right", mt: 4 }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>Host groups</Typography>
+                    </Box>
                   </Box>
-                  <Box sx={{ display: "flex", justifyContent: "right", mt: 4 }}>
-                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                      *
-                    </Typography>
-                    <Typography sx={{ fontSize: 14 }}>SNMP version</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "right", mt: 4 }}>
-                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                      *
-                    </Typography>
-                    <Typography sx={{ fontSize: 14 }}>
-                      SNMP community
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ textAlign: "left", width: "40%" }}>
-                  <TextField
-                    {...textFieldProps}
-                    value={ip_address}
-                    onChange={(e) => setip_address(e.target.value)}
-                    sx={{
-                      mb: 2,
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
                   <Box sx={{ textAlign: "left" }}>
-                    <FormControl sx={{ minWidth: 200 }} size="small">
-                      <Select
-                        value={snmp_version}
-                        onChange={handleVersionChange}
-                        displayEmpty
-                        sx={{
-                          mb: 2,
-                          fontSize: 14,
-                          "& .MuiMenuItem-root": { fontSize: 14 },
-                        }}
-                      >
-                        <MenuItem value="v1">SNMPv1</MenuItem>
-                        <MenuItem value="v2">SNMPv2</MenuItem>
-                        <MenuItem value="v3">SNMPv3</MenuItem>
-                      </Select>
-                    </FormControl>
                     <TextField
                       {...textFieldProps}
-                      value={snmp_community}
-                      onChange={(e) => setsnmp_community(e.target.value)}
+                      value={hostname}
+                      onChange={(e) => sethostname(e.target.value)}
+                      sx={{
+                        mb: 2,
+                        width: 1,
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                    <TextField
+                      {...textFieldProps}
+                      select
+                      value={templates}
+                      onChange={handleTemplateChange}
+                      disabled={loading}
+                      sx={{
+                        mb: 2,
+                        width: 1,
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {templateOptions.map((template) => (
+                        <MenuItem key={template._id} value={template._id}>
+                          {template.template_name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      {...textFieldProps}
+                      value={hostgroup}
+                      onChange={(e) => sethostgroup(e.target.value)}
+                      sx={{
+                        mb: 0,
+                        width: 1,
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      textAlign: "left",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2.5,
+                    }}
+                  ></Box>
+                </Box>
+              </Box>
+
+              <Box sx={{ padding: 3 }}>
+                <Typography
+                  sx={{
+                    fontSize: "1.1rem",
+                    color: "#a9a9a9",
+                    fontWeight: "semibold",
+                  }}
+                  {...typographyProps}
+                >
+                  SNMP INTERFACE
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    mt: 2,
+                    // backgroundColor: "#ebf1ff",
+                    borderRadius: 2,
+                    border: "4px solid #ebf1ff",
+                  }}
+                >
+                  {/* Interface Section */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 3,
+                      mt: 3,
+                      mb: 3,
+                    }}
+                  >
+                    <Box sx={{ textAlign: "right", mt: 1, width: "18%" }}>
+                      <Box sx={{ display: "flex", justifyContent: "right" }}>
+                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                          *
+                        </Typography>
+                        <Typography sx={{ fontSize: 14 }}>
+                          IP address
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{ display: "flex", justifyContent: "right", mt: 4 }}
+                      >
+                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                          *
+                        </Typography>
+                        <Typography sx={{ fontSize: 14 }}>
+                          SNMP version
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{ display: "flex", justifyContent: "right", mt: 4 }}
+                      >
+                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                          *
+                        </Typography>
+                        <Typography sx={{ fontSize: 14 }}>
+                          SNMP community
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ textAlign: "left", width: "40%" }}>
+                      <TextField
+                        {...textFieldProps}
+                        value={ip_address}
+                        onChange={(e) => setip_address(e.target.value)}
+                        sx={{
+                          mb: 2,
+                          width: 1,
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+                      <Box sx={{ textAlign: "left" }}>
+                        <FormControl sx={{ minWidth: 200 }} size="small">
+                          <Select
+                            value={snmp_version}
+                            onChange={handleVersionChange}
+                            displayEmpty
+                            sx={{
+                              mb: 2,
+                              fontSize: 14,
+                              "& .MuiMenuItem-root": { fontSize: 14 },
+                            }}
+                          >
+                            <MenuItem value="v1">SNMPv1</MenuItem>
+                            <MenuItem value="v2">SNMPv2</MenuItem>
+                            <MenuItem value="v3">SNMPv3</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <TextField
+                          {...textFieldProps}
+                          value={snmp_community}
+                          onChange={(e) => setsnmp_community(e.target.value)}
+                          sx={{
+                            width: 1,
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontSize: 14, mt: 1 }}>Port</Typography>
+                    </Box>
+                    <Box>
+                      <TextField
+                        {...textFieldProps}
+                        value={snmp_port}
+                        onChange={(e) => setsnmp_port(e.target.value)}
+                        sx={{
+                          width: "90%",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Details Section */}
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+              >
+                <Typography
+                  sx={{
+                    mb: -2,
+                    fontSize: "1.1rem",
+                    color: "#a9a9a9",
+                    fontWeight: "semibold",
+                    mt: 0.5,
+                  }}
+                  {...typographyProps}
+                >
+                  DETAILS
+                </Typography>
+                <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+                <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+                  <Box
+                    sx={{
+                      width: "18%",
+                      display: "flex",
+                      justifyContent: "right",
+                      mt: 4,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 14 }}>Description</Typography>
+                  </Box>
+
+                  <Box sx={{ textAlign: "left", width: "40%" }}>
+                    <TextField
+                      multiline
+                      rows={4}
+                      {...textFieldProps}
+                      value={details_description}
+                      onChange={(e) => setdetails_description(e.target.value)}
                       sx={{
                         width: 1,
                         "& .MuiInputBase-input": {
@@ -625,71 +718,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     />
                   </Box>
                 </Box>
-                <Box>
-                  <Typography sx={{ fontSize: 14, mt: 1 }}>Port</Typography>
-                </Box>
-                <Box>
-                  <TextField
-                    {...textFieldProps}
-                    value={snmp_port}
-                    onChange={(e) => setsnmp_port(e.target.value)}
-                    sx={{
-                      width: "90%",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                </Box>
-                </Box>
-              </Box>
               </Box>
 
-              {/* Details Section */}
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 , mt: 2}}>
-              <Typography
-                sx={{
-                  mb: -2,
-                  fontSize: "1.1rem",
-                  color: "#a9a9a9",
-                  fontWeight: "semibold",
-                  mt: 0.5,
-                }}
-                {...typographyProps}
-              >
-                DETAILS
-              </Typography>
-              <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                <Box
-                  sx={{
-                    width: "18%",
-                    display: "flex",
-                    justifyContent: "right",
-                    mt: 4,
-                  }}
-                >
-                  <Typography sx={{ fontSize: 14 }}>Description</Typography>
-                </Box>
-
-                <Box sx={{ textAlign: "left", width: "40%" }}>
-                  <TextField
-                    multiline
-                    rows={4}
-                    {...textFieldProps}
-                    value={details_description}
-                    onChange={(e) => setdetails_description(e.target.value)}
-                    sx={{
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-              </Box>
- 
               {/* Action Buttons */}
               <Box
                 sx={{
