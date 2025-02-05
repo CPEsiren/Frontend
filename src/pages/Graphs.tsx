@@ -108,6 +108,50 @@ const Graphs: React.FC = () => {
     new Date()
   );
 
+  //Now Range Data
+  const [rangeTime, setRangeTime] = useState<string>("15 m");
+  const setTimeRange = () => {
+    switch (selectedLastTime) {
+      case "Last 15 Minutes":
+        setRangeTime("15 m");
+        break;
+      case "Last 30 Minutes":
+        setRangeTime("30 m");
+        break;
+      case "Last 1 Hour":
+        setRangeTime("1 h");
+        break;
+      case "Last 3 Hours":
+        setRangeTime("3 h");
+        break;
+      case "Last 6 Hours":
+        setRangeTime("6 h");
+        break;
+      case "Last 12 Hours": {
+        setRangeTime("12 h");
+        break;
+      }
+      case "Last 1 Day":
+        setRangeTime("1 d");
+        break;
+      case "Last 3 Days":
+        setRangeTime("3 d");
+        break;
+      case "Last 7 Days":
+        setRangeTime("7 d");
+        break;
+      case "Last 1 Month":
+        setRangeTime("1 M");
+        break;
+      case "Last 6 Months":
+        setRangeTime("6 M");
+        break;
+      default:
+        // If no match, don't change the date
+        return;
+    }
+  };
+
   //Set Last Time
   const lastTime: string[] = [
     "Last 15 Minutes",
@@ -185,8 +229,8 @@ const Graphs: React.FC = () => {
       }`
     );
     setIsAuto(false);
+    setTimeRange();
   };
-
 
   // Add a reset filters function
   const handleResetFilters = () => {
@@ -195,7 +239,7 @@ const Graphs: React.FC = () => {
       initialSelectedItems[item.item_id.item_name] = true;
     });
     setSelectedItems(initialSelectedItems);
-    localStorage.setItem('graphFilters', JSON.stringify(initialSelectedItems));
+    localStorage.setItem("graphFilters", JSON.stringify(initialSelectedItems));
   };
 
   // Modify the reset button click handler to include filter reset
@@ -284,7 +328,7 @@ const Graphs: React.FC = () => {
   };
   // Load saved filters from localStorage on component mount
   useEffect(() => {
-    const savedFilters = localStorage.getItem('graphFilters');
+    const savedFilters = localStorage.getItem("graphFilters");
     if (savedFilters) {
       setSelectedItems(JSON.parse(savedFilters));
     } else {
@@ -294,7 +338,10 @@ const Graphs: React.FC = () => {
         initialSelectedItems[item.item_id.item_name] = true;
       });
       setSelectedItems(initialSelectedItems);
-      localStorage.setItem('graphFilters', JSON.stringify(initialSelectedItems));
+      localStorage.setItem(
+        "graphFilters",
+        JSON.stringify(initialSelectedItems)
+      );
     }
   }, [data]); // Add data as dependency to update when items change
 
@@ -308,14 +355,14 @@ const Graphs: React.FC = () => {
   const filteredItemsForSearch = data.filter((item) =>
     item.item_id.item_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-   // Update localStorage whenever filters change
-   const handleCheckboxChange = (itemName: string) => {
+  // Update localStorage whenever filters change
+  const handleCheckboxChange = (itemName: string) => {
     const newSelectedItems = {
       ...selectedItems,
       [itemName]: !selectedItems[itemName],
     };
     setSelectedItems(newSelectedItems);
-    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
+    localStorage.setItem("graphFilters", JSON.stringify(newSelectedItems));
   };
 
   const handleSelectAll = () => {
@@ -324,7 +371,7 @@ const Graphs: React.FC = () => {
       newSelectedItems[item.item_id.item_name] = true;
     });
     setSelectedItems(newSelectedItems);
-    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
+    localStorage.setItem("graphFilters", JSON.stringify(newSelectedItems));
   };
 
   const handleDeselectAll = () => {
@@ -333,7 +380,7 @@ const Graphs: React.FC = () => {
       newSelectedItems[item.item_id.item_name] = false;
     });
     setSelectedItems(newSelectedItems);
-    localStorage.setItem('graphFilters', JSON.stringify(newSelectedItems));
+    localStorage.setItem("graphFilters", JSON.stringify(newSelectedItems));
   };
 
   //Graph
@@ -724,7 +771,7 @@ const Graphs: React.FC = () => {
                     {item.item_id.item_name}
                   </Typography>
                   <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                    <MetricGraph item={item} />
+                    <MetricGraph item={item} selectedLastTime={rangeTime} />
                   </Box>
                 </Paper>
               </Grid>

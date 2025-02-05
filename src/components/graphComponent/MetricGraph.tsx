@@ -3,8 +3,6 @@ import { Box } from "@mui/material";
 import { DataEntry } from "../../interface/InterfaceCollection";
 import { Item } from "../../interface/InterfaceCollection";
 import { LineChart } from "@mui/x-charts/LineChart";
-import { ChartContainer } from "@mui/x-charts/ChartContainer";
-import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 
 export interface Items {
   item_id: Item;
@@ -16,12 +14,14 @@ export interface Items {
 
 interface MetricGraphProps {
   item: Items;
+  selectedLastTime: string;
   hideLegendLabel?: boolean;
   isSmall?: boolean; // Add new prop for size
 }
 
 const MetricGraph: React.FC<MetricGraphProps> = ({
   item,
+  selectedLastTime,
   hideLegendLabel = false,
   isSmall = false, // Default to normal size
 }) => {
@@ -90,7 +90,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 item.max_change_per_second,
                 yAxis.length
               ),
-              label: "Maximum ",
+              label: `Maximum(${selectedLastTime})`,
               curve: "linear",
               color: "#ff9800",
               showMark: false,
@@ -101,7 +101,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 item.avg_change_per_second,
                 yAxis.length
               ),
-              label: "Average",
+              label: `Average(${selectedLastTime})`,
               curve: "linear",
               color: "#4caf50",
               showMark: false,
@@ -112,7 +112,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 item.min_change_per_second,
                 yAxis.length
               ),
-              label: "Minimum",
+              label: `Minimum(${selectedLastTime})`,
               curve: "linear",
               color: "#f44336",
               showMark: false,
