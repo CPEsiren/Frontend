@@ -35,6 +35,7 @@ import EventBlock from "../components/DashBoardWidgets/EventBlock";
 import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
+import DraggableDashboard from '../components/DraggableDashboard';
 
 // Add new interfaces for graph selection
 interface GraphSelection {
@@ -397,62 +398,131 @@ const Dashboard = () => {
     return !activeComponents.some((comp) => comp.id === componentId);
   };
 
+  const handleReorder = (newLayout: ActiveComponentWithGraph[]) => {
+    setActiveComponents(newLayout);
+    try {
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newLayout));
+      setSnackbar({
+        open: true,
+        message: "Dashboard layout updated successfully",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error saving layout:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to save dashboard layout",
+        severity: "error",
+      });
+    }
+  };
+
+  const renderComponent = (
+    activeComp: ActiveComponentWithGraph, 
+    componentConfig: ComponentConfig, 
+    index: number
+  ) => {
+    const Component = componentConfig.component;
+    
+    return (
+      <Box sx={{ position: 'relative', height: '100%' }}>
+        {isEditing && (
+          <IconButton
+            size="small"
+            onClick={() => handleRemoveComponent(activeComp.position)}
+            sx={{
+              position: "absolute",
+              right: 2,
+              top: 2,
+              zIndex: 10,
+              backgroundColor: "white",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+              },
+              boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+            }}
+          >
+            <AddIcon
+              sx={{
+                transform: "rotate(45deg)",
+                zIndex: 11,
+              }}
+            />
+          </IconButton>
+        )}
+        <Component 
+          graphKey={`graph-${activeComp.position}`}
+          graphSelection={activeComp.graphSelection} 
+        />
+      </Box>
+    );
+  };
+
   return (
     <>
-      {windowSize.width > 600 && (
-        <Box
-          sx={{
-            width: 1,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 5,
-          }}
-        >
-          <Typography
-            variant="h4"
-            component="h1"
-            fontWeight={600}
-            color={"#242D5D"}
-          >
-            DASHBOARD
-          </Typography>
-          <Box>
-            <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
-              <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
-                {isEditing ? <DoneIcon /> : <EditIcon />}
-              </IconButton>
-            </Tooltip>
-            {isEditing && (
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() => setComponentDialog(true)}
-                sx={{
-                  backgroundColor: "#F25A28",
-                  "&:hover": {
-                    backgroundColor: "#F37E58",
-                  },
-                }}
-              >
-                Add Component
-              </Button>
-            )}
-          </Box>
-        </Box>
-      )}
-
+    {windowSize.width > 600 && (
       <Box
         sx={{
           width: 1,
-          marginTop: 2,
-          minHeight: "calc(100vh - 200px)",
-          backgroundColor: "#FFFFFB",
-          borderRadius: 3,
-          p: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 5,
         }}
       >
-         <Grid container rowSpacing={1} columnSpacing={2}>
+        <Typography
+          variant="h4"
+          component="h1"
+          fontWeight={600}
+          color={"#242D5D"}
+        >
+          DASHBOARD
+        </Typography>
+        <Box>
+          <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
+            <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
+              {isEditing ? <DoneIcon /> : <EditIcon />}
+            </IconButton>
+          </Tooltip>
+          {isEditing && (
+            <Button
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() => setComponentDialog(true)}
+              sx={{
+                backgroundColor: "#F25A28",
+                "&:hover": {
+                  backgroundColor: "#F37E58",
+                },
+              }}
+            >
+              Add Component
+            </Button>
+          )}
+        </Box>
+      </Box>
+    )}
+
+    <Box
+      sx={{
+        width: 1,
+        marginTop: 2,
+        minHeight: "calc(100vh - 200px)",
+        backgroundColor: "#FFFFFB",
+        borderRadius: 3,
+        p: 3,
+      }}
+    >
+      <DraggableDashboard
+        components={availableComponents}
+        activeComponents={activeComponents}
+        onReorder={handleReorder}
+        isEditing={isEditing}
+        onRemoveComponent={handleRemoveComponent}
+        renderComponent={renderComponent}
+      />
+    {/* </Box> */}
+         {/* <Grid container rowSpacing={1} columnSpacing={2}>
         {activeComponents.map((activeComp) => {
           const componentConfig = availableComponents.find(
             (c) => c.id === activeComp.id
@@ -516,7 +586,7 @@ const Dashboard = () => {
             </Grid>
           );
         })}
-      </Grid>
+      </Grid> */}
 
        {/* Graph Selection Dialog */}
        <GraphSelectionDialog
