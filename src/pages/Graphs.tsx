@@ -44,50 +44,54 @@ const Graphs: React.FC = () => {
   const [hosts, setHosts] = useState<IHost[]>([]);
   const [selectedHost, setSelectedHost] = useState("");
 
+  const fetchHosts = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/host", {
+        method: "GET",
+      });
+
+      if (res.status === 404) {
+        setHosts([{ host_id: "not-found", hostname: "Host Not Found" }]);
+        setSelectedHost("not-found");
+        return;
+      }
+
+      const result = await res.json();
+      if (result.status === "success" && Array.isArray(result.data)) {
+        const listHost = result.data.map(
+          (host: { _id: string; hostname: string }) => {
+            return {
+              host_id: host._id,
+              hostname: host.hostname,
+            };
+          }
+        );
+        setHosts(listHost);
+        setSelectedHost(listHost[0].hostname);
+        setTimeRange();
+        setIsAuto(true);
+
+        // Set the URL and fetch data immediately after setting the host
+        const initialUrl = `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+          listHost[0].host_id
+        }`;
+        setUrl(initialUrl);
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      console.log(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchHosts();
+  }, []);
   const handleHostChange = (event: SelectChangeEvent<string>) => {
     setSelectedHost(event.target.value);
   };
-  useEffect(() => {
-    const fetchHosts = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/host", {
-          method: "GET",
-        });
 
-        if (res.status === 404) {
-          setHosts([{ host_id: "not-found", hostname: "Host Not Found" }]);
-          setSelectedHost("not-found");
-          return;
-        }
-
-        const result = await res.json();
-        if (result.status === "success" && Array.isArray(result.data)) {
-          const listHost = result.data.map(
-            (host: { _id: string; hostname: string }) => {
-              return {
-                host_id: host._id,
-                hostname: host.hostname,
-              };
-            }
-          );
-          setHosts(listHost);
-          setSelectedHost(listHost[0].hostname);
-          setUrl(
-            `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
-              listHost[0].host_id
-            }`
-          );
-        }
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred";
-        console.log(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchHosts();
-  }, []);
   useEffect(() => {
     const hostNow = hosts.find((host) => host.hostname === selectedHost);
     setUrl(
@@ -244,12 +248,12 @@ const Graphs: React.FC = () => {
 
   // Modify the reset button click handler to include filter reset
   const handleResetClick = () => {
+    setSelectedLastTime(lastTime[0]);
     setSelectedDateTimeEnd(new Date());
     setSelectedDateTimeStart(() => {
-      const now = selectedDateTimeEnd;
+      const now = new Date();
       return new Date(now.setMinutes(now.getMinutes() - 15));
     });
-    setSelectedLastTime(lastTime[0]);
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
@@ -260,8 +264,9 @@ const Graphs: React.FC = () => {
   const [isAuto, setIsAuto] = useState(true);
   const [url, setUrl] = useState<string>("");
   const [data, setData] = useState<Items[]>([]);
+
   useEffect(() => {
-    const updateUrlAndFetch = () => {
+    const updateUrlAndFetch = async () => {
       if (isAuto) {
         const now = new Date();
         setSelectedDateTimeEnd(now);
@@ -281,39 +286,38 @@ const Graphs: React.FC = () => {
         }
       }
     };
-
     updateUrlAndFetch();
     const interval = setInterval(updateUrlAndFetch, 10000);
     return () => clearInterval(interval);
-  }, [isAuto]);
+  }, [isAuto, hosts]);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch(url, { method: "GET" });
+
+      if (res.status === 404) {
+        setData([]);
+        return;
+      }
+
+      const result = await res.json();
+
+      if (result.status === "success" && Array.isArray(result.data)) {
+        const sortedData = result.data[0].items.sort((a: Items, b: Items) => {
+          return a.item_id.item_name.localeCompare(b.item_id.item_name);
+        });
+        setData(sortedData);
+      } else {
+        setData([]);
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      console.error(errorMessage);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(url, { method: "GET" });
-
-        if (res.status === 404) {
-          setData([]);
-          return;
-        }
-
-        const result = await res.json();
-
-        if (result.status === "success" && Array.isArray(result.data)) {
-          const sortedData = result.data[0].items.sort((a: Items, b: Items) => {
-            return a.item_id.item_name.localeCompare(b.item_id.item_name);
-          });
-          setData(sortedData);
-        } else {
-          setData([]);
-        }
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred";
-        console.error(errorMessage);
-      }
-    };
-
     if (url) {
       fetchData();
     }
