@@ -68,12 +68,17 @@ export interface ITrigger {
   _id: string;
   trigger_name: string;
   host_id: string;
-  hostname?: string;
   severity: string;
-  valuetrigger: number;
-  ComparisonOperator: string;
-  createdAt: string;
+  expression: string;
+  logicExpression: string[];
+  isExpressionValid: boolean;
+  items: [string, string][];
+  ok_event_generation: string;
+  recovery_expression: string;
+  logicRecoveryExpression: string[];
+  isRecoveryExpressionValid: boolean;
   enabled: boolean;
+  createdAt: string;
 }
 
 export interface IEvent {
