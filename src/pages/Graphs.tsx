@@ -68,8 +68,6 @@ const Graphs: React.FC = () => {
         );
         setHosts(listHost);
         setSelectedHost(listHost[0].hostname);
-        setTimeRange();
-        setIsAuto(true);
 
         // Set the URL and fetch data immediately after setting the host
         const initialUrl = `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
@@ -237,14 +235,14 @@ const Graphs: React.FC = () => {
   };
 
   // Add a reset filters function
-  const handleResetFilters = () => {
-    const initialSelectedItems: SelectedItems = {};
-    data.forEach((item) => {
-      initialSelectedItems[item.item_id.item_name] = true;
-    });
-    setSelectedItems(initialSelectedItems);
-    localStorage.setItem("graphFilters", JSON.stringify(initialSelectedItems));
-  };
+  // const handleResetFilters = () => {
+  //   const initialSelectedItems: SelectedItems = {};
+  //   data.forEach((item) => {
+  //     initialSelectedItems[item.item_id.item_name] = true;
+  //   });
+  //   setSelectedItems(initialSelectedItems);
+  //   localStorage.setItem("graphFilters", JSON.stringify(initialSelectedItems));
+  // };
 
   // Modify the reset button click handler to include filter reset
   const handleResetClick = () => {
@@ -257,7 +255,7 @@ const Graphs: React.FC = () => {
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
-    handleResetFilters(); // Reset filters to initial state
+    // handleResetFilters(); // Reset filters to initial state
   };
 
   //Fetch Data
@@ -270,13 +268,14 @@ const Graphs: React.FC = () => {
       if (isAuto) {
         const now = new Date();
         setSelectedDateTimeEnd(now);
-        setSelectedDateTimeStart(new Date(now.getTime() - 15 * 60000)); // 15 minutes ago
+        const past = new Date(now.getTime() - 15 * 60000);
+        setSelectedDateTimeStart(past); // 15 minutes ago
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
           const host: IHost = hosts[0];
           setUrl(
-            `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${now.toISOString()}&host_id=${
+            `http://127.0.0.1:3000/data/between?startTime=${past.toISOString()}&endTime=${now.toISOString()}&host_id=${
               host.host_id
             }`
           );
