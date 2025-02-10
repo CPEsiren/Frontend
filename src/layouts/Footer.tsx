@@ -46,7 +46,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const role = localStorage.getItem("role");
+    const role = localStorage.getItem("userRole");
     if (role === "admin") {
       setIsAdmin(true);
     } else {
@@ -67,7 +67,11 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     >
       <Avatar
         ref={anchorRef}
-        sx={{ width: "30px", height: "30px", cursor: isAdmin ? "pointer" : "" }}
+        sx={{
+          width: "30px",
+          height: "30px",
+          cursor: isAdmin ? "pointer" : "default",
+        }}
         alt="userProfile"
         src={
           "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"

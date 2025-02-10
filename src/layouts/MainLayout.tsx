@@ -25,7 +25,7 @@ export const getPageName = (pathname: string): string => {
 };
 
 interface MainLayoutProps {
-  children: ReactNode;  // Explicitly type children as ReactNode
+  children: ReactNode; // Explicitly type children as ReactNode
 }
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const windowSize = useWindowSize();
@@ -36,11 +36,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const isDesktop = windowSize.width > 600;
-  const [isAdmin,setIsAdmin] = useState(false);
-  
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const role = localStorage.getItem("role");
+    const role = localStorage.getItem("userRole");
     if (role === "admin") {
       setIsAdmin(true);
     } else {
@@ -105,10 +104,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             mx: "auto",
           }}
         >
-          <Outlet /> 
+          <Outlet />
         </Box>
       </Box>
     </Stack>
   );
-}
+};
 export default MainLayout;
