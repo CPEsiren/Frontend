@@ -5,6 +5,7 @@ import AccountComponent from "../components/AccountComponent";
 
 const Account = () => {
     const windowSize = useWindowSize();
+    const role =localStorage.getItem("userRole");
 
     return (
       <>

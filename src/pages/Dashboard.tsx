@@ -1,3 +1,9 @@
+interface DashboardLayout {
+  id: string;
+  name: string;
+  components: ActiveComponentWithGraph[];
+}
+
 import React, { useState, useEffect } from "react";
 import {
   Typography,
@@ -17,6 +23,8 @@ import {
   Alert,
   InputAdornment,
   TextField,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
@@ -35,7 +43,7 @@ import EventBlock from "../components/DashBoardWidgets/EventBlock";
 import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
-import DraggableDashboard from '../components/DraggableDashboard';
+import DraggableDashboard from "../components/DraggableDashboard";
 
 // Add new interfaces for graph selection
 interface GraphSelection {
@@ -52,47 +60,57 @@ const GraphSelectionDialog: React.FC<{
   onSelect: (graphName: string) => void;
 }> = ({ open, onClose, onSelect }) => {
   const [availableGraphs, setAvailableGraphs] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchGraphs = async () => {
       if (!open) return;
-      
+
       try {
-        const res = await fetch('http://localhost:3000/host', { method: 'GET' });
-        if (!res.ok) throw new Error('Failed to fetch hosts');
-        
+        const res = await fetch("http://localhost:3000/host", {
+          method: "GET",
+        });
+        if (!res.ok) throw new Error("Failed to fetch hosts");
+
         const result = await res.json();
-        if (result.status === 'success' && Array.isArray(result.data) && result.data.length > 0) {
+        if (
+          result.status === "success" &&
+          Array.isArray(result.data) &&
+          result.data.length > 0
+        ) {
           const host = result.data[0];
-          
+
           const now = new Date();
           const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
-          
+
           const dataRes = await fetch(
-            `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${host._id}`
+            `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
+              host._id
+            }`
           );
-          
-          if (!dataRes.ok) throw new Error('Failed to fetch graph data');
-          
+
+          if (!dataRes.ok) throw new Error("Failed to fetch graph data");
+
           const dataResult = await dataRes.json();
-          if (dataResult.status === 'success' && Array.isArray(dataResult.data)) {
-            const sortedData = dataResult.data[0].items
-              .sort((a: any, b: any) => 
-                a.item_id.item_name.localeCompare(b.item_id.item_name)
-              );
+          if (
+            dataResult.status === "success" &&
+            Array.isArray(dataResult.data)
+          ) {
+            const sortedData = dataResult.data[0].items.sort((a: any, b: any) =>
+              a.item_id.item_name.localeCompare(b.item_id.item_name)
+            );
             setAvailableGraphs(sortedData);
           }
         }
       } catch (error) {
-        console.error('Error fetching graphs:', error);
+        console.error("Error fetching graphs:", error);
       }
     };
 
     fetchGraphs();
   }, [open]);
 
-  const filteredGraphs = availableGraphs.filter(graph =>
+  const filteredGraphs = availableGraphs.filter((graph) =>
     graph.item_id.item_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -117,23 +135,23 @@ const GraphSelectionDialog: React.FC<{
             }}
           />
         </Box>
-        <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+        <List sx={{ maxHeight: 400, overflow: "auto" }}>
           {filteredGraphs.length > 0 ? (
             filteredGraphs.map((graph) => (
               <ListItem
                 key={graph.item_id.item_name}
                 onClick={() => onSelect(graph.item_id.item_name)}
                 sx={{
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
+                  cursor: "pointer",
+                  "&:hover": {
+                    backgroundColor: "action.hover",
                   },
                 }}
               >
                 <ListItemIcon>
                   <ShowChartIcon />
                 </ListItemIcon>
-                <ListItemText 
+                <ListItemText
                   primary={graph.item_id.item_name}
                   secondary={`Unit: ${graph.item_id.unit}`}
                 />
@@ -141,9 +159,9 @@ const GraphSelectionDialog: React.FC<{
             ))
           ) : (
             <ListItem>
-              <ListItemText 
+              <ListItemText
                 primary="No matching graphs found"
-                sx={{ textAlign: 'center', color: 'text.secondary' }}
+                sx={{ textAlign: "center", color: "text.secondary" }}
               />
             </ListItem>
           )}
@@ -179,9 +197,7 @@ interface SnackbarState {
   message: string;
   severity: "success" | "error";
 }
-
 const DASHBOARD_STORAGE_KEY = "dashboard_layout";
-
 const availableComponents: ComponentConfig[] = [
   {
     id: "digitalClock",
@@ -236,6 +252,7 @@ const availableComponents: ComponentConfig[] = [
 const Dashboard = () => {
   const windowSize = useWindowSize();
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [componentDialog, setComponentDialog] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
@@ -245,7 +262,9 @@ const Dashboard = () => {
 
   const [graphSelectionOpen, setGraphSelectionOpen] = useState(false);
   const [pendingGraphAdd, setPendingGraphAdd] = useState(false);
-  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>(() => {
+  const [activeComponents, setActiveComponents] = useState<
+    ActiveComponentWithGraph[]
+  >(() => {
     try {
       const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
       return savedLayout
@@ -262,22 +281,102 @@ const Dashboard = () => {
       ];
     }
   });
+  const [dashboards, setDashboards] = useState<DashboardLayout[]>(() => {
+    try {
+      const savedDashboards = localStorage.getItem("dashboards");
+      if (savedDashboards) {
+        return JSON.parse(savedDashboards);
+      }
+      // Initialize with default dashboard
+      return [
+        {
+          id: "dashboard1",
+          name: "Dashboard 1",
+          components: [
+            { id: "digitalClock", position: 0 },
+            { id: "graph1", position: 1 },
+          ],
+        },
+      ];
+    } catch (error) {
+      console.error("Error loading dashboards:", error);
+      return [
+        {
+          id: "dashboard1",
+          name: "Dashboard 1",
+          components: [
+            { id: "digitalClock", position: 0 },
+            { id: "graph1", position: 1 },
+          ],
+        },
+      ];
+    }
+  });
+
+  const [currentDashboardId, setCurrentDashboardId] =
+    useState<string>("dashboard1");
+
+  const handleDashboardChange = (event: any) => {
+    setCurrentDashboardId(event.target.value);
+    const dashboard = dashboards.find((d) => d.id === event.target.value);
+    if (dashboard) {
+      setActiveComponents(dashboard.components);
+    }
+  };
+
+  const handleAddDashboard = () => {
+    if (dashboards.length >= 3) {
+      setSnackbar({
+        open: true,
+        message: "Maximum number of dashboards reached (3)",
+        severity: "error",
+      });
+      return;
+    }
+
+    const newDashboardNumber = dashboards.length + 1;
+    const newDashboard: DashboardLayout = {
+      id: `dashboard${newDashboardNumber}`,
+      name: `Dashboard ${newDashboardNumber}`,
+      components: [],
+    };
+
+    setDashboards((prev) => {
+      const updated = [...prev, newDashboard];
+      localStorage.setItem("dashboards", JSON.stringify(updated));
+      return updated;
+    });
+    setCurrentDashboardId(newDashboard.id);
+    setActiveComponents([]);
+  };
 
   useEffect(() => {
     try {
-      localStorage.setItem(
-        DASHBOARD_STORAGE_KEY,
-        JSON.stringify(activeComponents)
-      );
-    } catch (error) {
-      console.error("Error saving layout:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to save dashboard layout",
-        severity: "error",
+      setDashboards((prev) => {
+        const updated = prev.map((dashboard) => {
+          if (dashboard.id === currentDashboardId) {
+            return {
+              ...dashboard,
+              components: activeComponents,
+            };
+          }
+          return dashboard;
+        });
+        localStorage.setItem("dashboards", JSON.stringify(updated));
+        return updated;
       });
+
+      const userRole = localStorage.getItem("userRole");
+
+      if (userRole === "admin") {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error saving dashboard:", error);
     }
-  }, [activeComponents]);
+  }, [activeComponents, currentDashboardId]);
 
   const handleAddComponent = (componentId: string) => {
     const componentConfig = availableComponents.find(
@@ -291,7 +390,7 @@ const Dashboard = () => {
     if (isAlreadyAdded && !componentConfig.allowMultiple) return;
 
     // If it's a graph component, show selection dialog
-    if (componentId === 'graph') {
+    if (componentId === "graph") {
       setPendingGraphAdd(true);
       setGraphSelectionOpen(true);
       return;
@@ -310,12 +409,11 @@ const Dashboard = () => {
   };
 
   const handleGraphSelection = (graphName: string) => {
-    
     setActiveComponents((prev) => {
       const newComponent = {
         id: "graph",
         position: prev.length,
-        graphSelection: { graphName }
+        graphSelection: { graphName },
       };
       return [...prev, newComponent];
     });
@@ -332,14 +430,20 @@ const Dashboard = () => {
 
     // Save to localStorage after updating
     try {
-      const updatedLayout = [...activeComponents, {
-        id: "graph",
-        position: activeComponents.length,
-        graphSelection: { graphName }
-      }];
-      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(updatedLayout));
+      const updatedLayout = [
+        ...activeComponents,
+        {
+          id: "graph",
+          position: activeComponents.length,
+          graphSelection: { graphName },
+        },
+      ];
+      localStorage.setItem(
+        DASHBOARD_STORAGE_KEY,
+        JSON.stringify(updatedLayout)
+      );
     } catch (error) {
-      console.error('Error saving layout:', error);
+      console.error("Error saving layout:", error);
     }
   };
 
@@ -418,14 +522,14 @@ const Dashboard = () => {
   };
 
   const renderComponent = (
-    activeComp: ActiveComponentWithGraph, 
-    componentConfig: ComponentConfig, 
+    activeComp: ActiveComponentWithGraph,
+    componentConfig: ComponentConfig,
     index: number
   ) => {
     const Component = componentConfig.component;
-    
+
     return (
-      <Box sx={{ position: 'relative', height: '100%' }}>
+      <Box sx={{ position: "relative", height: "100%" }}>
         {isEditing && (
           <IconButton
             size="small"
@@ -450,9 +554,9 @@ const Dashboard = () => {
             />
           </IconButton>
         )}
-        <Component 
+        <Component
           graphKey={`graph-${activeComp.position}`}
-          graphSelection={activeComp.graphSelection} 
+          graphSelection={activeComp.graphSelection}
         />
       </Box>
     );
@@ -460,147 +564,126 @@ const Dashboard = () => {
 
   return (
     <>
-    {windowSize.width > 600 && (
+      {windowSize.width > 600 && (
+        <Box
+          sx={{
+            width: 1,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 5,
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight={600}
+            color={"#242D5D"}
+          >
+            DASHBOARD
+          </Typography>
+          {isAdmin ? (
+            <>
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
+                  <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
+                    {isEditing ? <DoneIcon /> : <EditIcon />}
+                  </IconButton>
+                </Tooltip>
+
+                {!isEditing && (
+                  <>
+                    <Select
+                      value={currentDashboardId}
+                      onChange={handleDashboardChange}
+                      sx={{
+                        backgroundColor: "white",
+                        minWidth: 150,
+                        "& .MuiSelect-select": {
+                          py: 1,
+                        },
+                      }}
+                    >
+                      {dashboards.map((dashboard) => (
+                        <MenuItem key={dashboard.id} value={dashboard.id}>
+                          {dashboard.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+
+                    {dashboards.length < 3 && (
+                      <Button
+                        variant="contained"
+                        onClick={handleAddDashboard}
+                        sx={{
+                          backgroundColor: "#4CAF50",
+                          "&:hover": {
+                            backgroundColor: "#45a049",
+                          },
+                        }}
+                      >
+                        New Dashboard
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {isEditing && (
+                  <Button
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    onClick={() => setComponentDialog(true)}
+                    sx={{
+                      backgroundColor: "#F25A28",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#F37E58",
+                      },
+                    }}
+                  >
+                    Add Component
+                  </Button>
+                )}
+              </Box>
+            </>
+          ) : (
+            <></>
+          )}
+        </Box>
+      )}
+
       <Box
         sx={{
           width: 1,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginTop: 5,
+          marginTop: 2,
+          minHeight: "calc(100vh - 200px)",
+          backgroundColor: "#FFFFFB",
+          borderRadius: 3,
+          p: 3,
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          fontWeight={600}
-          color={"#242D5D"}
-        >
-          DASHBOARD
-        </Typography>
-        <Box>
-          <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
-            <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
-              {isEditing ? <DoneIcon /> : <EditIcon />}
-            </IconButton>
-          </Tooltip>
-          {isEditing && (
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => setComponentDialog(true)}
-              sx={{
-                backgroundColor: "#F25A28",
-                "&:hover": {
-                  backgroundColor: "#F37E58",
-                },
-              }}
-            >
-              Add Component
-            </Button>
-          )}
-        </Box>
-      </Box>
-    )}
+        <DraggableDashboard
+          components={availableComponents}
+          activeComponents={activeComponents}
+          onReorder={handleReorder}
+          isEditing={isEditing}
+          onRemoveComponent={handleRemoveComponent}
+          renderComponent={renderComponent}
+        />
 
-    <Box
-      sx={{
-        width: 1,
-        marginTop: 2,
-        minHeight: "calc(100vh - 200px)",
-        backgroundColor: "#FFFFFB",
-        borderRadius: 3,
-        p: 3,
-      }}
-    >
-      <DraggableDashboard
-        components={availableComponents}
-        activeComponents={activeComponents}
-        onReorder={handleReorder}
-        isEditing={isEditing}
-        onRemoveComponent={handleRemoveComponent}
-        renderComponent={renderComponent}
-      />
-    {/* </Box> */}
-         {/* <Grid container rowSpacing={1} columnSpacing={2}>
-        {activeComponents.map((activeComp) => {
-          const componentConfig = availableComponents.find(
-            (c) => c.id === activeComp.id
-          );
-          if (!componentConfig) return null;
-
-          const Component = componentConfig.component;
-
-          return (
-            <Grid
-              item
-              key={activeComp.position}
-              {...componentConfig.defaultSize}
-              sx={{ mb: 1 }}
-            >
-              <Box
-                sx={{
-                  position: "relative",
-                  height: "100%",
-                  backgroundColor: "white",
-                  borderRadius: 2,
-                  p: 0,
-                  border: "1px solid #eee",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
-                {isEditing && (
-                  <IconButton
-                    size="small"
-                    onClick={() => handleRemoveComponent(activeComp.position)}
-                    sx={{
-                      position: "absolute",
-                      right: 2,
-                      top: 2,
-                      zIndex: 10,
-                      backgroundColor: "white",
-                      "&:hover": {
-                        backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      },
-                      boxShadow: "0 0 4px rgba(0,0,0,0.1)",
-                    }}
-                  >
-                    <AddIcon
-                      sx={{
-                        transform: "rotate(45deg)",
-                        zIndex: 11,
-                      }}
-                    />
-                  </IconButton>
-                )}
-                <Component 
-                  graphKey={`graph-${activeComp.position}`}
-                  graphSelection={activeComp.graphSelection} 
-                />
-              </Box>
-            </Grid>
-          );
-        })}
-      </Grid> */}
-
-       {/* Graph Selection Dialog */}
-       <GraphSelectionDialog
-        open={graphSelectionOpen}
-        onClose={() => {
-          setGraphSelectionOpen(false);
-          setPendingGraphAdd(false);
-        }}
-        onSelect={handleGraphSelection}
-      />
+        {/* Graph Selection Dialog */}
+        <GraphSelectionDialog
+          open={graphSelectionOpen}
+          onClose={() => {
+            setGraphSelectionOpen(false);
+            setPendingGraphAdd(false);
+          }}
+          onSelect={handleGraphSelection}
+        />
       </Box>
 
-       {/* Add Component Dialog */}
-       <Dialog
+      {/* Add Component Dialog */}
+      <Dialog
         open={componentDialog}
         onClose={() => setComponentDialog(false)}
         maxWidth="xs"
@@ -637,8 +720,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
-     
-
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
@@ -655,7 +736,6 @@ const Dashboard = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
     </>
   );
 };

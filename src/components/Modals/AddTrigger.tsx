@@ -19,6 +19,34 @@ import axios from "axios";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
+interface ExpressionPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+}
+
+const functionofItem = [
+  { value: "avg", label: "avg()" },
+  { value: "min", label: "min()" },
+  { value: "max", label: "max()" },
+  { value: "last", label: "last()" },
+];
+
+const operators = [
+  { value: "and", label: "AND" },
+  { value: "or", label: "OR" },
+];
+
+const operations = [
+  { value: ">", label: ">" },
+  { value: ">=", label: ">=" },
+  { value: "=", label: "=" },
+  { value: "<", label: "<" },
+  { value: "<=", label: "<=" },
+];
+
 interface Host {
   _id: string;
   hostname: string;
@@ -48,6 +76,66 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   //Global state
   const typographyProps = {
     fontSize: 14,
+  };
+
+  // Add new state for expression parts
+  const [expressionParts, setExpressionParts] = useState<ExpressionPart[]>([
+    {
+      item: "",
+      operation: "",
+      value: "",
+      functionofItem: "",
+    },
+  ]);
+
+  // Update expression when parts change
+  const handleExpressionPartChange = (
+    index: number,
+    field: keyof ExpressionPart,
+    value: string
+  ) => {
+    const newParts = [...expressionParts];
+    newParts[index] = { ...newParts[index], [field]: value };
+    setExpressionParts(newParts);
+
+    // Update the final expression
+    const validParts = newParts.filter(
+      (part) => part.item && part.operation && part.value
+    );
+    const newExpression = validParts
+      .map((part, idx) => {
+        const expr = `${part.item} ${part.operation} ${part.value}`;
+        return idx < validParts.length - 1
+          ? `${expr} ${part.operator || "and"}`
+          : expr;
+      })
+      .join(" ");
+    setExpression(newExpression);
+  };
+
+  // Add new expression row
+  const handleAddExpression = () => {
+    setExpressionParts((prev) => [
+      ...prev,
+      { item: "", operation: "", value: "", functionofItem: "" },
+    ]);
+  };
+
+  // Remove expression row
+  const handleRemoveExpression = (index: number) => {
+    if (expressionParts.length > 1) {
+      const newParts = expressionParts.filter((_, i) => i !== index);
+      setExpressionParts(newParts);
+
+      // Update the final expression
+      const validParts = newParts.filter(
+        (part) => part.item && part.operation && part.value
+      );
+      const newExpression = validParts
+        .map((part) => `${part.item} ${part.operation} ${part.value}`)
+        .join(" and ");
+      setExpression(newExpression);
+    }
   };
 
   const textFieldProps = {
@@ -336,6 +424,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                 display: "flex",
                 flexWrap: "wrap",
                 maxWidth: "calc(100% - 150px)",
+                gap: 1,
               }}
             >
               {[
@@ -379,7 +468,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
           </Box>
 
           {/* Expression field */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
               <Typography color="error" {...typographyProps}>
                 *
@@ -387,44 +476,181 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               <Typography sx={{ ml: 1 }} {...typographyProps}>
                 Expression
               </Typography>
+              <Button
+                onClick={handleAddExpression}
+                disabled={isFormDisabled}
+                sx={{
+                  ml: 3,
+                  fontSize: 12,
+                  color: "blue",
+                  cursor: "pointer",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                Add Expression
+              </Button>
             </Box>
-            <TextField
-              {...textFieldProps}
-              value={expression}
-              onChange={(e) => setExpression(e.target.value)}
-              disabled={isFormDisabled}
-              error={errors.expression}
-              helperText={errors.expression ? "Expression is required" : ""}
-              multiline
-              rows={4}
-              sx={{
-                ...textFieldProps.sx,
-                "& .MuiOutlinedInput-root": {
-                  padding: "8px",
-                },
-              }}
-            />
-            <Button
-              onClick={handleOpenDialogExpression}
-              disabled={isFormDisabled}
-              sx={{
-                mt: 1,
-                alignSelf: "flex-start",
-                backgroundColor: "#4CAF50",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "#45a049",
-                },
-                "&:disabled": {
-                  backgroundColor: "#a5d6a7",
-                  color: "#e8f5e9",
-                },
-                fontSize: 14,
-                padding: "6px 16px",
-              }}
+
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
             >
-              Add Item
-            </Button>
+              {expressionParts.map((part, index) => (
+                <Box
+                  key={index}
+                  sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                >
+                  {/* functionofitem section */}
+                  <TextField
+                    select
+                    value={part.functionofItem}
+                    onChange={(e) =>
+                      handleExpressionPartChange(
+                        index,
+                        "functionofItem",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Function"
+                    size="small"
+                    sx={{
+                      width: "10%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {functionofItem.map((fn) => (
+                      <MenuItem key={fn.value} value={fn.value}>
+                        {fn.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  {/* Item Selection */}
+                  <TextField
+                    select
+                    value={part.item}
+                    onChange={(e) =>
+                      handleExpressionPartChange(index, "item", e.target.value)
+                    }
+                    disabled={isFormDisabled}
+                    error={errors.expression}
+                    size="small"
+                    label="Item"
+                    sx={{
+                      width: "47%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {items.map((item) => (
+                      <MenuItem key={item._id} value={item.item_name}>
+                        {item.item_name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  {/* Operation Selection */}
+                  <TextField
+                    select
+                    value={part.operation}
+                    onChange={(e) =>
+                      handleExpressionPartChange(
+                        index,
+                        "operation",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Operation"
+                    size="small"
+                    sx={{
+                      width: "13%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {operations.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    value={part.value}
+                    onChange={(e) =>
+                      handleExpressionPartChange(index, "value", e.target.value)
+                    }
+                    disabled={isFormDisabled}
+                    label="Value"
+                    size="small"
+                    sx={{
+                      width: "15%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+
+                  {/* Operator Selection (show only if not the last row) */}
+                  {index < expressionParts.length - 1 && (
+                    <TextField
+                      select
+                      value={part.operator || "and"}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "operator",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Operator"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {operators.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+
+                  {/* Remove button (only show for rows after the first) */}
+                  {index > 0 && (
+                    <Typography
+                      onClick={() => handleRemoveExpression(index)}
+                      sx={{
+                        fontSize: 12,
+                        color: "red",
+                        cursor: "pointer",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      Remove
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Box>
           </Box>
 
           {/* OK event generation */}
@@ -442,6 +668,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                 display: "flex",
                 flexWrap: "wrap",
                 maxWidth: "calc(100% - 150px)",
+                gap: 1,
               }}
             >
               {[

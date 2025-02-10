@@ -66,7 +66,8 @@ const DraggableItem = styled(Paper, {
           left: -4,
           width: 4,
           height: "100%",
-          backgroundColor: theme.palette.primary.main,
+          backgroundColor: "orange",
+          // backgroundColor: theme.palette.primary.main,
           borderRadius: 2,
           zIndex: 2,
         }
@@ -80,8 +81,8 @@ const DraggableItem = styled(Paper, {
           right: -4,
           width: 4,
           height: "100%",
-          // backgroundColor: "blue",
-          backgroundColor: theme.palette.primary.main,
+          backgroundColor: "orange",
+          // backgroundColor: theme.palette.primary.main,
           borderRadius: 2,
           zIndex: 2,
         }

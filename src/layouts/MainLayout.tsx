@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Stack, Box, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
@@ -36,6 +36,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const isDesktop = windowSize.width > 600;
+  const [isAdmin,setIsAdmin] = useState(false);
+  
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  });
 
   return (
     <Stack
@@ -69,7 +80,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <Footer isHideSidebar={isHideSidebar} />
         </Stack>
       ) : (
-        // <MobileLayout />
         <></>
       )}
       <Box

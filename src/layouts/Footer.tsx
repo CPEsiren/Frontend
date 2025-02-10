@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Avatar,
   Stack,
@@ -26,7 +26,6 @@ export default function Footer({ isHideSidebar }: FooterProps) {
   const anchorRef = useRef<HTMLDivElement>(null); // Ref type assertion for anchorRef
 
   const navigate = useNavigate();
-
   const handleclick = () => {
     navigate(`/account`);
   };
@@ -44,6 +43,17 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     setOpenSignout(false);
   };
 
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  });
+
   return (
     <Stack
       direction="row"
@@ -57,15 +67,19 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     >
       <Avatar
         ref={anchorRef}
-        sx={{ width: "30px", height: "30px", cursor: "pointer" }}
+        sx={{ width: "30px", height: "30px", cursor: isAdmin ? "pointer" : "" }}
         alt="userProfile"
         src={
           "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
         }
-        onClick={() => {
-          handleclick();
-          handleOpenSignout();
-        }}
+        onClick={
+          isAdmin
+            ? () => {
+                handleclick();
+                handleOpenSignout();
+              }
+            : undefined
+        }
       />
       <Popper
         open={openSignout}
@@ -83,10 +97,10 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             }}
           >
             <Paper>
-              <Box sx={{ marginBlockEnd:1 ,width: "100%" }}>
-              <ClickAwayListener onClickAway={handleClose}>
+              <Box sx={{ marginBlockEnd: 1, width: "100%" }}>
+                <ClickAwayListener onClickAway={handleClose}>
                   <LogoutAuthen />
-              </ClickAwayListener>   
+                </ClickAwayListener>
               </Box>
             </Paper>
           </Grow>
@@ -103,8 +117,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
               fontWeight: 400,
               color: "black",
             }}
-          >
-          </Typography>
+          ></Typography>
           <LogoutAuthen />
         </>
       )}

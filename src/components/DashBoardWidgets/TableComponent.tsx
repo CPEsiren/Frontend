@@ -57,7 +57,7 @@ interface TableData {
 
 const highlightText = (text: string) => {
   return text
-    .split(/(enabled|disabled|problem|resolved)/gi)
+    .split(/(enabled|disabled|problem|resolved|online|offline|templates)/gi)
     .map((part, index) => {
       if (/enabled/i.test(part)) {
         return (
@@ -103,12 +103,36 @@ const highlightText = (text: string) => {
           </Typography>
         );
       }
+      if (/online/i.test(part)) {
+        return (
+          <Typography
+            key={index}
+            component="span"
+            sx={{ color: "green", fontSize: "0.8rem" }}
+          >
+            {part}
+          </Typography>
+        );
+      }
+      if (/offline/i.test(part)) {
+        return (
+          <Typography
+            key={index}
+            component="span"
+            sx={{ color: "red", fontSize: "0.8rem" }}
+          >
+            {part}
+          </Typography>
+        );
+      }
       return part;
     });
 };
 
 const TableComponent = () => {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -118,9 +142,9 @@ const TableComponent = () => {
       setError(null);
 
       try {
-        const response = await fetch('http://localhost:3000/dashboard/count');
+        const response = await fetch("http://localhost:3000/dashboard/count");
         if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
+          throw new Error("Failed to fetch dashboard data");
         }
         const data = await response.json();
         setDashboardData(data);
@@ -270,29 +294,41 @@ const TableComponent = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  {row.name.includes('event') ? (
+                  {row.name.includes("event") ? (
                     <>
-                      <Typography component="span" sx={{ color: 'green', fontSize: '0.8rem' }}>
+                      <Typography
+                        component="span"
+                        sx={{ color: "green", fontSize: "0.8rem" }}
+                      >
                         {row.resolved}
                       </Typography>
                       /
-                      <Typography component="span" sx={{ color: 'red', fontSize: '0.8rem' }}>
+                      <Typography
+                        component="span"
+                        sx={{ color: "red", fontSize: "0.8rem" }}
+                      >
                         {row.problem}
                       </Typography>
                     </>
                   ) : (
                     <>
-                      <Typography component="span" sx={{ color: 'green', fontSize: '0.8rem' }}>
+                      <Typography
+                        component="span"
+                        sx={{ color: "green", fontSize: "0.8rem" }}
+                      >
                         {row.enabled}
                       </Typography>
                       /
-                      <Typography component="span" sx={{ color: 'red', fontSize: '0.8rem' }}>
+                      <Typography
+                        component="span"
+                        sx={{ color: "red", fontSize: "0.8rem" }}
+                      >
                         {row.disabled}
                       </Typography>
                     </>
                   )}
                   {row.template && (
-                    <Typography component="span" sx={{ fontSize: '0.8rem' }}>
+                    <Typography component="span" sx={{ fontSize: "0.8rem" }}>
                       /{row.template}
                     </Typography>
                   )}
