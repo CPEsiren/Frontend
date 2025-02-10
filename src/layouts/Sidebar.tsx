@@ -134,13 +134,11 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    if (userRole === "admin") {
-      setSidebarItems(
-        [...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id)
-      );
-    } else {
-      setSidebarItems(BaseItems);
-    }
+if (userRole === "admin") {
+  setSidebarItems([...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id));
+} else {
+  setSidebarItems(BaseItems);
+}
   }, []);
 
   const [expandedItem, setExpandedItem] = useState<number | null>(
