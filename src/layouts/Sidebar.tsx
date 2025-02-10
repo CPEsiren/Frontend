@@ -1,4 +1,5 @@
-import { useState } from "react";
+// Sidebar.tsx
+import { useState, useEffect } from "react";
 import { Typography, Box, Stack } from "@mui/material";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
@@ -10,19 +11,36 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DatabaseIcon from "@mui/icons-material/Storage";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import { useNavigate, useLocation } from "react-router-dom";
-import useWindowSize from "../hooks/useWindowSize";
 import DevicesIcon from "@mui/icons-material/Devices";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import EventIcon from "@mui/icons-material/Event";
-import PersonIcon from "@mui/icons-material/Person";
+import { useNavigate, useLocation } from "react-router-dom";
+import useWindowSize from "../hooks/useWindowSize";
+
+interface SubItem {
+  id: string;
+  icon: JSX.Element;
+  name: string;
+  path: string;
+  newIcon: string;
+}
+
+interface SidebarItem {
+  id: number;
+  icon: JSX.Element;
+  name: string;
+  path?: string;
+  newIcon: string;
+  subItems?: SubItem[];
+}
 
 interface SidebarProps {
   isHideSidebar: boolean;
   toggleSidebar: () => void;
 }
 
-export const SlideBarItems = [
+// Define base items that all users can see
+const BaseItems: SidebarItem[] = [
   {
     id: 0,
     icon: <CottageIcon sx={{ fontSize: 20 }} />,
@@ -30,13 +48,24 @@ export const SlideBarItems = [
     path: "/dashboard",
     newIcon: "",
   },
-  // {
-  //   id: 1,
-  //   icon: <PersonIcon sx={{ fontSize: 20 }} />,
-  //   name: "Account",
-  //   path: "/account",
-  //   newIcon: "",
-  // },
+  {
+    id: 2,
+    icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
+    name: "Graphs",
+    path: "/graphs",
+    newIcon: "",
+  },
+  {
+    id: 6,
+    icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
+    name: "Contact Us",
+    path: "/contactus",
+    newIcon: "",
+  },
+];
+
+// Additional items only admins can see
+const AdminItems: SidebarItem[] = [
   {
     id: 1,
     icon: <DatabaseIcon sx={{ fontSize: 20 }} />,
@@ -60,13 +89,6 @@ export const SlideBarItems = [
     ],
   },
   {
-    id: 2,
-    icon: <TimelineOutlinedIcon sx={{ fontSize: 20 }} />,
-    name: "Graphs",
-    path: "/graphs",
-    newIcon: "",
-  },
-  {
     id: 3,
     icon: <CloudUploadIcon sx={{ fontSize: 20 }} />,
     name: "Storage",
@@ -84,7 +106,6 @@ export const SlideBarItems = [
     id: 5,
     icon: <ErrorIcon sx={{ fontSize: 22 }} />,
     name: "Alerts",
-    // path: "/alerts",
     newIcon: "",
     subItems: [
       {
@@ -103,19 +124,25 @@ export const SlideBarItems = [
       },
     ],
   },
-  {
-    id: 6,
-    icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
-    name: "Contact Us",
-    path: "/contactus",
-    newIcon: "",
-  },
 ];
 
 export default function Sidebar({ isHideSidebar }: SidebarProps) {
+  const [sidebarItems, setSidebarItems] = useState<SidebarItem[]>(BaseItems);
   const windowSize = useWindowSize();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    if (userRole === "admin") {
+      setSidebarItems(
+        [...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id)
+      );
+    } else {
+      setSidebarItems(BaseItems);
+    }
+  }, []);
+
   const [expandedItem, setExpandedItem] = useState<number | null>(
     location.pathname.includes("/devices") ||
       location.pathname.includes("/templates") ||
@@ -128,25 +155,10 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
       : null
   );
 
-  // const handleItemClick = (item: any) => {
-  //   if (item.subItems) {
-  //     if (expandedItem === item.id) {
-  //       setExpandedItem(null);
-  //     } else {
-  //       setExpandedItem(item.id);
-  //       navigate(item.subItems[0].path);
-  //     }
-  //   } else {
-  //     setExpandedItem(null);
-  //     navigate(item.path);
-  //   }
-  // };
-
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: SidebarItem) => {
     if (item.subItems) {
-      // Only toggle the expanded state without navigating
       setExpandedItem(expandedItem === item.id ? null : item.id);
-    } else {
+    } else if (item.path) {
       setExpandedItem(null);
       navigate(item.path);
     }
@@ -154,7 +166,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
 
   return (
     <Stack direction="column" spacing="10px">
-      {SlideBarItems.map((item) => (
+      {sidebarItems.map((item) => (
         <div key={item.id}>
           <Box
             onClick={() => handleItemClick(item)}
@@ -167,7 +179,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               p: "10px 25px",
               m: 0,
               backgroundColor:
-                location.pathname === item.path ||
+                (item.path && location.pathname === item.path) ||
                 item.subItems?.some((sub) => sub.path === location.pathname) ||
                 (item.id === 5 &&
                   (location.pathname.includes("trigger") ||
@@ -175,7 +187,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
                   ? "#F25A28"
                   : "transparent",
               color:
-                location.pathname === item.path ||
+                (item.path && location.pathname === item.path) ||
                 item.subItems?.some((sub) => sub.path === location.pathname) ||
                 (item.id === 5 &&
                   (location.pathname.includes("trigger") ||
@@ -255,7 +267,6 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
                           location.pathname.includes("/alerts"))
                           ? "transparent"
                           : "transparent",
-
                       "&:hover": {
                         backgroundColor:
                           location.pathname !== subItem.path

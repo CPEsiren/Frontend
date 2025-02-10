@@ -5,7 +5,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import Header from "./Header";
 import Footer from "./Footer";
 import Sidebar from "./Sidebar";
-import MobileLayout from "./mobilelayout/MobileLayout";
+// import MobileLayout from "./mobilelayout/MobileLayout";
 
 export const getPageName = (pathname: string): string => {
   const pageName = [
@@ -69,7 +69,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <Footer isHideSidebar={isHideSidebar} />
         </Stack>
       ) : (
-        <MobileLayout />
+        // <MobileLayout />
+        <></>
       )}
       <Box
         sx={{

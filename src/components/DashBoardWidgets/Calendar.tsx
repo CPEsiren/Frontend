@@ -118,12 +118,12 @@ const Calendar = () => {
           p: 0,
           borderRadius: "50%",
           cursor: "pointer",
-          backgroundColor: isSelected
+          backgroundColor: isSelected && !isToday
             ? "primary.main"
             : isToday
             ? "blue"
             : "transparent",
-          color: isSelected
+          color: isSelected && !isToday
             ? "primary.contrastText"
             : isToday
             ? "white"
@@ -131,7 +131,7 @@ const Calendar = () => {
             ? "text.disabled"
             : "text.primary",
           "&:hover": {
-            backgroundColor: !isSelected ? "action.hover" : undefined,
+            backgroundColor: !isToday ? "#E2E3E6" : "blue",
           },
           display: "flex",
           alignItems: "center",
@@ -140,6 +140,7 @@ const Calendar = () => {
           width: "20px",
           margin: "auto",
           fontSize: "0.65rem",
+          fontWeight: isToday ? "bold" : "normal",
         }}
       >
         {date.getDate()}
