@@ -42,13 +42,14 @@ export interface IAlert {
 }
 
 export interface IUser {
-  id: number;
+  _id: number;
   firstName: string;
   lastName: string;
   email: string;
   isAdmin: boolean;
-  password: string;
+  username: string;
   role: string;
+  isActive: boolean;
 }
 
 export interface IGraph {
