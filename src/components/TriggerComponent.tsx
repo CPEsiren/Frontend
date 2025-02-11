@@ -18,6 +18,7 @@ import {
   ListItemText,
   Paper,
   Snackbar,
+  Stack,
   Switch,
   Table,
   TableBody,
@@ -322,6 +323,12 @@ const TriggerComponent = () => {
                     align="center"
                     sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
                   >
+                    OK event generation
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                  >
                     Status
                   </TableCell>
                   <TableCell
@@ -367,30 +374,89 @@ const TriggerComponent = () => {
                     </TableCell>
 
                     {/* Expression */}
-                    <TableCell align="center">
-                      {trigger.expression
-                        .split(/\b(and|or)\b/)
-                        .map((part, index) => {
-                          if (
-                            part.toLowerCase() === "and" ||
-                            part.toLowerCase() === "or"
-                          ) {
-                            return (
-                              <span
-                                key={index}
-                                style={{
-                                  backgroundColor: "#FFD700",
-                                  fontWeight: "bold",
-                                  padding: "0 2px",
-                                  borderRadius: "3px",
-                                }}
-                              >
-                                {part}
-                              </span>
-                            );
-                          }
-                          return part;
-                        })}
+                    <TableCell
+                      align="center"
+                      sx={{
+                        maxWidth: "300px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        position: "relative",
+                        "&:hover": {
+                          "& .full-expression": {
+                            display: "block",
+                          },
+                        },
+                      }}
+                    >
+                      {trigger.expression}
+                      <Stack
+                        direction={"column"}
+                        sx={{ justifyContent: "center", alignItems: "center" }}
+                      >
+                        <Box
+                          className="full-expression"
+                          sx={{
+                            display: "none",
+                            zIndex: 1000,
+                            backgroundColor: "white",
+                            border: "1px solid #ccc",
+                            padding: "5px",
+                            borderRadius: "4px",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                            maxWidth: "400px",
+                            wordWrap: "break-word",
+                            whiteSpace: "normal",
+                          }}
+                        >
+                          {trigger.expression}
+                        </Box>
+                      </Stack>
+                    </TableCell>
+
+                    {/* Ok event generation */}
+                    <TableCell
+                      align="center"
+                      sx={{
+                        maxWidth: "300px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        position: "relative",
+                        "&:hover": {
+                          "& .full-Recovery-expression": {
+                            display:
+                              trigger.ok_event_generation.toLowerCase() ===
+                              "recovery expression"
+                                ? "block"
+                                : "none",
+                          },
+                        },
+                      }}
+                    >
+                      {trigger.ok_event_generation.toLocaleUpperCase()}
+                      <Stack
+                        direction={"column"}
+                        sx={{ justifyContent: "center", alignItems: "center" }}
+                      >
+                        <Box
+                          className="full-Recovery-expression"
+                          sx={{
+                            display: "none",
+                            zIndex: 1,
+                            backgroundColor: "white",
+                            border: "1px solid #ccc",
+                            padding: "5px",
+                            borderRadius: "4px",
+                            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                            maxWidth: "400px",
+                            wordWrap: "break-word",
+                            whiteSpace: "normal",
+                          }}
+                        >
+                          {trigger.recovery_expression}
+                        </Box>
+                      </Stack>
                     </TableCell>
 
                     {/* Status */}
