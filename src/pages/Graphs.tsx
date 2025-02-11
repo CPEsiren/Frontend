@@ -341,10 +341,10 @@ const Graphs: React.FC = () => {
         initialSelectedItems[item.item_id.item_name] = true;
       });
       setSelectedItems(initialSelectedItems);
-      localStorage.setItem(
-        "graphFilters",
-        JSON.stringify(initialSelectedItems)
-      );
+      // localStorage.setItem(
+      //   "graphFilters",
+      //   JSON.stringify(initialSelectedItems)
+      // );
     }
   }, [data]); // Add data as dependency to update when items change
 

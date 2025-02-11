@@ -6,35 +6,23 @@ interface LoginAuthenProps {
   onError: (errorMessage: string) => void;
 }
 
-// Enhanced API call with role handling and debugging
 const authenticateWithServer = async (token: string) => {
   try {
     const response = await axios.post("http://localhost:3000/authen/signup", {
       token,
     });
 
-    // Log the full response for debugging
-    // console.log('Server response:', response.data);
-
-    // Check if response exists and has data
     if (!response || !response.data) {
       throw new Error("No response data received from server");
     }
 
-    // Store authentication status
     localStorage.setItem("isAuthenticated", "true");
-
-    // Check if role exists in response data
-    // Adjust this based on your actual response structure
     const userRole = response.data.role || response.data.user?.role;
 
     if (!userRole) {
       throw new Error("No role found in server response");
     }
-
-    // Store the role
     localStorage.setItem("userRole", userRole);
-    // console.log('User role stored:', userRole);
 
     return response.data;
   } catch (error: any) {
@@ -54,17 +42,13 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
     try {
       console.log("Google authentication successful");
 
-      // Store Google token
       localStorage.setItem("token", credentialResponse.credential);
 
-      // Authenticate with your server and get role
       const serverResponse = await authenticateWithServer(
         credentialResponse.credential
       );
 
-      // Check if we have a valid response with role
       if (serverResponse && localStorage.getItem("userRole")) {
-        // console.log('Authentication complete, triggering success callback');
         setTimeout(() => {
           onSuccess();
         }, 2000);

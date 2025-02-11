@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Stack, Box, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
@@ -25,7 +25,7 @@ export const getPageName = (pathname: string): string => {
 };
 
 interface MainLayoutProps {
-  children: ReactNode; // Explicitly type children as ReactNode
+  children: ReactNode;  // Explicitly type children as ReactNode
 }
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const windowSize = useWindowSize();
@@ -36,16 +36,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const isDesktop = windowSize.width > 600;
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const role = localStorage.getItem("userRole");
-    if (role === "admin") {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  });
 
   return (
     <Stack
@@ -78,9 +68,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           />
           <Footer isHideSidebar={isHideSidebar} />
         </Stack>
-      ) : (
-        <></>
-      )}
+      ) 
+      : (
+         <></>
+      )
+    }
       <Box
         sx={{
           flex: 1,
@@ -104,10 +96,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             mx: "auto",
           }}
         >
-          <Outlet />
+          <Outlet /> 
         </Box>
       </Box>
     </Stack>
   );
-};
+}
 export default MainLayout;
