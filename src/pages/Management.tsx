@@ -173,24 +173,26 @@ const Management: React.FC = () => {
 
           <Box
             sx={{
-              width: 1,
+              width: "100%",
               marginTop: 2,
               height: "auto",
               display: "flex",
             }}
           >
-            <Box
+           <Box
               sx={{
-                backgroundColor: "#FFFFFB",
-                flex: 1,
-                display: "flex",
-                borderRadius: 3,
-                flexDirection: "column",
-                justifyContent: windowSize.width >= 1100 ? "center" : "start",
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                justifyContent: "center",
                 alignItems: "center",
-                minHeight: "fit-content",
+                width: "100%",
+                overflowY: "auto",
+                backgroundColor: "#FFFFFB",
+                borderRadius: 3,
                 py: 3,
                 px: 3,
+                paddingLeft: 6,
+                paddingRight: 6,
               }}
             >
               <Usermanagemnet />

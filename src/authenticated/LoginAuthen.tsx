@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 
@@ -38,22 +39,42 @@ const authenticateWithServer = async (token: string) => {
 const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+  useEffect(() => {
+    const tokenCleanupInterval = setInterval(() => {
+      const storedToken = localStorage.getItem("token");
+      const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+
+      if (storedToken && tokenTimestamp) {
+        const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
+
+        if (elapsedTime >= 4 * 60 * 60 * 1000) { // 4 ชั่วโมง
+          console.log("Token expired. Clearing from localStorage.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("isAuthenticated");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("tokenTimestamp");
+        }
+      }
+    }, 60 * 60 * 1000); 
+
+    return () => clearInterval(tokenCleanupInterval);
+  }, []);
+
   const handleSuccess = async (credentialResponse: any) => {
     try {
       console.log("Google authentication successful");
 
-      localStorage.setItem("token", credentialResponse.credential);
+      const token = credentialResponse.credential;
+      localStorage.setItem("token", token);
+      localStorage.setItem("tokenTimestamp", Date.now().toString()); // บันทึกเวลาปัจจุบัน
 
-      const serverResponse = await authenticateWithServer(
-        credentialResponse.credential
-      );
+      const serverResponse = await authenticateWithServer(token);
 
       if (serverResponse && localStorage.getItem("userRole")) {
         setTimeout(() => {
           onSuccess();
         }, 2000);
       } else {
-        // More specific error message based on what's missing
         const errorMessage = !serverResponse
           ? "No response from server"
           : "User role not received from server";
@@ -61,7 +82,6 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
         onError(errorMessage);
       }
     } catch (error: any) {
-      // More detailed error message
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
