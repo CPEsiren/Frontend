@@ -635,9 +635,9 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                               "& .MuiMenuItem-root": { fontSize: 14 },
                             }}
                           >
-                            <MenuItem value="v1">SNMPv1</MenuItem>
-                            <MenuItem value="v2">SNMPv2</MenuItem>
-                            <MenuItem value="v3">SNMPv3</MenuItem>
+                            <MenuItem value="SNMPv1">SNMPv1</MenuItem>
+                            <MenuItem value="SNMPv2">SNMPv2</MenuItem>
+                            <MenuItem value="SNMPv3">SNMPv3</MenuItem>
                           </Select>
                         </FormControl>
                         <TextField

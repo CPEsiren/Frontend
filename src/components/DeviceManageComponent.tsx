@@ -459,9 +459,7 @@ const ManageComponent = () => {
                   <Typography variant="body2">{device.ip_address}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">
-                    {device.snmp_version.toUpperCase()}
-                  </Typography>
+                  <Typography variant="body2">{device.snmp_version}</Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">{device.hostgroup}</Typography>
@@ -563,9 +561,9 @@ const ManageComponent = () => {
                 value={editForm.snmp_version}
                 onChange={handleSelectChange}
               >
-                <MenuItem value="v1">SNMPv1</MenuItem>
-                <MenuItem value="v2c">SNMPv2</MenuItem>
-                <MenuItem value="v3">SNMPv3</MenuItem>
+                <MenuItem value="SNMPv1">SNMPv1</MenuItem>
+                <MenuItem value="SNMPv2">SNMPv2</MenuItem>
+                <MenuItem value="SNMPv3">SNMPv3</MenuItem>
               </Select>
               {formErrors.snmp_version && (
                 <FormHelperText>{formErrors.snmp_version}</FormHelperText>
