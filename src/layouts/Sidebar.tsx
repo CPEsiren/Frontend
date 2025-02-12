@@ -56,7 +56,7 @@ const BaseItems: SidebarItem[] = [
     newIcon: "",
   },
   {
-    id: 6,
+    id: 7,
     icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Contact Us",
     path: "/contactus",
@@ -123,6 +123,13 @@ const AdminItems: SidebarItem[] = [
         newIcon: "",
       },
     ],
+  },
+  {
+    id: 6,
+    icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
+    name: "Actions",
+    path: "/action",
+    newIcon: "",
   },
 ];
 
