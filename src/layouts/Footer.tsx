@@ -81,6 +81,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         whiteSpace: "nowrap",
       }}
     >
+      <Button onClick={handleclick} sx={{ml:2,mr:3,color:"black"}}>
       <Avatar
         ref={anchorRef}
         sx={{
@@ -95,7 +96,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         onClick={
           isAdmin
             ? () => {
-                handleclick();
+                // handleclick();
                 handleOpenSignout();
               }
             : undefined
@@ -107,6 +108,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
           {/* <Typography>{userName.lastName}</Typography> */}
         </Stack>
       )}
+      </Button>
       <Popper
         open={openSignout}
         anchorEl={anchorRef.current}

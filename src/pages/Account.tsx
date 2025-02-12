@@ -56,7 +56,7 @@ const Account = () => {
           <AccountComponent />
         </Box>
       </Box>
-      <Box
+      {/* <Box
         sx={{
           width: 1,
           display: "flex",
@@ -99,7 +99,7 @@ const Account = () => {
         >
           <NotificationComponenet />
         </Box>
-      </Box>
+      </Box> */}
     </>
   );
 };
