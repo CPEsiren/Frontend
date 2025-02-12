@@ -143,8 +143,8 @@ const Management: React.FC = () => {
             justifyContent: windowSize.width >= 1100 ? "center" : "start",
             alignItems: "center",
             minHeight: "fit-content",
-            py: 3,
-            px: 3,
+            // py: 3,
+            // px: 3,
           }}
         >
           <ManageComponent />

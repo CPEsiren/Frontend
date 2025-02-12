@@ -586,8 +586,17 @@ const Dashboard = () => {
             <>
               <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                 <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
-                  <IconButton onClick={toggleEdit} sx={{ mr: 1 }}>
-                    {isEditing ? <DoneIcon /> : <EditIcon />}
+                  <IconButton
+                    onClick={toggleEdit}
+                    sx={{
+                      mr: 1,
+                      "&:focus": {
+                        outline: "none",
+                        border: "none",
+                      },
+                    }}
+                  >
+                    {isEditing ? <DoneIcon sx={{}} /> : <EditIcon sx={{}} />}
                   </IconButton>
                 </Tooltip>
 

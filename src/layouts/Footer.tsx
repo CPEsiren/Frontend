@@ -76,38 +76,50 @@ export default function Footer({ isHideSidebar }: FooterProps) {
       sx={{
         alignItems: "center",
         marginTop: "auto",
-        px: 2.5,
+        px: 0,
         pb: 2,
         whiteSpace: "nowrap",
       }}
     >
-      <Button onClick={handleclick} sx={{ml:2,mr:3,color:"black"}}>
-      <Avatar
-        ref={anchorRef}
+      <Button
+        onClick={handleclick}
         sx={{
-          width: "30px",
-          height: "30px",
-          cursor: isAdmin ? "pointer" : "default",
+          ml: isHideSidebar ? 0 : 1,
+          mr: isHideSidebar ? 0 : 2,
+          color: "black",
+          width: "50%",
+          "&:focus": {
+            outline: "none",
+            border: "none",
+          },
         }}
-        alt="userProfile"
-        src={
-          "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
-        }
-        onClick={
-          isAdmin
-            ? () => {
-                // handleclick();
-                handleOpenSignout();
-              }
-            : undefined
-        }
-      />
-      {!isHideSidebar && (
-        <Stack direction="row" spacing={1} marginLeft={2}>
-          <Typography>{userName.firstName}</Typography>
-          {/* <Typography>{userName.lastName}</Typography> */}
-        </Stack>
-      )}
+      >
+        <Avatar
+          ref={anchorRef}
+          sx={{
+            width: "30px",
+            height: "30px",
+            cursor: isAdmin ? "pointer" : "default",
+          }}
+          alt="userProfile"
+          src={
+            "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
+          }
+          onClick={
+            isAdmin
+              ? () => {
+                  // handleclick();
+                  handleOpenSignout();
+                }
+              : undefined
+          }
+        />
+        {!isHideSidebar && (
+          <Stack direction="row" spacing={1} marginLeft={1.5}>
+            <Typography fontWeight={"medium"}>{userName.firstName}</Typography>
+            {/* <Typography>{userName.lastName}</Typography> */}
+          </Stack>
+        )}
       </Button>
       <Popper
         open={openSignout}

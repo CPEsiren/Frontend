@@ -403,7 +403,8 @@ const ManageComponent = () => {
       >
         <Table
           sx={{
-            minWidth: 650,
+            // minWidth: 650,
+            width: 1,
             "& .MuiTableCell-root": {
               borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
               padding: "16px",
@@ -413,39 +414,35 @@ const ManageComponent = () => {
             },
           }}
         >
-          <TableHead sx={{ backgroundColor: "#242d5d",  }}>
-            <TableRow >
-              <TableCell sx={{color: "white"}} >
+          {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
+            <TableRow>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Device's name
                 </Typography>
               </TableCell>
-              <TableCell sx={{color: "white"}}>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   IP Address
                 </Typography>
               </TableCell>
-              <TableCell sx={{color: "white"}}>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   SNMP Version
                 </Typography>
               </TableCell>
-              <TableCell sx={{color: "white"}}>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Group
                 </Typography>
               </TableCell>
-              {/* <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Location
-                </Typography>
-              </TableCell> */}
-              <TableCell sx={{color: "white"}}>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Status
                 </Typography>
               </TableCell>
-              <TableCell width={120} align="center" sx={{color: "white"}}>
+              <TableCell width={120} align="center" sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Actions
                 </Typography>

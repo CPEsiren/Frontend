@@ -51,7 +51,8 @@ const LogoutAuthen = () => {
         }}
         onClick={handleLogout}
       >
-        <ExitToAppIcon sx={{ marginRight: "8px" }} /> Sign out
+        <ExitToAppIcon sx={{ marginRight: "8px" }} /> 
+        {/* Sign out */}
       </Button>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
