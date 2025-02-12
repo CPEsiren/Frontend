@@ -1,8 +1,15 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Button, Dialog, DialogContent, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
+import AddAction from "../components/Modals/AddAction";
 
 const Action = () => {
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setModalOpen(!isModalOpen);
+  };
+
   const windowSize = useWindowSize();
   return (
     <>
@@ -11,7 +18,7 @@ const Action = () => {
           sx={{
             width: 1,
             display: "flex",
-            justifyContent: "flex-start",
+            justifyContent: "space-between",
             marginTop: 5,
           }}
         >
@@ -23,6 +30,23 @@ const Action = () => {
           >
             ACTION
           </Typography>
+          <Button
+            onClick={toggleModal}
+            sx={{
+              color: "#FFFFFB",
+              backgroundColor: "#F25A28",
+              fontSize: "1rem",
+              fontWeight: 600,
+              borderRadius: "70px",
+              width: "7rem",
+              height: "2.5rem",
+              "&:hover": {
+                backgroundColor: "#F37E58",
+              },
+            }}
+          >
+            + Action
+          </Button>
         </Box>
       )}
       <Box
@@ -52,6 +76,24 @@ const Action = () => {
           actionnnnnnnnnnn
         </Box>
       </Box>
+
+      <Dialog open={isModalOpen} onClose={toggleModal} fullWidth maxWidth="lg">
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "#a9a9a9",
+            px: 3,
+            py: 2,
+          }}
+        >
+          <Typography component="div" variant="h6">
+            New Action
+          </Typography>
+        </Box>
+        <DialogContent>
+          <AddAction onClose={toggleModal} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
