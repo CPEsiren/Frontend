@@ -20,6 +20,7 @@ import Event from "./pages/Event";
 import Trigger from "./pages/Trigger";
 import Account from "./pages/Account";
 import PrivateRoute from "./authenticated/PrivateRoute";
+import Action from "./pages/Action";
 
 // Create a PrivateRoute component for protecting routes that require authentication
 
@@ -58,6 +59,7 @@ const App = () => {
               <Route path="/trigger" element={<Trigger />} />
               <Route path="/event" element={<Event />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/action" element={<Action />} />
             {/* </Route> */}
           </Route>
 

@@ -6,9 +6,9 @@ import { LineChart } from "@mui/x-charts/LineChart";
 
 export interface Items {
   item_id: Item;
-  avg_change_per_second: number;
-  max_change_per_second: number;
-  min_change_per_second: number;
+  avg_value: number;
+  max_value: number;
+  min_value: number;
   data: DataEntry[];
 }
 
@@ -43,10 +43,8 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
       return `${formattedDate}\n${formattedTime}`;
     });
     setXAxis(DateXAxis);
-    const Change_per_seconds = sortedData.map((entry) =>
-      Number(entry.Change_per_second)
-    );
-    setYAxis(Change_per_seconds);
+    const value = sortedData.map((entry) => Number(entry.value));
+    setYAxis(value);
   }, [item]);
 
   const createConstantArray = (value: number, length: number) => {
@@ -86,10 +84,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               color: "#2196f3",
             },
             {
-              data: createConstantArray(
-                item.max_change_per_second,
-                yAxis.length
-              ),
+              data: createConstantArray(item.max_value, yAxis.length),
               label: `Maximum(${selectedLastTime})`,
               curve: "linear",
               color: "#ff9800",
@@ -97,10 +92,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               id: "max",
             },
             {
-              data: createConstantArray(
-                item.avg_change_per_second,
-                yAxis.length
-              ),
+              data: createConstantArray(item.avg_value, yAxis.length),
               label: `Average(${selectedLastTime})`,
               curve: "linear",
               color: "#4caf50",
@@ -108,10 +100,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               id: "avg",
             },
             {
-              data: createConstantArray(
-                item.min_change_per_second,
-                yAxis.length
-              ),
+              data: createConstantArray(item.min_value, yAxis.length),
               label: `Minimum(${selectedLastTime})`,
               curve: "linear",
               color: "#f44336",

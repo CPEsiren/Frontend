@@ -16,6 +16,7 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate, useLocation } from "react-router-dom";
 import useWindowSize from "../hooks/useWindowSize";
+import BuildIcon from "@mui/icons-material/Build";
 
 interface SubItem {
   id: string;
@@ -56,7 +57,7 @@ const BaseItems: SidebarItem[] = [
     newIcon: "",
   },
   {
-    id: 6,
+    id: 7,
     icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Contact Us",
     path: "/contactus",
@@ -123,6 +124,13 @@ const AdminItems: SidebarItem[] = [
         newIcon: "",
       },
     ],
+  },
+  {
+    id: 6,
+    icon: <BuildIcon sx={{ fontSize: 20 }} />,
+    name: "Actions",
+    path: "/action",
+    newIcon: "",
   },
 ];
 

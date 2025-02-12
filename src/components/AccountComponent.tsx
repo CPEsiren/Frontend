@@ -1,7 +1,126 @@
-import { Grid, Typography, Box, Avatar } from "@mui/material";
 import Profile from "../assets/Dog01.jpg";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  Avatar,
+  CircularProgress,
+  Container,
+  Paper,
+  Chip,
+  Snackbar,
+  Alert,
+  Grid,
+} from "@mui/material";
+import { IUser } from "../interface/InterfaceCollection";
+
+interface ApiResponse {
+  message: string;
+  user: IUser;
+}
+
+interface ProcessedUser extends Omit<IUser, "username"> {
+  firstName: string;
+  lastName: string;
+}
 
 const AccountComponent = () => {
+  const [user, setUser] = useState<ProcessedUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
+  const processUserData = (userData: IUser): ProcessedUser => {
+    // Split username into first and last name
+    const nameParts = userData.username.split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    return {
+      ...userData,
+      firstName,
+      lastName,
+    };
+  };
+
+  const fetchUserData = async () => {
+    const userId = localStorage.getItem("user_id");
+    try {
+      const response = await fetch(`http://localhost:3000/user/${userId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user: ${response.statusText}`);
+      }
+      const result: ApiResponse = await response.json();
+      const processedUser = processUserData(result.user);
+      setUser(processedUser);
+      setError(null);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching user data";
+      console.error("Error fetching user:", errorMessage);
+      setError(errorMessage);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <Typography color="error" variant="h6">
+            {error}
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="200px"
+        >
+          <Typography color="textSecondary" variant="h6">
+            No user data found
+          </Typography>
+        </Box>
+      </Container>
+    );
+  }
   return (
     <>
       <Grid
@@ -33,6 +152,7 @@ const AccountComponent = () => {
         <Box sx={{ display: "flex", alignItems: "center", ml: 2, padding: 3 }}>
           <Avatar
             src={Profile}
+            // src={user.profileImage}
             alt="Profile Picture"
             sx={{
               width: 100,
@@ -41,13 +161,29 @@ const AccountComponent = () => {
           />
           <Box sx={{ ml: 5 }}>
             <Box sx={{ display: "flex", gap: 1, mb: 0.8 }}>
-              <Typography sx={{ fontWeight: "bold" }}>Firstname</Typography>
-              <Typography sx={{ fontWeight: "bold" }}>Lastname</Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  // fontSize: "20px"
+                }}
+              >
+                {user.firstName}
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  // fontSize: "20px"
+                }}
+              >
+                {user.lastName}
+              </Typography>
             </Box>
             <Typography sx={{ mb: 0.4, color: "#888888" }}>
-              xxxxxx@gmail.com
+              {user.email}
             </Typography>
-            <Typography sx={{ mb: 0.4, color: "#888888" }}>Admin</Typography>
+            <Typography sx={{ mb: 0.4, color: "#888888" }}>
+              {user.role}
+            </Typography>
           </Box>
         </Box>
       </Box>
@@ -85,12 +221,14 @@ const AccountComponent = () => {
           >
             <Box sx={{ mb: 2 }}>
               <Typography sx={{ color: "#000000" }}>Firstname</Typography>
-              <Typography sx={{ color: "#888888" }}>Smith</Typography>
+              <Typography sx={{ color: "#888888" }}>
+                {user.firstName}
+              </Typography>
             </Box>
 
             <Box>
               <Typography sx={{ color: "#000000" }}>Lastname</Typography>
-              <Typography sx={{ color: "#888888" }}>John</Typography>
+              <Typography sx={{ color: "#888888" }}>{user.lastName}</Typography>
             </Box>
           </Box>
 
@@ -105,14 +243,14 @@ const AccountComponent = () => {
           >
             <Box>
               <Typography sx={{ color: "#000000" }}>Email Address</Typography>
-              <Typography sx={{ color: "#888888" }}>
-                xxxxxx@gmail.com
-              </Typography>
+              <Typography sx={{ color: "#888888" }}>{user.email}</Typography>
             </Box>
 
             <Box>
               <Typography sx={{ color: "#000000" }}>Phone</Typography>
-              <Typography sx={{ color: "#888888" }}>095-5284568</Typography>
+              <Typography sx={{ color: "#888888" }}>
+                {user.phone || ""}
+              </Typography>
             </Box>
           </Box>
           <Box
@@ -125,7 +263,7 @@ const AccountComponent = () => {
           >
             <Box>
               <Typography sx={{ color: "#000000" }}>Role</Typography>
-              <Typography sx={{ color: "#888888" }}>Admin</Typography>
+              <Typography sx={{ color: "#888888" }}>{user.role}</Typography>
             </Box>
           </Box>
         </Box>

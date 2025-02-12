@@ -49,6 +49,7 @@ export interface IUser {
   isAdmin: boolean;
   username: string;
   role: string;
+  phone: string;
   isActive: boolean;
 }
 

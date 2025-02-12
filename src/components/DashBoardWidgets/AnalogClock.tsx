@@ -32,18 +32,20 @@ const AnalogClock = () => {
             margin: "auto",
             border: "3px solid rgb(192, 191, 191)", // Increased from 1px
             backgroundColor: "#fffff",
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1)', // Added shadow
-            '&::before': {  // Inner shadow effect
+            boxShadow:
+              "0 4px 8px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1)", // Added shadow
+            "&::before": {
+              // Inner shadow effect
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              borderRadius: '50%',
-              boxShadow: 'inset 0 2px 5px rgba(0, 0, 0, 0.15)',  // Inner shadow
-              pointerEvents: 'none',
-            }
+              borderRadius: "50%",
+              boxShadow: "inset 0 2px 5px rgba(0, 0, 0, 0.15)", // Inner shadow
+              pointerEvents: "none",
+            },
           }}
         >
           {/* Hour markers */}
@@ -172,19 +174,18 @@ const AnalogClock = () => {
               left: "50%",
               top: "50%",
               transform: "translate(-50%, -50%)",
-              
             }}
           />
         </Box>
-        <Box sx={{ width: 1, textAlign: "center", mb: -4 }}>
+        <Box sx={{ width: 1, textAlign: "center", mb: 0 }}>
           <Typography
             variant="body2" // Changed from caption
             sx={{
-              mt: 1.5,
+              mt: 2,
               color: "#00000",
               fontSize: "1.2rem", // Increased from 0.7rem
-              fontWeight:"medium",
-              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)' // Added subtle text shadow
+              fontWeight: "medium",
+              textShadow: "1px 1px 2px rgba(0, 0, 0, 0.1)", // Added subtle text shadow
             }}
           >
             {time.toLocaleDateString("en-US", {

@@ -19,12 +19,19 @@ import { useNavigate } from "react-router-dom";
 interface FooterProps {
   isHideSidebar: boolean;
 }
+interface UserName {
+  firstName: string;
+  lastName: string;
+}
 
 export default function Footer({ isHideSidebar }: FooterProps) {
   const [openSignout, setOpenSignout] = useState(false);
   const windowSize = useWindowSize();
-  const anchorRef = useRef<HTMLDivElement>(null); // Ref type assertion for anchorRef
-
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [userName, setUserName] = useState<UserName>({
+    firstName: "",
+    lastName: "",
+  });
   const navigate = useNavigate();
   const handleclick = () => {
     navigate(`/account`);
@@ -54,6 +61,15 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     }
   });
 
+  useEffect(() => {
+    const fullName = localStorage.getItem("username") || "";
+    const nameParts = fullName.split(" ");
+    setUserName({
+      firstName: nameParts[0] || "",
+      lastName: nameParts.slice(1).join(" ") || "",
+    });
+  }, []);
+
   return (
     <Stack
       direction="row"
@@ -65,6 +81,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         whiteSpace: "nowrap",
       }}
     >
+      <Button onClick={handleclick} sx={{ml:2,mr:3,color:"black"}}>
       <Avatar
         ref={anchorRef}
         sx={{
@@ -79,12 +96,19 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         onClick={
           isAdmin
             ? () => {
-                handleclick();
+                // handleclick();
                 handleOpenSignout();
               }
             : undefined
         }
       />
+      {!isHideSidebar && (
+        <Stack direction="row" spacing={1} marginLeft={2}>
+          <Typography>{userName.firstName}</Typography>
+          {/* <Typography>{userName.lastName}</Typography> */}
+        </Stack>
+      )}
+      </Button>
       <Popper
         open={openSignout}
         anchorEl={anchorRef.current}
@@ -111,19 +135,9 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         )}
       </Popper>
       {!(isHideSidebar || windowSize.width < 1100) && (
-        <>
-          <Typography
-            noWrap={true}
-            sx={{
-              m: 0,
-              marginLeft: "70px",
-              fontSize: 15,
-              fontWeight: 400,
-              color: "black",
-            }}
-          ></Typography>
+        <Box sx={{ marginLeft: "auto", marginRight: 2 }}>
           <LogoutAuthen />
-        </>
+        </Box>
       )}
     </Stack>
   );
