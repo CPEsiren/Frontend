@@ -110,6 +110,7 @@ const Management: React.FC = () => {
             alignItems: "center",
             marginTop: 5,
             height: "auto",
+          
           }}
         >
           <Typography
@@ -129,6 +130,7 @@ const Management: React.FC = () => {
           marginTop: 2,
           height: "auto",
           display: "flex",
+          
         }}
       >
         <Box
@@ -159,6 +161,7 @@ const Management: React.FC = () => {
               alignItems: "center",
               marginTop: 5,
               height: "auto",
+              
             }}
           >
             <Typography
@@ -177,6 +180,7 @@ const Management: React.FC = () => {
               marginTop: 2,
               height: "auto",
               display: "flex",
+              paddingBottom:5,
             }}
           >
            <Box
@@ -193,6 +197,7 @@ const Management: React.FC = () => {
                 px: 3,
                 paddingLeft: 6,
                 paddingRight: 6,
+                
               }}
             >
               <Usermanagemnet />

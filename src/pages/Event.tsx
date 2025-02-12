@@ -44,11 +44,8 @@ const Event = () => {
             justifyContent: windowSize.width >= 1100 ? "center" : "start",
             alignItems: "center",
             minHeight: "fit-content",
-            // marginBottom: 5,
-            // height: 1,
+            marginBottom: 5,
             py: 3,
-            // pt: windowSize.width >= 1100 ? "15vh" : "0vh",
-            // pb: "15vh",
             px: 3,
           }}
         >
