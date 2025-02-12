@@ -19,11 +19,15 @@ const authenticateWithServer = async (token: string) => {
 
     localStorage.setItem("isAuthenticated", "true");
     const userRole = response.data.role || response.data.user?.role;
+    const user_id = response.data._id || response.data.user?._id;
+    const username = response.data.username || response.data.user?.username;
 
     if (!userRole) {
       throw new Error("No role found in server response");
     }
     localStorage.setItem("userRole", userRole);
+    localStorage.setItem("user_id", user_id);
+    localStorage.setItem("username", username);
 
     return response.data;
   } catch (error: any) {
@@ -47,7 +51,8 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
       if (storedToken && tokenTimestamp) {
         const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
 
-        if (elapsedTime >= 4 * 60 * 60 * 1000) { // 4 ชั่วโมง
+        if (elapsedTime >= 4 * 60 * 60 * 1000) {
+          // 4 ชั่วโมง
           console.log("Token expired. Clearing from localStorage.");
           localStorage.removeItem("token");
           localStorage.removeItem("isAuthenticated");
@@ -55,7 +60,7 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
           localStorage.removeItem("tokenTimestamp");
         }
       }
-    }, 60 * 60 * 1000); 
+    }, 60 * 60 * 1000);
 
     return () => clearInterval(tokenCleanupInterval);
   }, []);

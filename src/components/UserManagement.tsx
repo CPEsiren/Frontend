@@ -220,7 +220,7 @@ const UserManagement = () => {
                     }}
                   />
                 </TableCell>
-                <TableCell sx={{ textAlign: "center" }}>
+                <TableCell sx={{ textAlign: "left" }}>
                   <IconButton
                     onClick={() => handleSwapRole(user)}
                     disabled={loading}
