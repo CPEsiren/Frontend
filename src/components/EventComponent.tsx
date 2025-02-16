@@ -174,9 +174,14 @@ const EventComponent = () => {
                   Time
                 </Typography>
               </TableCell>
-              <TableCell align="center" sx={{ width: "17%" }}>
+              <TableCell align="center">
                 <Typography variant="subtitle1" fontWeight="medium">
                   Device's name
+                </Typography>
+              </TableCell>
+              <TableCell align="center">
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Severity
                 </Typography>
               </TableCell>
               <TableCell align="center">
@@ -194,9 +199,7 @@ const EventComponent = () => {
           <TableBody>
             {events.map((event) => {
               const displayTime =
-              event.status === "PROBLEM"
-                  ? event.createdAt
-                  : event.updatedAt;
+                event.status === "PROBLEM" ? event.createdAt : event.updatedAt;
 
               return (
                 <TableRow
@@ -205,7 +208,7 @@ const EventComponent = () => {
                   hover
                   sx={{
                     backgroundColor:
-                    event.status === "PROBLEM" ? "#fff5f8" : "inherit",
+                      event.status === "PROBLEM" ? "#fff5f8" : "inherit",
                   }}
                 >
                   <TableCell align="center">
@@ -215,6 +218,33 @@ const EventComponent = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="body2">{event.hostname}</Typography>
+                  </TableCell>
+
+                  {/* Severity */}
+                  <TableCell
+                    sx={{
+                      color: (() => {
+                        switch (event.severity.toLowerCase()) {
+                          case "not classified":
+                            return "#808080";
+                          case "information":
+                            return "#0000FF";
+                          case "warning":
+                            return "#FFA500";
+                          case "average":
+                            return "#FF4500";
+                          case "high":
+                            return "#FF0000";
+                          case "disaster":
+                            return "#8B0000";
+                          default:
+                            return "inherit";
+                        }
+                      })(),
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {event.severity}
                   </TableCell>
                   <TableCell align="center">
                     <Typography variant="body2">{event.message}</Typography>
