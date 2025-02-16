@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Button, Dialog, DialogContent, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddAction from "../components/Modals/AddAction";
+import ActionComponent from "../components/ActionComponent";
 
 const Action = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -73,7 +74,7 @@ const Action = () => {
             px: 3,
           }}
         >
-          actionnnnnnnnnnn
+          <ActionComponent />
         </Box>
       </Box>
 
