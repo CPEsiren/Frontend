@@ -85,6 +85,7 @@ export interface ITrigger {
 
 export interface IEvent {
   _id: string;
+  severity: string;
   hostname: string;
   status: string;
   message: string;
