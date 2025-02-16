@@ -27,7 +27,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
       actionName: !actionName,
       media: !media,
       duration: !duration,
+      subjectProblemTemplate: !subjectProblemTemplate,
       messageProblemTemplate: !messageProblemTemplate,
+      subjectRecoveryTemplate: !subjectRecoveryTemplate,
       messageRecoveryTemplate: !messageRecoveryTemplate,
     };
 
@@ -39,7 +41,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
     actionName: false,
     media: false,
     duration: false,
+    subjectProblemTemplate: false,
     messageProblemTemplate: false,
+    subjectRecoveryTemplate: false,
     messageRecoveryTemplate: false,
   });
 
@@ -71,8 +75,14 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
   //Duration field
   const [duration, setDuration] = useState("30m");
 
+  //Subject Problem Template
+  const [subjectProblemTemplate, setSubjectProblemTemplate] = useState("");
+
   //Message Problem Template
   const [messageProblemTemplate, setMessageProblemTemplate] = useState("");
+
+  //Subject Problem Template
+  const [subjectRecoveryTemplate, setSubjectRecoveryTemplate] = useState("");
 
   //Message Recovery Template
   const [messageRecoveryTemplate, setMessageRecoveryTemplate] = useState("");
@@ -92,7 +102,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
       actionName,
       media,
       duration,
+      subjectProblemTemplate,
       messageProblemTemplate,
+      subjectRecoveryTemplate,
       messageRecoveryTemplate,
       enabled
     );
@@ -101,7 +113,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
       setActionName("");
       setMedia(mediaOptions[0].value);
       setDuration("");
+      setSubjectProblemTemplate("");
       setMessageProblemTemplate("");
+      setSubjectRecoveryTemplate("");
       setMessageRecoveryTemplate("");
       setEnabled(true);
       onClose();
@@ -117,7 +131,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
     actionName: string,
     media: string,
     duration: string,
+    subjectProblemTemplate: string,
     messageProblemTemplate: string,
+    subjectRecoveryTemplate: string,
     messageRecoveryTemplate: string,
     enabled: boolean
   ): Promise<boolean> => {
@@ -127,7 +143,9 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
         user_id: user_id,
         media,
         duration,
+        subjectProblemTemplate,
         messageProblemTemplate,
+        subjectRecoveryTemplate,
         messageRecoveryTemplate,
         enabled,
       };
@@ -212,6 +230,35 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
             />
           </Box>
 
+          {/* Subject Problem Template */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
+              <Typography color="error" {...typographyProps}>
+                *
+              </Typography>
+              <Typography sx={{ ml: 1 }} {...typographyProps}>
+                Subject Problem Template
+              </Typography>
+            </Box>
+            <TextField
+              value={subjectProblemTemplate}
+              onChange={(e) => setSubjectProblemTemplate(e.target.value)}
+              sx={{
+                backgroundColor: "white",
+                "& .MuiInputBase-input": {
+                  fontSize: 14,
+                },
+              }}
+              size="small"
+              error={errors.subjectProblemTemplate}
+              helperText={
+                errors.subjectProblemTemplate
+                  ? "Subject problem template is required."
+                  : ""
+              }
+            />
+          </Box>
+
           {/* Message Problem Template */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
@@ -238,6 +285,35 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
               helperText={
                 errors.messageProblemTemplate
                   ? "Message problem template is required."
+                  : ""
+              }
+            />
+          </Box>
+
+          {/* Subject Recovery Template */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
+              <Typography color="error" {...typographyProps}>
+                *
+              </Typography>
+              <Typography sx={{ ml: 1 }} {...typographyProps}>
+                Subject Recovery Template
+              </Typography>
+            </Box>
+            <TextField
+              value={subjectRecoveryTemplate}
+              onChange={(e) => setSubjectRecoveryTemplate(e.target.value)}
+              sx={{
+                backgroundColor: "white",
+                "& .MuiInputBase-input": {
+                  fontSize: 14,
+                },
+              }}
+              size="small"
+              error={errors.subjectRecoveryTemplate}
+              helperText={
+                errors.subjectRecoveryTemplate
+                  ? "Subject Recovery template is required."
                   : ""
               }
             />
