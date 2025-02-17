@@ -28,6 +28,7 @@ import {
   TableRow,
   TextField,
   Typography,
+  MenuItem,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -39,6 +40,44 @@ interface GroupedTriggers {
     hostname: string;
   };
 }
+
+interface ExpressionPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+  duration: string;
+}
+
+interface RecoveryPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+  duration: string;
+}
+
+const functionofItem = [
+  { value: "avg", label: "avg()" },
+  { value: "min", label: "min()" },
+  { value: "max", label: "max()" },
+  { value: "last", label: "last()" },
+];
+
+const operators = [
+  { value: "and", label: "AND" },
+  { value: "or", label: "OR" },
+];
+
+const operations = [
+  { value: ">", label: ">" },
+  { value: ">=", label: ">=" },
+  { value: "=", label: "=" },
+  { value: "<", label: "<" },
+  { value: "<=", label: "<=" },
+];
 
 const TriggerComponent = () => {
   //Global State
@@ -62,6 +101,16 @@ const TriggerComponent = () => {
     open: false,
     message: "",
     severity: "success" as "success" | "error",
+  });
+
+  // Add error states for form validation
+  const [errors, setErrors] = useState({
+    trigger_name: false,
+    host_id: false,
+    severity: false,
+    expression: false,
+    ok_eventGen: false,
+    recoveryExpression: false,
   });
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
@@ -90,6 +139,132 @@ const TriggerComponent = () => {
   }, []);
 
   //Edit Trigger
+  const [expressionParts, setExpressionParts] = useState<ExpressionPart[]>([
+    {
+      item: "",
+      operation: "",
+      value: "",
+      functionofItem: "",
+      duration: "",
+    },
+  ]);
+
+  const [recoveryParts, setRecoveryParts] = useState<RecoveryPart[]>([
+    {
+      item: "",
+      operation: "",
+      value: "",
+      functionofItem: "",
+      duration: "",
+    },
+  ]);
+  const [ok_eventGen, setOk_eventGen] = useState<string>("");
+  const handleRemoveRecovery = (index: number) => {
+    if (recoveryParts.length > 1) {
+      const newParts = recoveryParts.filter((_, i) => i !== index);
+      setRecoveryParts(newParts);
+
+      // Update the final expression
+      const validParts = newParts.filter(
+        (part) => part.item && part.operation && part.value
+      );
+      const newRecovery = validParts
+        .map((part) => `${part.item} ${part.operation} ${part.value}`)
+        .join(" and ");
+      setExpression(newRecovery);
+    }
+  };
+  const handleAddRecovery = () => {
+    setRecoveryParts((prev) => [
+      ...prev,
+      { item: "", operation: "", value: "", functionofItem: "", duration: "" },
+    ]);
+  };
+
+  const handleRecoveryPartChange = (
+    index: number,
+    field: keyof RecoveryPart,
+    value: string
+  ) => {
+    const newParts = [...recoveryParts];
+    newParts[index] = { ...newParts[index], [field]: value };
+    setRecoveryParts(newParts);
+
+    // Update the final expression
+    const validParts = newParts.filter(
+      (part) => part.item && part.operation && part.value && part.functionofItem
+    );
+    const newRecovery = validParts
+      .map((part, idx) => {
+        // Format: functionofItem(item,duration) operation value
+        const durationInMinutes = part.duration ? `${part.duration}m` : "";
+        const functionCall = part.duration
+          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+          : `${part.functionofItem}(${part.item})`;
+        const expr = `${functionCall} ${part.operation} ${part.value}`;
+        return idx < validParts.length - 1
+          ? `${expr} ${part.operator || "and"}`
+          : expr;
+      })
+      .join(" ");
+    setRecoveryExpression(newRecovery);
+  };
+
+  const handleRemoveExpression = (index: number) => {
+    if (expressionParts.length > 1) {
+      const newParts = expressionParts.filter((_, i) => i !== index);
+      setExpressionParts(newParts);
+
+      // Update the final expression
+      const validParts = newParts.filter(
+        (part) => part.item && part.operation && part.value
+      );
+      const newExpression = validParts
+        .map((part) => `${part.item} ${part.operation} ${part.value}`)
+        .join(" and ");
+      setExpression(newExpression);
+    }
+  };
+
+  //Expression
+  const [expression, setExpression] = useState<string>("");
+  const [recoveryExpression, setRecoveryExpression] = useState<string>("");
+
+  const handleExpressionPartChange = (
+    index: number,
+    field: keyof ExpressionPart,
+    value: string
+  ) => {
+    const newParts = [...expressionParts];
+    newParts[index] = { ...newParts[index], [field]: value };
+    setExpressionParts(newParts);
+
+    // Update the final expression
+    const validParts = newParts.filter(
+      (part) => part.item && part.operation && part.value && part.functionofItem
+    );
+    const newExpression = validParts
+      .map((part, idx) => {
+        // Format: functionofItem(item,duration) operation value
+        const durationInMinutes = part.duration ? `${part.duration}m` : "";
+        const functionCall = part.duration
+          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+          : `${part.functionofItem}(${part.item})`;
+        const expr = `${functionCall} ${part.operation} ${part.value}`;
+        return idx < validParts.length - 1
+          ? `${expr} ${part.operator || "and"}`
+          : expr;
+      })
+      .join(" ");
+    setExpression(newExpression);
+  };
+
+  const handleAddExpression = () => {
+    setExpressionParts((prev) => [
+      ...prev,
+      { item: "", operation: "", value: "", functionofItem: "", duration: "" },
+    ]);
+  };
 
   const [editTriggerName, setEditTriggerName] = useState("");
   const [editIdTrigger, setEditIdTrigger] = useState("");
@@ -109,8 +284,60 @@ const TriggerComponent = () => {
     setEditRecoveryExpression(trigger.recovery_expression);
     setEditOk_eve(trigger.ok_event_generation);
     setEditEnabled(trigger.enabled);
+
+    // Set expression parts from trigger data
+    if (trigger.expressionPart && trigger.expressionPart.length > 0) {
+      setExpressionParts(
+        trigger.expressionPart.map((part) => ({
+          item: part.item || "",
+          operation: part.operation || "",
+          value: part.value || "",
+          operator: part.operator || "and",
+          functionofItem: part.functionofItem || "",
+          duration: part.duration?.toString() || "",
+        }))
+      );
+    } else {
+      setExpressionParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
+    }
+
+    // Set recovery expression parts from trigger data
+    if (
+      trigger.expressionRecoveryPart &&
+      trigger.expressionRecoveryPart.length > 0
+    ) {
+      setRecoveryParts(
+        trigger.expressionRecoveryPart.map((part) => ({
+          item: part.item || "",
+          operation: part.operation || "",
+          value: part.value || "",
+          operator: part.operator || "and",
+          functionofItem: part.functionofItem || "",
+          duration: part.duration?.toString() || "",
+        }))
+      );
+    } else {
+      setRecoveryParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
+    }
+
     setEditDialogOpen(true);
-    fetchItems(edithostId);
+    fetchItems(trigger.host_id);
   };
 
   //Delete Trigger
@@ -214,6 +441,26 @@ const TriggerComponent = () => {
 
     setFormLoading(true);
     try {
+      // Format expression parts for submission
+      const formattedExpressionParts = expressionParts.map((part) => ({
+        item: part.item,
+        operation: part.operation,
+        value: part.value,
+        operator: part.operator,
+        functionofItem: part.functionofItem,
+        duration: parseInt(part.duration) || 0,
+      }));
+
+      // Format recovery expression parts for submission
+      const formattedRecoveryParts = recoveryParts.map((part) => ({
+        item: part.item,
+        operation: part.operation,
+        value: part.value,
+        operator: part.operator,
+        functionofItem: part.functionofItem,
+        duration: parseInt(part.duration) || 0,
+      }));
+
       await axios.put(`http://127.0.0.1:3000/trigger/${editIdTrigger}`, {
         trigger_name: editTriggerName,
         severity: editSeverity,
@@ -221,6 +468,8 @@ const TriggerComponent = () => {
         ok_event_generation: editOk_eve,
         recovery_expression: editRecoveryExpression,
         enabled: editEnabled,
+        expressionPart: formattedExpressionParts,
+        expressionRecoveryPart: formattedRecoveryParts,
       });
 
       fetchTriggerData();
@@ -345,7 +594,6 @@ const TriggerComponent = () => {
                   <TableRow key={index}>
                     {/* Trigger Name */}
                     <TableCell>{trigger.trigger_name}</TableCell>
-
                     {/* Severity */}
                     <TableCell
                       sx={{
@@ -507,6 +755,7 @@ const TriggerComponent = () => {
           </TableContainer>
         </Box>
       ))}
+
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
@@ -559,6 +808,7 @@ const TriggerComponent = () => {
                     display: "flex",
                     flexWrap: "wrap",
                     maxWidth: "calc(100% - 150px)",
+                    gap: 1,
                   }}
                 >
                   {[
@@ -605,7 +855,7 @@ const TriggerComponent = () => {
               </Box>
 
               {/* Expression field */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box sx={{ gap: 2 }}>
                 <Box
                   sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
                 >
@@ -615,40 +865,203 @@ const TriggerComponent = () => {
                   <Typography sx={{ ml: 1 }} {...typographyProps}>
                     Expression
                   </Typography>
+                  <Button
+                    onClick={handleAddExpression}
+                    sx={{
+                      ml: 3,
+                      fontSize: 12,
+                      color: "blue",
+                      cursor: "pointer",
+                      "&:hover": {
+                        textDecoration: "underline",
+                      },
+                    }}
+                  >
+                    Add Expression
+                  </Button>
                 </Box>
-                <TextField
-                  {...textFieldProps}
-                  value={editExpression}
-                  onChange={(e) => setEditExpression(e.target.value)}
-                  multiline
-                  rows={4}
-                  sx={{
-                    ...textFieldProps.sx,
-                    "& .MuiOutlinedInput-root": {
-                      padding: "8px",
-                    },
-                  }}
-                />
-                <Button
-                  onClick={handleOpenDialogExpression}
-                  sx={{
-                    mt: 1,
-                    alignSelf: "flex-start",
-                    backgroundColor: "#4CAF50",
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "#45a049",
-                    },
-                    "&:disabled": {
-                      backgroundColor: "#a5d6a7",
-                      color: "#e8f5e9",
-                    },
-                    fontSize: 14,
-                    padding: "6px 16px",
-                  }}
-                >
-                  Add Item
-                </Button>
+              </Box>
+
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+              >
+                {expressionParts.map((part, index) => (
+                  <Box
+                    key={index}
+                    sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                  >
+                    {/* functionofitem section */}
+                    <TextField
+                      select
+                      value={part.functionofItem}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "functionofItem",
+                          e.target.value
+                        )
+                      }
+                      label="Function"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {functionofItem.map((fn) => (
+                        <MenuItem key={fn.value} value={fn.value}>
+                          {fn.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    {/* Item Selection */}
+                    <TextField
+                      select
+                      value={part.item}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "item",
+                          e.target.value
+                        )
+                      }
+                      size="small"
+                      label="Item"
+                      sx={{
+                        width: "47%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {items.map((item) => (
+                        <MenuItem key={item._id} value={item.item_name}>
+                          {item.item_name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    {/* Operation Selection */}
+                    <TextField
+                      select
+                      value={part.operation}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "operation",
+                          e.target.value
+                        )
+                      }
+                      label="Operation"
+                      size="small"
+                      sx={{
+                        width: "13%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {operations.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    <TextField
+                      value={part.value}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "value",
+                          e.target.value
+                        )
+                      }
+                      label="Value"
+                      size="small"
+                      sx={{
+                        width: "15%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                    {/* Duration section */}
+                    <TextField
+                      value={part.duration}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "duration",
+                          e.target.value
+                        )
+                      }
+                      label="Duration"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+
+                    {/* Operator Selection (show only if not the last row) */}
+                    {index < expressionParts.length - 1 && (
+                      <TextField
+                        select
+                        value={part.operator || "and"}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "operator",
+                            e.target.value
+                          )
+                        }
+                        label="Operator"
+                        size="small"
+                        sx={{
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {operators.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+
+                    {/* Remove button (only show for rows after the first) */}
+                    {index > 0 && (
+                      <Typography
+                        onClick={() => handleRemoveExpression(index)}
+                        sx={{
+                          fontSize: 12,
+                          color: "red",
+                          cursor: "pointer",
+                          "&:hover": {
+                            textDecoration: "underline",
+                          },
+                        }}
+                      >
+                        Remove
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
               </Box>
 
               {/* OK event generation */}
@@ -668,6 +1081,7 @@ const TriggerComponent = () => {
                     display: "flex",
                     flexWrap: "wrap",
                     maxWidth: "calc(100% - 150px)",
+                    gap: 1,
                   }}
                 >
                   {[
@@ -710,54 +1124,214 @@ const TriggerComponent = () => {
 
               {/* Recovery Expression field */}
               {editOk_eve === "recovery expression" && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
-                      minWidth: 150,
+                      justifyContent: "flex-start",
+                      mt: -2,
+                      mb: -1,
                     }}
                   >
-                    <Typography color="error" {...typographyProps}>
-                      *
-                    </Typography>
-                    <Typography sx={{ ml: 1 }} {...typographyProps}>
-                      Recovery Expression
-                    </Typography>
+                    <Button
+                      onClick={handleAddRecovery}
+                      sx={{
+                        fontSize: 12,
+                        color: "blue",
+                        cursor: "pointer",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      Add Recovery Expression
+                    </Button>
                   </Box>
-                  <TextField
-                    {...textFieldProps}
-                    value={editRecoveryExpression}
-                    onChange={(e) => setEditRecoveryExpression(e.target.value)}
-                    multiline
-                    rows={4}
-                    sx={{
-                      ...textFieldProps.sx,
-                      "& .MuiOutlinedInput-root": {
-                        padding: "8px",
-                      },
-                    }}
-                  />
-                  <Button
-                    onClick={handleOpenDialogRecoveryExpression}
-                    sx={{
-                      mt: 1,
-                      alignSelf: "flex-start",
-                      backgroundColor: "#4CAF50",
-                      color: "white",
-                      "&:hover": {
-                        backgroundColor: "#45a049",
-                      },
-                      "&:disabled": {
-                        backgroundColor: "#a5d6a7",
-                        color: "#e8f5e9",
-                      },
-                      fontSize: 14,
-                      padding: "6px 16px",
-                    }}
-                  >
-                    Add Item
-                  </Button>
+                  {recoveryParts.map((part, index) => (
+                    <Box
+                      key={index}
+                      sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                    >
+                      {/* functionofitem section */}
+                      <TextField
+                        select
+                        value={part.functionofItem}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "functionofItem",
+                            e.target.value
+                          )
+                        }
+                        label="Function"
+                        size="small"
+                        sx={{
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {functionofItem.map((fn) => (
+                          <MenuItem key={fn.value} value={fn.value}>
+                            {fn.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      {/* Item Selection */}
+                      <TextField
+                        select
+                        value={part.item}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "item",
+                            e.target.value
+                          )
+                        }
+                        error={errors.expression}
+                        size="small"
+                        label="Item"
+                        sx={{
+                          width: "47%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {items.map((item) => (
+                          <MenuItem key={item._id} value={item.item_name}>
+                            {item.item_name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      {/* Operation Selection */}
+                      <TextField
+                        select
+                        value={part.operation}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "operation",
+                            e.target.value
+                          )
+                        }
+                        label="Operation"
+                        size="small"
+                        sx={{
+                          width: "13%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {operations.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      <TextField
+                        value={part.value}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "value",
+                            e.target.value
+                          )
+                        }
+                        label="Value"
+                        size="small"
+                        sx={{
+                          width: "15%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+
+                      <TextField
+                        value={part.duration}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "duration",
+                            e.target.value
+                          )
+                        }
+                        label="Duration"
+                        size="small"
+                        sx={{
+                          width: "15%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+
+                      {/* Operator Selection (show only if not the last row) */}
+                      {index < recoveryParts.length - 1 && (
+                        <TextField
+                          select
+                          value={part.operator || "and"}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "operator",
+                              e.target.value
+                            )
+                          }
+                          label="Operator"
+                          size="small"
+                          sx={{
+                            width: "10%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          {operators.map((op) => (
+                            <MenuItem key={op.value} value={op.value}>
+                              {op.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      )}
+
+                      {/* Remove button (only show for rows after the first) */}
+                      {index > 0 && (
+                        <Typography
+                          onClick={() => handleRemoveRecovery(index)}
+                          sx={{
+                            fontSize: 12,
+                            color: "red",
+                            cursor: "pointer",
+                            "&:hover": {
+                              textDecoration: "underline",
+                            },
+                          }}
+                        >
+                          Remove
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
                 </Box>
               )}
 
