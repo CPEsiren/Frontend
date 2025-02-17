@@ -139,8 +139,10 @@ const EventComponent = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",
-          mt: 2,
+          backgroundColor: "white",
+          borderRadius: 3,
+          // mt: 2,    
+           mx: -3,
         }}
       >
         <Table
@@ -161,20 +163,30 @@ const EventComponent = () => {
           }}
         >
           <TableHead
-            sx={{
-              backgroundColor: "#242D5D",
-              "& .MuiTableCell-root": {
-                color: "white",
-              },
-            }}
+            // sx={{
+            //   backgroundColor: "#242D5D",
+            //   "& .MuiTableCell-root": {
+            //     color: "white",
+            //   },
+            // }}
           >
             <TableRow>
-              <TableCell align="center">
+              <TableCell align="center"
+                sx={{
+                  width: "100px",
+                  flexBasis: "100px",
+                }}
+              >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Time
                 </Typography>
               </TableCell>
-              <TableCell align="center">
+              <TableCell align="center"
+                sx={{
+                  width: "180px",
+                  flexBasis: "180px",
+                }}
+              >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Device's name
                 </Typography>
