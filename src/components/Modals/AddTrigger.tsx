@@ -25,6 +25,16 @@ interface ExpressionPart {
   value: string;
   operator?: string; // 'and' or 'or'
   functionofItem: string;
+  duration: number;
+}
+
+interface RecoveryPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+  duration: number;
 }
 
 const functionofItem = [
@@ -79,12 +89,27 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   };
 
   // Add new state for expression parts
+  // Expression parts state
   const [expressionParts, setExpressionParts] = useState<ExpressionPart[]>([
     {
       item: "",
       operation: "",
       value: "",
+      operator: "",
       functionofItem: "",
+      duration: 0,
+    },
+  ]);
+
+  // Recovery parts state
+  const [recoveryParts, setRecoveryParts] = useState<RecoveryPart[]>([
+    {
+      item: "",
+      operation: "",
+      value: "",
+      operator: "",
+      functionofItem: "",
+      duration: 0,
     },
   ]);
 
@@ -100,11 +125,16 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
 
     // Update the final expression
     const validParts = newParts.filter(
-      (part) => part.item && part.operation && part.value
+      (part) => part.item && part.operation && part.value && part.functionofItem
     );
     const newExpression = validParts
       .map((part, idx) => {
-        const expr = `${part.item} ${part.operation} ${part.value}`;
+        // Format: functionofItem(item,duration) operation value
+        const durationInMinutes = part.duration ? `${part.duration}m` : "";
+        const functionCall = part.duration
+          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+          : `${part.functionofItem}(${part.item})`;
+        const expr = `${functionCall} ${part.operation} ${part.value}`;
         return idx < validParts.length - 1
           ? `${expr} ${part.operator || "and"}`
           : expr;
@@ -113,11 +143,48 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     setExpression(newExpression);
   };
 
+  const handleRecoveryPartChange = (
+    index: number,
+    field: keyof RecoveryPart,
+    value: string
+  ) => {
+    const newParts = [...recoveryParts];
+    newParts[index] = { ...newParts[index], [field]: value };
+    setRecoveryParts(newParts);
+
+    // Update the final expression
+    const validParts = newParts.filter(
+      (part) => part.item && part.operation && part.value && part.functionofItem
+    );
+    const newRecovery = validParts
+      .map((part, idx) => {
+        // Format: functionofItem(item,duration) operation value
+        const durationInMinutes = part.duration ? `${part.duration}m` : "";
+        const functionCall = part.duration
+          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+          : `${part.functionofItem}(${part.item})`;
+        const expr = `${functionCall} ${part.operation} ${part.value}`;
+        return idx < validParts.length - 1
+          ? `${expr} ${part.operator || "and"}`
+          : expr;
+      })
+      .join(" ");
+    setRecoveryExpression(newRecovery);
+  };
+
   // Add new expression row
   const handleAddExpression = () => {
     setExpressionParts((prev) => [
       ...prev,
-      { item: "", operation: "", value: "", functionofItem: "" },
+      { item: "", operation: "", value: "", functionofItem: "", duration: 0 },
+    ]);
+  };
+
+  // Add new recovery row
+  const handleAddRecovery = () => {
+    setRecoveryParts((prev) => [
+      ...prev,
+      { item: "", operation: "", value: "", functionofItem: "", duration: 0 },
     ]);
   };
 
@@ -138,6 +205,23 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     }
   };
 
+  // Remove recovery row
+  const handleRemoveRecovery = (index: number) => {
+    if (recoveryParts.length > 1) {
+      const newParts = recoveryParts.filter((_, i) => i !== index);
+      setRecoveryParts(newParts);
+
+      // Update the final expression
+      const validParts = newParts.filter(
+        (part) => part.item && part.operation && part.value
+      );
+      const newRecovery = validParts
+        .map((part) => `${part.item} ${part.operation} ${part.value}`)
+        .join(" and ");
+      setExpression(newRecovery);
+    }
+  };
+
   const textFieldProps = {
     size: "small" as const,
     fullWidth: true,
@@ -152,12 +236,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
     if (!validateForm()) {
       alert("Please fill in all required fields");
       return;
     }
-
+  
     const success = await StoreNewtrigger(
       trigger_name,
       host_id,
@@ -165,14 +249,32 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       expression,
       ok_eventGen,
       recoveryExpression,
-      enabled
+      enabled,
+      expressionParts,
+      recoveryParts
     );
-
+  
     if (success) {
       setTrigger_name("");
       setEnabled(true);
       setSeverity("");
       setHost_id("");
+      setExpressionParts([{
+        item: "",
+        operation: "",
+        value: "",
+        operator: "",
+        functionofItem: "",
+        duration: 0
+      }]);
+      setRecoveryParts([{
+        item: "",
+        operation: "",
+        value: "",
+        operator: "",
+        functionofItem: "",
+        duration: 0
+      }]);
       alert("Trigger added successfully!");
       onClose();
     } else {
@@ -186,7 +288,9 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     expression: string,
     ok_event_generation: string,
     recovery_expression: string,
-    enabled: boolean
+    enabled: boolean,
+    expressionParts: ExpressionPart[],
+    recoveryParts: RecoveryPart[]
   ): Promise<boolean> => {
     try {
       const requestBody = {
@@ -197,8 +301,26 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
         ok_event_generation,
         recovery_expression,
         enabled,
+        // Store expressionParts as expressionPart in the model
+        expressionPart: expressionParts.map(part => ({
+          item: part.item,
+          operation: part.operation,
+          value: part.value,
+          operator: part.operator || 'and',
+          functionofItem: part.functionofItem,
+          duration: part.duration
+        })),
+        // Store recoveryParts as expressionRecoveryPart in the model
+        expressionRecoveryPart: recoveryParts.map(part => ({
+          item: part.item,
+          operation: part.operation,
+          value: part.value,
+          operator: part.operator || 'and',
+          functionofItem: part.functionofItem,
+          duration: part.duration
+        }))
       };
-
+  
       await axios.post("http://127.0.0.1:3000/trigger", requestBody);
       return true;
     } catch (error) {
@@ -386,7 +508,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                 *
               </Typography>
               <Typography sx={{ ml: 1 }} {...typographyProps}>
-                Host
+                Device
               </Typography>
             </Box>
             <TextField
@@ -529,6 +651,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       </MenuItem>
                     ))}
                   </TextField>
+
                   {/* Item Selection */}
                   <TextField
                     select
@@ -594,6 +717,27 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     size="small"
                     sx={{
                       width: "15%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+                  {/* Duration section */}
+                  <TextField
+                    value={part.duration}
+                    onChange={(e) =>
+                      handleExpressionPartChange(
+                        index,
+                        "duration",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Duration"
+                    size="small"
+                    sx={{
+                      width: "10%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -717,58 +861,208 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
 
           {/* Recovery Expression field */}
           {ok_eventGen === "recovery expression" && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+            >
               <Box
-                sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-start",
+                  mt: -2,
+                  mb: -1,
+                }}
               >
-                <Typography color="error" {...typographyProps}>
-                  *
-                </Typography>
-                <Typography sx={{ ml: 1 }} {...typographyProps}>
-                  Recovery Expression
-                </Typography>
+                <Button
+                  onClick={handleAddRecovery}
+                  disabled={isFormDisabled}
+                  sx={{
+                    fontSize: 12,
+                    color: "blue",
+                    cursor: "pointer",
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  Add Recovery Expression
+                </Button>
               </Box>
-              <TextField
-                {...textFieldProps}
-                value={recoveryExpression}
-                onChange={(e) => setRecoveryExpression(e.target.value)}
-                disabled={isFormDisabled}
-                error={errors.recoveryExpression}
-                helperText={
-                  errors.recoveryExpression
-                    ? "Recovery Expression is required"
-                    : ""
-                }
-                multiline
-                rows={4}
-                sx={{
-                  ...textFieldProps.sx,
-                  "& .MuiOutlinedInput-root": {
-                    padding: "8px",
-                  },
-                }}
-              />
-              <Button
-                onClick={handleOpenDialogRecoveryExpression}
-                disabled={isFormDisabled}
-                sx={{
-                  mt: 1,
-                  alignSelf: "flex-start",
-                  backgroundColor: "#4CAF50",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "#45a049",
-                  },
-                  "&:disabled": {
-                    backgroundColor: "#a5d6a7",
-                    color: "#e8f5e9",
-                  },
-                  fontSize: 14,
-                  padding: "6px 16px",
-                }}
-              >
-                Add Item
-              </Button>
+              {recoveryParts.map((part, index) => (
+                <Box
+                  key={index}
+                  sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                >
+                  {/* functionofitem section */}
+                  <TextField
+                    select
+                    value={part.functionofItem}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(
+                        index,
+                        "functionofItem",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Function"
+                    size="small"
+                    sx={{
+                      width: "10%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {functionofItem.map((fn) => (
+                      <MenuItem key={fn.value} value={fn.value}>
+                        {fn.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  {/* Item Selection */}
+                  <TextField
+                    select
+                    value={part.item}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(index, "item", e.target.value)
+                    }
+                    disabled={isFormDisabled}
+                    error={errors.expression}
+                    size="small"
+                    label="Item"
+                    sx={{
+                      width: "47%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {items.map((item) => (
+                      <MenuItem key={item._id} value={item.item_name}>
+                        {item.item_name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  {/* Operation Selection */}
+                  <TextField
+                    select
+                    value={part.operation}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(
+                        index,
+                        "operation",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Operation"
+                    size="small"
+                    sx={{
+                      width: "13%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    {operations.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+
+                  <TextField
+                    value={part.value}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(index, "value", e.target.value)
+                    }
+                    disabled={isFormDisabled}
+                    label="Value"
+                    size="small"
+                    sx={{
+                      width: "15%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    value={part.duration}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(
+                        index,
+                        "duration",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Duration"
+                    size="small"
+                    sx={{
+                      width: "15%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+
+                  {/* Operator Selection (show only if not the last row) */}
+                  {index < recoveryParts.length - 1 && (
+                    <TextField
+                      select
+                      value={part.operator || "and"}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(
+                          index,
+                          "operator",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Operator"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {operators.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+
+                  {/* Remove button (only show for rows after the first) */}
+                  {index > 0 && (
+                    <Typography
+                      onClick={() => handleRemoveRecovery(index)}
+                      sx={{
+                        fontSize: 12,
+                        color: "red",
+                        cursor: "pointer",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      Remove
+                    </Typography>
+                  )}
+                </Box>
+              ))}
             </Box>
           )}
 
