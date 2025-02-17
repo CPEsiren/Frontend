@@ -397,8 +397,8 @@ const ManageComponent = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",
-          mt: 2,
+          backgroundColor: "transparent",      
+          // mt: 2,
         }}
       >
         <Table

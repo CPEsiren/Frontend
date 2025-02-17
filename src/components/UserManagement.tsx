@@ -160,7 +160,7 @@ const UserManagement = () => {
         elevation={0}
         sx={{
           backgroundColor: "transparent",
-          mt: 2,
+   
         }}
       >
         <Table
@@ -175,24 +175,24 @@ const UserManagement = () => {
             },
           }}
         >
-          <TableHead sx={{ backgroundColor: "#242d5d" }}>
+          <TableHead >
             <TableRow>
-              <TableCell sx={{ color: "white" }}>
+              <TableCell >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Username
                 </Typography>
               </TableCell>
-              <TableCell sx={{ color: "white" }}>
+              <TableCell >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Email
                 </Typography>
               </TableCell>
-              <TableCell sx={{ color: "white" }}>
+              <TableCell >
                 <Typography variant="subtitle1" fontWeight="medium">
                   Role
                 </Typography>
               </TableCell>
-              <TableCell sx={{ color: "white" }}>
+              <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Action
                 </Typography>

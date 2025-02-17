@@ -143,8 +143,7 @@ const Management: React.FC = () => {
             justifyContent: windowSize.width >= 1100 ? "center" : "start",
             alignItems: "center",
             minHeight: "fit-content",
-            // py: 3,
-            // px: 3,
+            py: 2,
           }}
         >
           <ManageComponent />
@@ -193,10 +192,10 @@ const Management: React.FC = () => {
                 overflowY: "auto",
                 backgroundColor: "#FFFFFB",
                 borderRadius: 3,
-                py: 3,
+                py: 2,
                 px: 3,
-                paddingLeft: 6,
-                paddingRight: 6,
+                // paddingLeft: 3,
+                // paddingRight: 3,
                 
               }}
             >
