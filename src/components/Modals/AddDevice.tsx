@@ -104,7 +104,15 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   const [details_location, setdetails_location] = useState<string>("");
   const [details_description, setdetails_description] = useState<string>("");
   const [tabvalue, setTabvalue] = React.useState("host"); //Tabview
-  
+
+  // About SNMPv3
+  const [V3Username, setV3Username] = useState<string>("");
+  const [SecurLevel, setSecurLevel] = useState<string>("");
+  const [authenProtocol, setAuthenProtocol] = useState<string>("");
+  const [authenPass, setAuthenPass] = useState<string>("");
+  const [privacyProtocol, setPrivacyProtocol] = useState<string>("");
+  const [privacyPass, setPrivacyPass] = useState<string>("");
+
   // const [currentTab, setCurrentTab] = useState("host");
 
   const [templateOptions, setTemplateOptions] = useState<Template[]>([]);
@@ -219,12 +227,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   };
 
   // const handleTabChange = (event, newValue) => {
-  //   setCurrentTab(newValue); 
+  //   setCurrentTab(newValue);
   // }
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setTabvalue(newValue);
   };
-
 
   const handleDeleteRow = (id: number) => {
     if (itemRows.length > 1) {
@@ -249,6 +256,15 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
 
   const handleVersionChange = (event: SelectChangeEvent) => {
     setsnmp_version(event.target.value);
+
+    if (event.target.value === "SNMPv2" || event.target.value === "SNMPv1") {
+      setV3Username("");
+      setSecurLevel("");
+      setAuthenProtocol("");
+      setAuthenPass("");
+      setPrivacyProtocol("");
+      setPrivacyPass("");
+    }
   };
 
   const StoreNewhost = async (
@@ -272,6 +288,14 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
         hostgroup,
         templates,
         details,
+        authenV3: {
+          username: V3Username,
+          securityLevel: SecurLevel,
+          authenProtocol: authenProtocol,
+          authenPass: authenPass,
+          privacyProtocol: privacyProtocol,
+          privacyPass: privacyPass,
+        },
       };
 
       // Only add items to request if they have data
@@ -346,7 +370,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
     fontSize: 14,
   };
 
-
   // Add new function to handle interface scanning
   const handleScanInterface = async () => {
     if (!ip_address || !snmp_port || !snmp_version || !snmp_community) {
@@ -405,528 +428,865 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
 
   return (
     <>
-    <Box sx={{ p: 0, width: "100%" }}>
-      {windowSize.width > 600 && (
+      <Box sx={{ p: 0, width: "100%" }}>
+        {windowSize.width > 600 && (
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-start", mb: 0, mt: 1 }}
+          />
+        )}
+        {/* <form onSubmit={handleSubmit}  > */}
         <Box
-          sx={{ display: "flex", justifyContent: "flex-start", mb: 0, mt: 1 }}
-        />
-      )}
-      {/* <form onSubmit={handleSubmit}  > */}
-      <Box
           component="form"
           onSubmit={handleSubmit}
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-      >      
-      <TabContext value={tabvalue} >
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <TabList
-            sx={{
-              minHeight: 0,
-            }}
-            onChange={handleChange}
-            aria-label="Tabview"
-          >
-            <Tab
-              sx={{
-                minHeight: 0,
-                color: "black",
-                "&.Mui-selected": {
-                  color: "blue",
-                  outline: "none",
-                  border: "none",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-              }}
-              label="Host"
-              value="host"
-            />
-            <Tab
-              sx={{
-                minHeight: 0,
-                color: "black",
-                "&.Mui-selected": {
-                  color: "blue",
-                  outline: "none",
-                  border: "none",
-                },
-                "&:focus": {
-                  outline: "none",
-                },
-              }}
-              label="Items"
-              value="item"
-            />
-          </TabList>
-        </Box>
-        <Box>
-        <Box>
-        <TabPanel value="host">
-          <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
-            <Box>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <TabContext value={tabvalue}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <TabList
+                sx={{
+                  minHeight: 0,
+                }}
+                onChange={handleChange}
+                aria-label="Tabview"
               >
-                <Typography
+                <Tab
                   sx={{
-                    mb: -2,
-                    fontSize: "1.1rem",
-                    color: "#a9a9a9",
-                    fontWeight: "semibold",
+                    minHeight: 0,
+                    color: "black",
+                    "&.Mui-selected": {
+                      color: "blue",
+                      outline: "none",
+                      border: "none",
+                    },
+                    "&:focus": {
+                      outline: "none",
+                    },
                   }}
-                  {...typographyProps}
-                >
-                  HOST
-                </Typography>
-                <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-
-                {/* Host Section */}
-                <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                  <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
-                    <Box sx={{ display: "flex", justifyContent: "right" }}>
-                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                        *
-                      </Typography>
-                      <Typography sx={{ fontSize: 14 }}>
-                        Device's name
-                      </Typography>
-                    </Box>
-                    <Typography sx={{ fontSize: 14, mt: 4 }}>
-                      Templates
-                    </Typography>
-                    <Box
-                      sx={{ display: "flex", justifyContent: "right", mt: 4 }}
-                    >
-                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                        *
-                      </Typography>
-                      <Typography sx={{ fontSize: 14 }}>Host groups</Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ textAlign: "left" }}>
-                    <TextField
-                      {...textFieldProps}
-                      value={hostname}
-                      onChange={(e) => sethostname(e.target.value)}
-                      sx={{
-                        mb: 2,
-                        width: 1,
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    />
-                    <TextField
-                      {...textFieldProps}
-                      select
-                      value={templates}
-                      onChange={handleTemplateChange}
-                      disabled={loading}
-                      sx={{
-                        mb: 2,
-                        width: 1,
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {templateOptions.map((template) => (
-                        <MenuItem key={template._id} value={template._id}>
-                          {template.template_name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                    <TextField
-                      {...textFieldProps}
-                      value={hostgroup}
-                      onChange={(e) => sethostgroup(e.target.value)}
-                      sx={{
-                        mb: 0,
-                        width: 1,
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    />
-                  </Box>
-                  <Box
-                    sx={{
-                      textAlign: "left",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2.5,
-                    }}
-                  ></Box>
-                </Box>
-              </Box>
-
-              <Box sx={{ padding: 3 }}>
-                <Typography
+                  label="Host"
+                  value="host"
+                />
+                <Tab
                   sx={{
-                    fontSize: "1.1rem",
-                    color: "#a9a9a9",
-                    fontWeight: "semibold",
+                    minHeight: 0,
+                    color: "black",
+                    "&.Mui-selected": {
+                      color: "blue",
+                      outline: "none",
+                      border: "none",
+                    },
+                    "&:focus": {
+                      outline: "none",
+                    },
                   }}
-                  {...typographyProps}
-                >
-                  SNMP INTERFACE
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    mt: 2,
-                    // backgroundColor: "#ebf1ff",
-                    borderRadius: 2,
-                    border: "4px solid #ebf1ff",
-                  }}
-                >
-                  {/* Interface Section */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "row",
-                      gap: 3,
-                      mt: 3,
-                      mb: 3,
-                    }}
+                  label="Items"
+                  value="item"
+                />
+              </TabList>
+            </Box>
+            <Box>
+              <Box>
+                <TabPanel value="host">
+                  <Paper
+                    elevation={0}
+                    sx={{ px: 2, backgroundColor: "#FFFFFB" }}
                   >
-                    <Box sx={{ textAlign: "right", mt: 1, width: "18%" }}>
-                      <Box sx={{ display: "flex", justifyContent: "right" }}>
-                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                          *
-                        </Typography>
-                        <Typography sx={{ fontSize: 14 }}>
-                          IP address
-                        </Typography>
-                      </Box>
+                    <Box>
                       <Box
-                        sx={{ display: "flex", justifyContent: "right", mt: 4 }}
-                      >
-                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                          *
-                        </Typography>
-                        <Typography sx={{ fontSize: 14 }}>
-                          SNMP version
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{ display: "flex", justifyContent: "right", mt: 4 }}
-                      >
-                        <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
-                          *
-                        </Typography>
-                        <Typography sx={{ fontSize: 14 }}>
-                          SNMP community
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ textAlign: "left", width: "40%" }}>
-                      <TextField
-                        {...textFieldProps}
-                        value={ip_address}
-                        onChange={(e) => setip_address(e.target.value)}
+                        component="form"
+                        onSubmit={handleSubmit}
                         sx={{
-                          mb: 2,
-                          width: 1,
-                          "& .MuiInputBase-input": {
-                            fontSize: 14,
-                          },
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
                         }}
-                      />
-                      <Box sx={{ textAlign: "left" }}>
-                        <FormControl sx={{ minWidth: 200 }} size="small">
-                          <Select
-                            value={snmp_version}
-                            onChange={handleVersionChange}
-                            displayEmpty
+                      >
+                        <Typography
+                          sx={{
+                            mb: -2,
+                            fontSize: "1.1rem",
+                            color: "#a9a9a9",
+                            fontWeight: "semibold",
+                          }}
+                          {...typographyProps}
+                        >
+                          HOST
+                        </Typography>
+                        <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+
+                        {/* Host Section */}
+                        <Box
+                          sx={{ display: "flex", flexDirection: "row", gap: 2 }}
+                        >
+                          <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
+                            <Box
+                              sx={{ display: "flex", justifyContent: "right" }}
+                            >
+                              <Typography
+                                sx={{ fontSize: 14, color: "red", mr: 1 }}
+                              >
+                                *
+                              </Typography>
+                              <Typography sx={{ fontSize: 14 }}>
+                                Device's name
+                              </Typography>
+                            </Box>
+                            <Typography sx={{ fontSize: 14, mt: 4 }}>
+                              Templates
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "right",
+                                mt: 4,
+                              }}
+                            >
+                              <Typography
+                                sx={{ fontSize: 14, color: "red", mr: 1 }}
+                              >
+                                *
+                              </Typography>
+                              <Typography sx={{ fontSize: 14 }}>
+                                Host groups
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Box sx={{ textAlign: "left" }}>
+                            <TextField
+                              {...textFieldProps}
+                              value={hostname}
+                              onChange={(e) => sethostname(e.target.value)}
+                              sx={{
+                                mb: 2,
+                                width: 1,
+                                "& .MuiInputBase-input": {
+                                  fontSize: 14,
+                                },
+                              }}
+                            />
+                            <TextField
+                              {...textFieldProps}
+                              select
+                              value={templates}
+                              onChange={handleTemplateChange}
+                              disabled={loading}
+                              sx={{
+                                mb: 2,
+                                width: 1,
+                                "& .MuiInputBase-input": {
+                                  fontSize: 14,
+                                },
+                              }}
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              {templateOptions.map((template) => (
+                                <MenuItem
+                                  key={template._id}
+                                  value={template._id}
+                                >
+                                  {template.template_name}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                            <TextField
+                              {...textFieldProps}
+                              value={hostgroup}
+                              onChange={(e) => sethostgroup(e.target.value)}
+                              sx={{
+                                mb: 0,
+                                width: 1,
+                                "& .MuiInputBase-input": {
+                                  fontSize: 14,
+                                },
+                              }}
+                            />
+                          </Box>
+                          <Box
                             sx={{
-                              mb: 2,
-                              fontSize: 14,
-                              "& .MuiMenuItem-root": { fontSize: 14 },
+                              textAlign: "left",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 2.5,
+                            }}
+                          ></Box>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ padding: 3 }}>
+                        <Typography
+                          sx={{
+                            fontSize: "1.1rem",
+                            color: "#a9a9a9",
+                            fontWeight: "semibold",
+                          }}
+                          {...typographyProps}
+                        >
+                          SNMP INTERFACE
+                        </Typography>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            mt: 2,
+                            // backgroundColor: "#ebf1ff",
+                            borderRadius: 2,
+                            border: "4px solid #ebf1ff",
+                          }}
+                        >
+                          {/* Interface Section */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "row",
+                              gap: 3,
+                              mt: 3,
+                              // mb: 3,
                             }}
                           >
-                            <MenuItem value="SNMPv1">SNMPv1</MenuItem>
-                            <MenuItem value="SNMPv2">SNMPv2</MenuItem>
-                            <MenuItem value="SNMPv3">SNMPv3</MenuItem>
-                          </Select>
-                        </FormControl>
-                        <TextField
-                          {...textFieldProps}
-                          value={snmp_community}
-                          onChange={(e) => setsnmp_community(e.target.value)}
+                            <Box
+                              sx={{ textAlign: "right", mt: 1, width: "18%" }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "right",
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  IP address
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  SNMP version
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    snmp_version === "SNMPv1" ||
+                                    snmp_version === "SNMPv2"
+                                      ? "flex"
+                                      : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  SNMP community
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    snmp_version === "SNMPv3" ? "flex" : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Username
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    snmp_version === "SNMPv3" ? "flex" : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Security Level
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    SecurLevel === "authNoPriv" ||
+                                    SecurLevel === "authPriv"
+                                      ? "flex"
+                                      : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Authen Protocol
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    SecurLevel === "authNoPriv" ||
+                                    SecurLevel === "authPriv"
+                                      ? "flex"
+                                      : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Authen Passphrase
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    SecurLevel === "authPriv" ? "flex" : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Privacy Protocol
+                                </Typography>
+                              </Box>
+                              <Box
+                                sx={{
+                                  display:
+                                    privacyProtocol === "DES" ||
+                                    privacyProtocol === "AES"
+                                      ? "flex"
+                                      : "none",
+                                  justifyContent: "right",
+                                  mt: 4,
+                                }}
+                              >
+                                <Typography
+                                  sx={{ fontSize: 14, color: "red", mr: 1 }}
+                                >
+                                  *
+                                </Typography>
+                                <Typography sx={{ fontSize: 14 }}>
+                                  Privacy Passphrase
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ textAlign: "left", width: "40%" }}>
+                              <TextField
+                                {...textFieldProps}
+                                value={ip_address}
+                                onChange={(e) => setip_address(e.target.value)}
+                                sx={{
+                                  mb: 2,
+                                  width: 1,
+                                  "& .MuiInputBase-input": {
+                                    fontSize: 14,
+                                  },
+                                }}
+                              />
+                              <Box sx={{ textAlign: "left" }}>
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <Select
+                                    value={snmp_version}
+                                    onChange={handleVersionChange}
+                                    displayEmpty
+                                    sx={{
+                                      mb: 2,
+                                      fontSize: 14,
+                                      "& .MuiMenuItem-root": { fontSize: 14 },
+                                    }}
+                                  >
+                                    <MenuItem value="SNMPv1">SNMPv1</MenuItem>
+                                    <MenuItem value="SNMPv2">SNMPv2</MenuItem>
+                                    <MenuItem value="SNMPv3">SNMPv3</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <TextField
+                                  {...textFieldProps}
+                                  value={snmp_community}
+                                  onChange={(e) =>
+                                    setsnmp_community(e.target.value)
+                                  }
+                                  sx={{
+                                    display:
+                                      snmp_version === "SNMPv1" ||
+                                      snmp_version === "SNMPv2"
+                                        ? ""
+                                        : "none",
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                  }}
+                                />
+                                <TextField
+                                  {...textFieldProps}
+                                  value={V3Username}
+                                  onChange={(e) =>
+                                    setV3Username(e.target.value)
+                                  }
+                                  sx={{
+                                    display:
+                                      snmp_version === "SNMPv3" ? "" : "none",
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                    mb: 2,
+                                  }}
+                                />
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <Select
+                                    value={SecurLevel}
+                                    onChange={(e) => {
+                                      setSecurLevel(e.target.value);
+                                      if (e.target.value === "noAuthNoPriv") {
+                                        setAuthenProtocol("");
+                                        setAuthenPass("");
+                                      } else if (
+                                        e.target.value === "authNoPriv"
+                                      ) {
+                                        setPrivacyProtocol("");
+                                        setPrivacyPass("");
+                                      }
+                                    }}
+                                    displayEmpty
+                                    sx={{
+                                      display:
+                                        snmp_version === "SNMPv3" ? "" : "none",
+                                      mb: 2,
+                                      fontSize: 14,
+                                      "& .MuiMenuItem-root": { fontSize: 14 },
+                                    }}
+                                  >
+                                    <MenuItem value="noAuthNoPriv">
+                                      noAuthNoPriv
+                                    </MenuItem>
+                                    <MenuItem value="authNoPriv">
+                                      authNoPriv
+                                    </MenuItem>
+                                    <MenuItem value="authPriv">
+                                      authPriv
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <Select
+                                    value={authenProtocol}
+                                    onChange={(e) =>
+                                      setAuthenProtocol(e.target.value)
+                                    }
+                                    displayEmpty
+                                    sx={{
+                                      display:
+                                        SecurLevel === "authNoPriv" ||
+                                        SecurLevel === "authPriv"
+                                          ? ""
+                                          : "none",
+                                      mb: 2,
+                                      fontSize: 14,
+                                      "& .MuiMenuItem-root": { fontSize: 14 },
+                                    }}
+                                  >
+                                    <MenuItem value="MD5">MD5</MenuItem>
+                                    <MenuItem value="SHA">SHA</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <TextField
+                                  {...textFieldProps}
+                                  value={authenPass}
+                                  onChange={(e) =>
+                                    setAuthenPass(e.target.value)
+                                  }
+                                  sx={{
+                                    display:
+                                      SecurLevel === "authNoPriv" ||
+                                      SecurLevel === "authPriv"
+                                        ? ""
+                                        : "none",
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                    mb: 2,
+                                  }}
+                                />
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <Select
+                                    value={privacyProtocol}
+                                    onChange={(e) => {
+                                      setPrivacyProtocol(e.target.value);
+                                      if (e.target.value === "NONE") {
+                                        setPrivacyPass("");
+                                      }
+                                    }}
+                                    displayEmpty
+                                    sx={{
+                                      display:
+                                        SecurLevel === "authPriv" ? "" : "none",
+                                      mb: 2,
+                                      fontSize: 14,
+                                      "& .MuiMenuItem-root": { fontSize: 14 },
+                                    }}
+                                  >
+                                    <MenuItem value="NONE">NONE</MenuItem>
+                                    <MenuItem value="DES">DES</MenuItem>
+                                    <MenuItem value="AES">AES</MenuItem>
+                                  </Select>
+                                </FormControl>
+                                <TextField
+                                  {...textFieldProps}
+                                  value={privacyPass}
+                                  onChange={(e) =>
+                                    setPrivacyPass(e.target.value)
+                                  }
+                                  sx={{
+                                    display:
+                                      privacyProtocol === "DES" ||
+                                      privacyProtocol === "AES"
+                                        ? ""
+                                        : "none",
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                    mb: 2,
+                                  }}
+                                />
+                              </Box>
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontSize: 14, mt: 1 }}>
+                                Port
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <TextField
+                                {...textFieldProps}
+                                value={snmp_port}
+                                onChange={(e) => setsnmp_port(e.target.value)}
+                                sx={{
+                                  width: "90%",
+                                  "& .MuiInputBase-input": {
+                                    fontSize: 14,
+                                  },
+                                }}
+                              />
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      {/* Details Section */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                          mt: 2,
+                        }}
+                      >
+                        <Typography
                           sx={{
-                            width: 1,
-                            "& .MuiInputBase-input": {
-                              fontSize: 14,
+                            mb: -2,
+                            fontSize: "1.1rem",
+                            color: "#a9a9a9",
+                            fontWeight: "semibold",
+                            mt: 0.5,
+                          }}
+                          {...typographyProps}
+                        >
+                          DETAILS
+                        </Typography>
+                        <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+                        <Box
+                          sx={{ display: "flex", flexDirection: "row", gap: 2 }}
+                        >
+                          <Box
+                            sx={{
+                              width: "18%",
+                              display: "flex",
+                              justifyContent: "right",
+                              mt: 4,
+                            }}
+                          >
+                            <Typography sx={{ fontSize: 14 }}>
+                              Description
+                            </Typography>
+                          </Box>
+
+                          <Box sx={{ textAlign: "left", width: "40%" }}>
+                            <TextField
+                              multiline
+                              rows={4}
+                              {...textFieldProps}
+                              value={details_description}
+                              onChange={(e) =>
+                                setdetails_description(e.target.value)
+                              }
+                              sx={{
+                                width: 1,
+                                "& .MuiInputBase-input": {
+                                  fontSize: 14,
+                                },
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </TabPanel>
+              </Box>
+
+              {/* Item Tabview */}
+              <Box>
+                <TabPanel value="item">
+                  <Paper
+                    elevation={0}
+                    sx={{ px: 2, backgroundColor: "#FFFFFB" }}
+                  >
+                    <Box
+                      component="form"
+                      onSubmit={handleSubmit}
+                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mb: 1,
+                        }}
+                      >
+                        <Box sx={{ width: "100%" }}>
+                          <Typography
+                            sx={{
+                              fontSize: "1.1rem",
+                              color: "#a9a9a9",
+                              fontWeight: "semibold",
+                            }}
+                          >
+                            ITEMS
+                          </Typography>
+                          <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+                        </Box>
+                        <IconButton
+                          onClick={handleAddRow}
+                          sx={{ color: "primary.main" }}
+                        >
+                          <AddIcon
+                            sx={{
+                              color: "black",
+                              border: "2px solid",
+                              "&.Mui-selected": {},
+                              "&:focus": {
+                                outline: "none",
+                              },
+                            }}
+                          />
+                        </IconButton>
+                      </Box>
+                      <Box sx={{ justifyItems: "flex-end" }}>
+                        <Button
+                          onClick={handleScanInterface}
+                          sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            color: "blue",
+                          }}
+                        >
+                          Scan interface
+                        </Button>
+                      </Box>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow sx={{ width: 1 }}>
+                              <TableCell>Item's name</TableCell>
+                              <TableCell>OID</TableCell>
+                              <TableCell>Type</TableCell>
+                              <TableCell>Unit</TableCell>
+                              <TableCell>Update Interval</TableCell>
+                              {/* <TableCell>History</TableCell>
+                      <TableCell>Trend</TableCell> */}
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            <TransitionGroup component={null}>
+                              {paginatedItems.map((row) => (
+                                <Fade
+                                  key={row.id}
+                                  in={!isTransitioning}
+                                  style={{ transformOrigin: "0 0 0" }}
+                                  {...(isTransitioning ? { timeout: 100 } : {})}
+                                >
+                                  <TableRow>
+                                    <TableCell sx={{ width: "25%" }}>
+                                      <TextField
+                                        {...textFieldProps}
+                                        value={row.item_name}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            row.id,
+                                            "item_name",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+                                    <TableCell sx={{ width: "25%" }}>
+                                      <TextField
+                                        {...textFieldProps}
+                                        value={row.oid}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            row.id,
+                                            "oid",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <TextField
+                                        {...textFieldProps}
+                                        value={row.type}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            row.id,
+                                            "type",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <TextField
+                                        {...textFieldProps}
+                                        value={row.unit}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            row.id,
+                                            "unit",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <TextField
+                                        {...textFieldProps}
+                                        value={row.interval}
+                                        onChange={(e) =>
+                                          handleItemChange(
+                                            row.id,
+                                            "interval",
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+
+                                    <TableCell>
+                                      <IconButton
+                                        onClick={() => handleDeleteRow(row.id)}
+                                        disabled={itemRows.length === 1}
+                                      >
+                                        <DeleteIcon />
+                                      </IconButton>
+                                    </TableCell>
+                                  </TableRow>
+                                </Fade>
+                              ))}
+                            </TransitionGroup>
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          mt: 2,
+                        }}
+                      >
+                        <Pagination
+                          count={Math.ceil(
+                            itemRows.length / itemsPerScanInterfacepage
+                          )}
+                          showFirstButton
+                          showLastButton
+                          page={ScanInterfacepage}
+                          onChange={handleChangeScanInterfacepage}
+                          color="primary"
+                          sx={{
+                            "& .MuiPaginationItem-root": {
+                              transition: "all 0.1s ease",
+                              "&:hover": {
+                                backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                transform: "scale(1.1)",
+                              },
                             },
                           }}
                         />
                       </Box>
                     </Box>
-                    <Box>
-                      <Typography sx={{ fontSize: 14, mt: 1 }}>Port</Typography>
-                    </Box>
-                    <Box>
-                      <TextField
-                        {...textFieldProps}
-                        value={snmp_port}
-                        onChange={(e) => setsnmp_port(e.target.value)}
-                        sx={{
-                          width: "90%",
-                          "& .MuiInputBase-input": {
-                            fontSize: 14,
-                          },
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </Box>
+                  </Paper>
+                </TabPanel>
               </Box>
-
-              {/* Details Section */}
               <Box
-                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
-              >
-                <Typography
-                  sx={{
-                    mb: -2,
-                    fontSize: "1.1rem",
-                    color: "#a9a9a9",
-                    fontWeight: "semibold",
-                    mt: 0.5,
-                  }}
-                  {...typographyProps}
-                >
-                  DETAILS
-                </Typography>
-                <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-                <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: "18%",
-                      display: "flex",
-                      justifyContent: "right",
-                      mt: 4,
-                    }}
-                  >
-                    <Typography sx={{ fontSize: 14 }}>Description</Typography>
-                  </Box>
-
-                  <Box sx={{ textAlign: "left", width: "40%" }}>
-                    <TextField
-                      multiline
-                      rows={4}
-                      {...textFieldProps}
-                      value={details_description}
-                      onChange={(e) => setdetails_description(e.target.value)}
-                      sx={{
-                        width: 1,
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    />
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
-        </TabPanel>
-        </Box>
-
-        {/* Item Tabview */}
-        <Box>
-        <TabPanel value="item">
-          <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 1,
-                }}
-              >
-                <Box sx={{ width: "100%" }}>
-                  <Typography
-                    sx={{
-                      fontSize: "1.1rem",
-                      color: "#a9a9a9",
-                      fontWeight: "semibold",
-                    }}
-                  >
-                    ITEMS
-                  </Typography>
-                  <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
-                </Box>
-                <IconButton
-                  onClick={handleAddRow}
-                  sx={{ color: "primary.main" }}
-                >
-                  <AddIcon
-                    sx={{
-                      color: "black",
-                      border: "2px solid",
-                      "&.Mui-selected": {},
-                      "&:focus": {
-                        outline: "none",
-                      },
-                    }}
-                  />
-                </IconButton>
-              </Box>
-              <Box sx={{ justifyItems: "flex-end" }}>
-                <Button
-                  onClick={handleScanInterface}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    color: "blue",
-                  }}
-                >
-                  Scan interface
-                </Button>
-              </Box>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ width: 1 }}>
-                      <TableCell>Item's name</TableCell>
-                      <TableCell>OID</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Unit</TableCell>
-                      <TableCell>Update Interval</TableCell>
-                      {/* <TableCell>History</TableCell>
-                      <TableCell>Trend</TableCell> */}
-                      <TableCell></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TransitionGroup component={null}>
-                      {paginatedItems.map((row) => (
-                        <Fade
-                          key={row.id}
-                          in={!isTransitioning}
-                          style={{ transformOrigin: "0 0 0" }}
-                          {...(isTransitioning ? { timeout: 100 } : {})}
-                        >
-                          <TableRow>
-                            <TableCell sx={{ width: "25%" }}>
-                              <TextField
-                                {...textFieldProps}
-                                value={row.item_name}
-                                onChange={(e) =>
-                                  handleItemChange(
-                                    row.id,
-                                    "item_name",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </TableCell>
-                            <TableCell sx={{ width: "25%" }}>
-                              <TextField
-                                {...textFieldProps}
-                                value={row.oid}
-                                onChange={(e) =>
-                                  handleItemChange(
-                                    row.id,
-                                    "oid",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <TextField
-                                {...textFieldProps}
-                                value={row.type}
-                                onChange={(e) =>
-                                  handleItemChange(
-                                    row.id,
-                                    "type",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <TextField
-                                {...textFieldProps}
-                                value={row.unit}
-                                onChange={(e) =>
-                                  handleItemChange(
-                                    row.id,
-                                    "unit",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <TextField
-                                {...textFieldProps}
-                                value={row.interval}
-                                onChange={(e) =>
-                                  handleItemChange(
-                                    row.id,
-                                    "interval",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </TableCell>
-
-                            <TableCell>
-                              <IconButton
-                                onClick={() => handleDeleteRow(row.id)}
-                                disabled={itemRows.length === 1}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </TableCell>
-                          </TableRow>
-                        </Fade>
-                      ))}
-                    </TransitionGroup>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                <Pagination
-                  count={Math.ceil(itemRows.length / itemsPerScanInterfacepage)}
-                  showFirstButton
-                  showLastButton
-                  page={ScanInterfacepage}
-                  onChange={handleChangeScanInterfacepage}
-                  color="primary"
-                  sx={{
-                    "& .MuiPaginationItem-root": {
-                      transition: "all 0.1s ease",
-                      "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.04)",
-                        transform: "scale(1.1)",
-                      },
-                    },
-                  }}
-                />
-              </Box>
-            </Box>
-          </Paper>
-        </TabPanel>
-        </Box>
-        <Box
                 sx={{
                   display: "flex",
                   justifyContent: "flex-end",
@@ -943,7 +1303,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   Cancel
                 </Button>
                 <Button
-                   type="submit"
+                  type="submit"
                   variant="outlined"
                   sx={{
                     fontSize: 14,
@@ -954,15 +1314,15 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                       borderColor: "red",
                     },
                   }}
-               >
-               Add
-             </Button>
+                >
+                  Add
+                </Button>
+              </Box>
             </Box>
+          </TabContext>
         </Box>
-      </TabContext>
+        {/* </form> */}
       </Box>
-      {/* </form> */}
-    </Box>
     </>
   );
 };
