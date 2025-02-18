@@ -71,7 +71,7 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
 
       const token = credentialResponse.credential;
       localStorage.setItem("token", token);
-      localStorage.setItem("tokenTimestamp", Date.now().toString()); 
+      localStorage.setItem("tokenTimestamp", Date.now().toString());
 
       const serverResponse = await authenticateWithServer(token);
 

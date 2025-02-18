@@ -25,6 +25,7 @@ import {
   TextField,
   Select,
   MenuItem,
+  CircularProgress
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
@@ -44,6 +45,7 @@ import NotificationImportantIcon from "@mui/icons-material/NotificationImportant
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
 import DraggableDashboard from "../components/DraggableDashboard";
+
 
 // Add new interfaces for graph selection
 interface GraphSelection {
@@ -171,6 +173,33 @@ const GraphSelectionDialog: React.FC<{
   );
 };
 
+
+// API response interfaces
+interface APIComponent {
+  id: string;
+  position: number;
+  componentType: string;
+  settings: Record<string, any>;
+  _id: string;
+}
+
+interface APIDashboard {
+  _id: string;
+  dashboard_name: string;
+  user_id: string;
+  isDefault: boolean;
+  components: APIComponent[];
+  isViewer: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+interface APIResponse {
+  status: string;
+  dashboards: APIDashboard[];
+}
+
 interface ComponentConfig {
   id: string;
   name: string;
@@ -262,69 +291,77 @@ const Dashboard = () => {
 
   const [graphSelectionOpen, setGraphSelectionOpen] = useState(false);
   const [pendingGraphAdd, setPendingGraphAdd] = useState(false);
-  const [activeComponents, setActiveComponents] = useState<
-    ActiveComponentWithGraph[]
-  >(() => {
-    try {
-      const savedLayout = localStorage.getItem(DASHBOARD_STORAGE_KEY);
-      return savedLayout
-        ? JSON.parse(savedLayout)
-        : [
-            { id: "digitalClock", position: 0 },
-            { id: "graph1", position: 1 },
-          ];
-    } catch (error) {
-      console.error("Error loading layout:", error);
-      return [
-        { id: "digitalClock", position: 0 },
-        { id: "graph1", position: 1 },
-      ];
-    }
-  });
-  const [dashboards, setDashboards] = useState<DashboardLayout[]>(() => {
-    try {
-      const savedDashboards = localStorage.getItem("dashboards");
-      if (savedDashboards) {
-        return JSON.parse(savedDashboards);
-      }
-      // Initialize with default dashboard
-      return [
-        {
-          id: "dashboard1",
-          name: "Dashboard 1",
-          components: [
-            { id: "digitalClock", position: 0 },
-            { id: "graph1", position: 1 },
-          ],
-        },
-      ];
-    } catch (error) {
-      console.error("Error loading dashboards:", error);
-      return [
-        {
-          id: "dashboard1",
-          name: "Dashboard 1",
-          components: [
-            { id: "digitalClock", position: 0 },
-            { id: "graph1", position: 1 },
-          ],
-        },
-      ];
-    }
-  });
+  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>([]);
+  const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
+  const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [currentDashboardId, setCurrentDashboardId] =
-    useState<string>("dashboard1");
+  useEffect(() => {
+    const fetchDashboards = async () => {
+      try {
+        const userId = localStorage.getItem("user_id");
+        if (!userId) {
+          throw new Error("No user ID found");
+        }
+
+        const response = await fetch(`http://localhost:3000/dashboard/user/${userId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboards");
+        }
+
+        const data = await response.json();
+        if (data.status === "success" && Array.isArray(data.dashboards)) {
+          // Transform API data to match our DashboardLayout interface
+          const transformedDashboards: DashboardLayout[] = data.dashboards.map((dashboard: APIDashboard) => ({
+            id: dashboard._id,
+            name: dashboard.dashboard_name,
+            components: dashboard.components.map((comp: APIComponent) => ({
+              id: comp.componentType,
+              position: comp.position,
+              ...(comp.settings || {})
+            }))
+          }));
+
+          setDashboards(transformedDashboards);
+          
+          // Set current dashboard to the first one
+          if (transformedDashboards.length > 0) {
+            setCurrentDashboardId(transformedDashboards[0].id);
+            setActiveComponents(transformedDashboards[0].components);
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch dashboards");
+        setSnackbar({
+          open: true,
+          message: "Failed to load dashboards",
+          severity: "error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboards();
+  }, []);
+
+  // Check user role
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+    setIsAdmin(userRole === "admin");
+  }, []);
 
   const handleDashboardChange = (event: any) => {
-    setCurrentDashboardId(event.target.value);
-    const dashboard = dashboards.find((d) => d.id === event.target.value);
+    const dashboardId = event.target.value;
+    setCurrentDashboardId(dashboardId);
+    const dashboard = dashboards.find((d) => d.id === dashboardId);
     if (dashboard) {
       setActiveComponents(dashboard.components);
     }
   };
 
-  const handleAddDashboard = () => {
+  const handleAddDashboard = async () => {
     if (dashboards.length >= 3) {
       setSnackbar({
         open: true,
@@ -334,50 +371,86 @@ const Dashboard = () => {
       return;
     }
 
-    const newDashboardNumber = dashboards.length + 1;
-    const newDashboard: DashboardLayout = {
-      id: `dashboard${newDashboardNumber}`,
-      name: `Dashboard ${newDashboardNumber}`,
-      components: [],
-    };
-
-    setDashboards((prev) => {
-      const updated = [...prev, newDashboard];
-      localStorage.setItem("dashboards", JSON.stringify(updated));
-      return updated;
-    });
-    setCurrentDashboardId(newDashboard.id);
-    setActiveComponents([]);
-  };
-
-  useEffect(() => {
     try {
-      setDashboards((prev) => {
-        const updated = prev.map((dashboard) => {
-          if (dashboard.id === currentDashboardId) {
-            return {
-              ...dashboard,
-              components: activeComponents,
-            };
-          }
-          return dashboard;
-        });
-        localStorage.setItem("dashboards", JSON.stringify(updated));
-        return updated;
+      const userId = localStorage.getItem("user_id");
+      const response = await fetch("http://localhost:3000/dashboard", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dashboard_name: `Dashboard ${dashboards.length + 1}`,
+          user_id: userId,
+          components: [],
+        }),
       });
 
-      const userRole = localStorage.getItem("userRole");
+      if (!response.ok) {
+        throw new Error("Failed to create dashboard");
+      }
 
-      if (userRole === "admin") {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
+      const data = await response.json();
+      if (data.status === "success") {
+        // Refresh dashboards
+        const userId = localStorage.getItem("user_id");
+        const refreshResponse = await fetch(`http://localhost:3000/dashboard/user/${userId}`);
+        const refreshData = await refreshResponse.json();
+        
+        if (refreshData.status === "success") {
+          const transformedDashboards: DashboardLayout[] = refreshData.dashboards.map((dashboard: APIDashboard) => ({
+            id: dashboard._id,
+            name: dashboard.dashboard_name,
+            components: dashboard.components.map((comp: APIComponent) => ({
+              id: comp.componentType,
+              position: comp.position,
+              ...(comp.settings || {})
+            }))
+          }));
+          
+          setDashboards(transformedDashboards);
+          setCurrentDashboardId(data.dashboard._id);
+          setActiveComponents([]);
+        }
       }
     } catch (error) {
-      console.error("Error saving dashboard:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to create dashboard",
+        severity: "error",
+      });
     }
-  }, [activeComponents, currentDashboardId]);
+  };
 
+  // Update dashboard components
+  useEffect(() => {
+    const updateDashboard = async () => {
+      if (!currentDashboardId || !isEditing) return;
+
+      try {
+        const response = await fetch(`http://localhost:3000/dashboard/${currentDashboardId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            components: activeComponents.map(comp => ({
+              componentType: comp.id,
+              position: comp.position,
+              settings: comp.graphSelection ? { graphSelection: comp.graphSelection } : {}
+            }))
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update dashboard");
+        }
+      } catch (error) {
+        console.error("Error updating dashboard:", error);
+      }
+    };
+
+    updateDashboard();
+  }, [activeComponents, currentDashboardId, isEditing]);
   const handleAddComponent = (componentId: string) => {
     const componentConfig = availableComponents.find(
       (c) => c.id === componentId

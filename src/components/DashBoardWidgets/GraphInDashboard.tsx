@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import MetricGraph from "../graphComponent/MetricGraph";
-import { hostname } from "os";
 
 interface GraphInDashboardProps {
   graphSelection?: {
@@ -14,6 +13,8 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
 }) => {
   const [graphData, setGraphData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // Add state for tracking the time range
+  const [timeRange, setTimeRange] = useState("15min");
 
   useEffect(() => {
     const fetchGraphData = async () => {
@@ -54,7 +55,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
             Array.isArray(dataResult.data) &&
             dataResult.data.length > 0
           ) {
-            const hostname = dataResult.data[0]._id.hostname; // ดึง hostname จาก _id
+            const hostname = dataResult.data[0]._id.hostname;
             const selectedGraph = dataResult.data[0].items.find(
               (item: any) => item.item_id.item_name === graphSelection.graphName
             );
@@ -63,7 +64,10 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
               setGraphData({
                 item_id: selectedGraph.item_id,
                 data: selectedGraph.data,
-                hostname: hostname, // ใช้ hostname ที่ถูกต้อง
+                avg_value: selectedGraph.avg_value || 0,
+                max_value: selectedGraph.max_value || 0,
+                min_value: selectedGraph.min_value || 0,
+                hostname: hostname,
               });
             }
           }          
@@ -104,8 +108,8 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
       <Box sx={{ height: "calc(100% - 52px)" }}>
         <MetricGraph
           item={graphData}
-          // hideLegendLabel={true}
-          isSmall={true} // Set to small size for dashboard
+          selectedLastTime={timeRange}
+          isSmall={true}
         />
       </Box>
     </Box>
