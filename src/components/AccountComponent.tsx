@@ -20,6 +20,7 @@ interface ApiResponse {
 }
 
 interface ProcessedUser extends Omit<IUser, "username"> {
+  picture: string;
   firstName: string;
   lastName: string;
 }
@@ -39,11 +40,13 @@ const AccountComponent = () => {
     const nameParts = userData.username.split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
+    const picture = userData.picture || "default-profile-image-url"; 
 
     return {
       ...userData,
       firstName,
       lastName,
+      picture,
     };
   };
 
@@ -150,15 +153,14 @@ const AccountComponent = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", ml: 2, padding: 3 }}>
-          <Avatar
-            src={Profile}
-            // src={user.profileImage}
-            alt="Profile Picture"
-            sx={{
-              width: 100,
-              height: 100,
-            }}
-          />
+        <Avatar
+        src={user?.picture || 'default-profile-image-url'} 
+        alt="Profile Picture"
+        sx={{
+          width: 100,
+          height: 100,
+        }}
+      />
           <Box sx={{ ml: 5 }}>
             <Box sx={{ display: "flex", gap: 1, mb: 0.8 }}>
               <Typography
@@ -249,7 +251,7 @@ const AccountComponent = () => {
             <Box>
               <Typography sx={{ color: "#000000" }}>Phone</Typography>
               <Typography sx={{ color: "#888888" }}>
-                {user.phone || ""}
+                {user.phone || "-"}
               </Typography>
             </Box>
           </Box>
