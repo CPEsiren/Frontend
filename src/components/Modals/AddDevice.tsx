@@ -379,14 +379,23 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
     }
 
     try {
-      const response = await axios.get("http://127.0.0.1:3000/item/interface", {
-        params: {
+      const response = await axios.post(
+        "http://127.0.0.1:3000/item/interface",
+        {
           ip_address: ip_address,
           port: snmp_port,
           version: snmp_version,
           community: snmp_community,
-        },
-      });
+          authenV3: {
+            username: V3Username,
+            securityLevel: SecurLevel,
+            authenProtocol: authenProtocol,
+            authenPass: authenPass,
+            privacyProtocol: privacyProtocol,
+            privacyPass: privacyPass,
+          },
+        }
+      );
 
       if (response.data && Array.isArray(response.data.data)) {
         // Convert the interface data to the DeviceItems format
