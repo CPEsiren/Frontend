@@ -404,13 +404,19 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   };
 
   return (
+    <>
     <Box sx={{ p: 0, width: "100%" }}>
       {windowSize.width > 600 && (
         <Box
           sx={{ display: "flex", justifyContent: "flex-start", mb: 0, mt: 1 }}
         />
       )}
-      <form onSubmit={handleSubmit}  >
+      {/* <form onSubmit={handleSubmit}  > */}
+      <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >      
       <TabContext value={tabvalue} >
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <TabList
@@ -434,7 +440,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                 },
               }}
               label="Host"
-              value={hostname}
+              value="host"
             />
             <Tab
               sx={{
@@ -954,8 +960,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
             </Box>
         </Box>
       </TabContext>
-      </form>
+      </Box>
+      {/* </form> */}
     </Box>
+    </>
   );
 };
 
