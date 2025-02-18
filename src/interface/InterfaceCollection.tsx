@@ -51,6 +51,7 @@ export interface IUser {
   role: string;
   phone: string;
   isActive: boolean;
+  picture?: string;
 }
 
 export interface IGraph {
