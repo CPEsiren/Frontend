@@ -917,6 +917,26 @@ const TriggerComponent = () => {
                         </MenuItem>
                       ))}
                     </TextField>
+                     {/* Duration section */}
+                     <TextField
+                      value={part.duration}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "duration",
+                          e.target.value
+                        )
+                      }
+                      label="Duration"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
 
                     {/* Item Selection */}
                     <TextField
@@ -932,7 +952,7 @@ const TriggerComponent = () => {
                       size="small"
                       label="Item"
                       sx={{
-                        width: "47%",
+                        width: "40%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -960,7 +980,7 @@ const TriggerComponent = () => {
                       label="Operation"
                       size="small"
                       sx={{
-                        width: "13%",
+                        width: "10%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -986,26 +1006,6 @@ const TriggerComponent = () => {
                       label="Value"
                       size="small"
                       sx={{
-                        width: "15%",
-                        backgroundColor: "white",
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    />
-                    {/* Duration section */}
-                    <TextField
-                      value={part.duration}
-                      onChange={(e) =>
-                        handleExpressionPartChange(
-                          index,
-                          "duration",
-                          e.target.value
-                        )
-                      }
-                      label="Duration"
-                      size="small"
-                      sx={{
                         width: "10%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
@@ -1013,6 +1013,7 @@ const TriggerComponent = () => {
                         },
                       }}
                     />
+                   
 
                     {/* Operator Selection (show only if not the last row) */}
                     {index < expressionParts.length - 1 && (
@@ -1029,7 +1030,7 @@ const TriggerComponent = () => {
                         label="Operator"
                         size="small"
                         sx={{
-                          width: "10%",
+                          width: "8%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1186,6 +1187,26 @@ const TriggerComponent = () => {
                           </MenuItem>
                         ))}
                       </TextField>
+                      {/* Duration section */}
+                      <TextField
+                        value={part.duration}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "duration",
+                            e.target.value
+                          )
+                        }
+                        label="Duration"
+                        size="small"
+                        sx={{
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
 
                       {/* Item Selection */}
                       <TextField
@@ -1202,7 +1223,7 @@ const TriggerComponent = () => {
                         size="small"
                         label="Item"
                         sx={{
-                          width: "47%",
+                          width: "40%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1230,7 +1251,7 @@ const TriggerComponent = () => {
                         label="Operation"
                         size="small"
                         sx={{
-                          width: "13%",
+                          width: "10%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1256,27 +1277,7 @@ const TriggerComponent = () => {
                         label="Value"
                         size="small"
                         sx={{
-                          width: "15%",
-                          backgroundColor: "white",
-                          "& .MuiInputBase-input": {
-                            fontSize: 14,
-                          },
-                        }}
-                      />
-
-                      <TextField
-                        value={part.duration}
-                        onChange={(e) =>
-                          handleRecoveryPartChange(
-                            index,
-                            "duration",
-                            e.target.value
-                          )
-                        }
-                        label="Duration"
-                        size="small"
-                        sx={{
-                          width: "15%",
+                          width: "10%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1299,7 +1300,7 @@ const TriggerComponent = () => {
                           label="Operator"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "8%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,

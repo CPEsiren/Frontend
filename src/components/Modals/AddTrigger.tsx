@@ -25,7 +25,7 @@ interface ExpressionPart {
   value: string;
   operator?: string; // 'and' or 'or'
   functionofItem: string;
-  duration: number;
+  duration: string;
 }
 
 interface RecoveryPart {
@@ -34,7 +34,7 @@ interface RecoveryPart {
   value: string;
   operator?: string; // 'and' or 'or'
   functionofItem: string;
-  duration: number;
+  duration: string;
 }
 
 const functionofItem = [
@@ -97,7 +97,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       value: "",
       operator: "",
       functionofItem: "",
-      duration: 0,
+      duration: "",
     },
   ]);
 
@@ -109,7 +109,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       value: "",
       operator: "",
       functionofItem: "",
-      duration: 0,
+      duration: "",
     },
   ]);
 
@@ -176,7 +176,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   const handleAddExpression = () => {
     setExpressionParts((prev) => [
       ...prev,
-      { item: "", operation: "", value: "", functionofItem: "", duration: 0 },
+      { item: "", operation: "", value: "", functionofItem: "", duration: "" },
     ]);
   };
 
@@ -184,7 +184,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   const handleAddRecovery = () => {
     setRecoveryParts((prev) => [
       ...prev,
-      { item: "", operation: "", value: "", functionofItem: "", duration: 0 },
+      { item: "", operation: "", value: "", functionofItem: "", duration: "" },
     ]);
   };
 
@@ -265,7 +265,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
         value: "",
         operator: "",
         functionofItem: "",
-        duration: 0
+        duration: ""
       }]);
       setRecoveryParts([{
         item: "",
@@ -273,7 +273,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
         value: "",
         operator: "",
         functionofItem: "",
-        duration: 0
+        duration: ""
       }]);
       alert("Trigger added successfully!");
       onClose();
@@ -621,7 +621,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               {expressionParts.map((part, index) => (
                 <Box
                   key={index}
-                  sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                  sx={{ display: "flex", gap: 1.5, alignItems: "center",width:1 }}
                 >
                   {/* functionofitem section */}
                   <TextField
@@ -651,6 +651,27 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       </MenuItem>
                     ))}
                   </TextField>
+                  {/* Duration section */}
+                  <TextField
+                    value={part.duration}
+                    onChange={(e) =>
+                      handleExpressionPartChange(
+                        index,
+                        "duration",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Duration"
+                    size="small"
+                    sx={{
+                      width: "10%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
 
                   {/* Item Selection */}
                   <TextField
@@ -664,7 +685,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     size="small"
                     label="Item"
                     sx={{
-                      width: "47%",
+                      width: "40%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -693,7 +714,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     label="Operation"
                     size="small"
                     sx={{
-                      width: "13%",
+                      width: "10%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -716,27 +737,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     label="Value"
                     size="small"
                     sx={{
-                      width: "15%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                  {/* Duration section */}
-                  <TextField
-                    value={part.duration}
-                    onChange={(e) =>
-                      handleExpressionPartChange(
-                        index,
-                        "duration",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Duration"
-                    size="small"
-                    sx={{
                       width: "10%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
@@ -744,6 +744,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       },
                     }}
                   />
+                  
 
                   {/* Operator Selection (show only if not the last row) */}
                   {index < expressionParts.length - 1 && (
@@ -761,7 +762,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       label="Operator"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "8%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -920,6 +921,26 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       </MenuItem>
                     ))}
                   </TextField>
+                  <TextField
+                    value={part.duration}
+                    onChange={(e) =>
+                      handleRecoveryPartChange(
+                        index,
+                        "duration",
+                        e.target.value
+                      )
+                    }
+                    disabled={isFormDisabled}
+                    label="Duration"
+                    size="small"
+                    sx={{
+                      width: "10%",
+                      backgroundColor: "white",
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
 
                   {/* Item Selection */}
                   <TextField
@@ -933,7 +954,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     size="small"
                     label="Item"
                     sx={{
-                      width: "47%",
+                      width: "40%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -962,7 +983,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     label="Operation"
                     size="small"
                     sx={{
-                      width: "13%",
+                      width: "10%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -985,7 +1006,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     label="Value"
                     size="small"
                     sx={{
-                      width: "15%",
+                      width: "10%",
                       backgroundColor: "white",
                       "& .MuiInputBase-input": {
                         fontSize: 14,
@@ -993,26 +1014,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     }}
                   />
 
-                  <TextField
-                    value={part.duration}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(
-                        index,
-                        "duration",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Duration"
-                    size="small"
-                    sx={{
-                      width: "15%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
+                  
 
                   {/* Operator Selection (show only if not the last row) */}
                   {index < recoveryParts.length - 1 && (
@@ -1030,7 +1032,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       label="Operator"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "8%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
