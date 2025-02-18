@@ -48,7 +48,7 @@ export interface IUser {
   email: string;
   isAdmin: boolean;
   username: string;
-  role: string;
+  role: "superdamin" | "admin" | "viewer";
   phone: string;
   isActive: boolean;
   picture?: string;
