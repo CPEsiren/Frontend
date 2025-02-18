@@ -234,6 +234,7 @@ const EventComponent = () => {
 
                   {/* Severity */}
                   <TableCell
+                  align="center"
                     sx={{
                       color: (() => {
                         switch (event.severity.toLowerCase()) {
