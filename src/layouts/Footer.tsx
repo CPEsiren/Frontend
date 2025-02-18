@@ -3,36 +3,35 @@ import {
   Avatar,
   Stack,
   Typography,
-  Paper,
-  Popper,
-  MenuItem,
-  MenuList,
-  ClickAwayListener,
   Button,
   Box,
+  Popper,
+  Grow,
+  Paper,
+  ClickAwayListener,
 } from "@mui/material";
-import Grow from "@mui/material/Grow";
+import { useNavigate } from "react-router-dom";
 import useWindowSize from "../hooks/useWindowSize";
 import LogoutAuthen from "../authenticated/LogoutAuthen";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 interface FooterProps {
   isHideSidebar: boolean;
 }
-interface UserName {
-  firstName: string;
-  lastName: string;
+
+interface IUser {
+  _id: string;
+  role: string;
+  picture?: string;
 }
 
 export default function Footer({ isHideSidebar }: FooterProps) {
   const [openSignout, setOpenSignout] = useState(false);
   const windowSize = useWindowSize();
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [userName, setUserName] = useState<UserName>({
-    firstName: "",
-    lastName: "",
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+
   const handleclick = () => {
     navigate(`/account`);
   };
@@ -50,24 +49,40 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     setOpenSignout(false);
   };
 
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<{ username: string; picture?: string }>({
+    username: "Guest",
+    picture: undefined,
+  });
 
+  const getUserData = async () => {
+    const loggedInUserId = localStorage.getItem("user_id");
+    if (loggedInUserId) {
+      try {
+        const response = await axios.get("http://localhost:3000/user");
+        const userData = response.data.users.find((user: IUser) => user._id === loggedInUserId);
+        if (userData) {
+      
+          const firstNameOnly = userData.username.split(" ")[0]; 
+          setUser({ username: firstNameOnly, picture: userData.picture });
+        } else {
+          console.warn("User not found in the response.");
+          setUser({ username: "Guest", picture: undefined }); 
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    } 
+  };
+  
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role === "admin") {
       setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
     }
-  });
+  }, []);
 
   useEffect(() => {
-    const fullName = localStorage.getItem("username") || "";
-    const nameParts = fullName.split(" ");
-    setUserName({
-      firstName: nameParts[0] || "",
-      lastName: nameParts.slice(1).join(" ") || "",
-    });
+    getUserData();
   }, []);
 
   return (
@@ -101,39 +116,23 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             height: "30px",
             cursor: isAdmin ? "pointer" : "default",
           }}
-          alt="userProfile"
-          src={
-            "https://i.pinimg.com/564x/2b/c0/fe/2bc0feb541b86dfe46cbd70c2bb63b7f.jpg"
-          }
-          onClick={
-            isAdmin
-              ? () => {
-                  // handleclick();
-                  handleOpenSignout();
-                }
-              : undefined
-          }
+          src={user.picture || "default-profile-image-url"} 
+          alt="Profile Picture"
+          onClick={isAdmin ? handleOpenSignout : undefined}
         />
         {!isHideSidebar && (
           <Stack direction="row" spacing={1} marginLeft={1.5}>
-            <Typography fontWeight={"medium"}>{userName.firstName}</Typography>
-            {/* <Typography>{userName.lastName}</Typography> */}
+            <Typography fontWeight={"medium"}>{user.username}</Typography>
           </Stack>
         )}
       </Button>
-      <Popper
-        open={openSignout}
-        anchorEl={anchorRef.current}
-        placement="right"
-        transition
-        disablePortal={true}
-      >
+
+      <Popper open={openSignout} anchorEl={anchorRef.current} placement="right" transition disablePortal>
         {({ TransitionProps, placement }) => (
           <Grow
             {...TransitionProps}
             style={{
-              transformOrigin:
-                placement === "bottom-start" ? "left top" : "left bottom",
+              transformOrigin: placement === "bottom-start" ? "left top" : "left bottom",
             }}
           >
             <Paper>
@@ -146,6 +145,8 @@ export default function Footer({ isHideSidebar }: FooterProps) {
           </Grow>
         )}
       </Popper>
+
+      {/* Logout button when sidebar is not hidden */}
       {!(isHideSidebar || windowSize.width < 1100) && (
         <Box sx={{ marginLeft: "auto", marginRight: 2 }}>
           <LogoutAuthen />
