@@ -9,6 +9,7 @@ import {
   Select,
   SelectChangeEvent,
   Paper,
+  Tabs,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -103,6 +104,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   const [details_location, setdetails_location] = useState<string>("");
   const [details_description, setdetails_description] = useState<string>("");
   const [tabvalue, setTabvalue] = React.useState("host"); //Tabview
+  
+  // const [currentTab, setCurrentTab] = useState("host");
 
   const [templateOptions, setTemplateOptions] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
@@ -214,6 +217,14 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
     };
     setItemRows([...itemRows, newRow]);
   };
+
+  // const handleTabChange = (event, newValue) => {
+  //   setCurrentTab(newValue); 
+  // }
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setTabvalue(newValue);
+  };
+
 
   const handleDeleteRow = (id: number) => {
     if (itemRows.length > 1) {
@@ -335,9 +346,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
     fontSize: 14,
   };
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    setTabvalue(newValue);
-  };
 
   // Add new function to handle interface scanning
   const handleScanInterface = async () => {
@@ -402,7 +410,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           sx={{ display: "flex", justifyContent: "flex-start", mb: 0, mt: 1 }}
         />
       )}
-      <TabContext value={tabvalue}>
+      <form onSubmit={handleSubmit}  >
+      <TabContext value={tabvalue} >
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <TabList
             sx={{
@@ -425,7 +434,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                 },
               }}
               label="Host"
-              value="host"
+              value={hostname}
             />
             <Tab
               sx={{
@@ -445,6 +454,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
             />
           </TabList>
         </Box>
+        <Box>
+        <Box>
         <TabPanel value="host">
           <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
             <Box>
@@ -719,45 +730,13 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   </Box>
                 </Box>
               </Box>
-
-              {/* Action Buttons */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 2,
-                  mt: 1,
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={onClose}
-                  sx={{ fontSize: 14 }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="outlined"
-                  sx={{
-                    fontSize: 14,
-                    color: "black",
-                    borderColor: "black",
-                    "&:hover": {
-                      color: "red",
-                      borderColor: "red",
-                    },
-                  }}
-                >
-                  Add
-                </Button>
-              </Box>
             </Box>
           </Paper>
         </TabPanel>
+        </Box>
 
         {/* Item Tabview */}
+        <Box>
         <TabPanel value="item">
           <Paper elevation={0} sx={{ px: 2, backgroundColor: "#FFFFFB" }}>
             <Box
@@ -937,8 +916,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   }}
                 />
               </Box>
-              {/* Action Buttons */}
-              <Box
+            </Box>
+          </Paper>
+        </TabPanel>
+        </Box>
+        <Box
                 sx={{
                   display: "flex",
                   justifyContent: "flex-end",
@@ -955,7 +937,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                   type="submit"
                   variant="outlined"
                   sx={{
                     fontSize: 14,
@@ -966,14 +948,13 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                       borderColor: "red",
                     },
                   }}
-                >
-                  Add
-                </Button>
-              </Box>
+               >
+               Add
+             </Button>
             </Box>
-          </Paper>
-        </TabPanel>
+        </Box>
       </TabContext>
+      </form>
     </Box>
   );
 };
