@@ -524,56 +524,43 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
 
                         {/* Host Section */}
                         <Box
-                          sx={{ display: "flex", flexDirection: "row", gap: 2 }}
+                          sx={{ display: "flex", flexDirection: "row",mt: "15px"}}
                         >
-                          <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
-                            <Box
-                              sx={{ display: "flex", justifyContent: "right" }}
-                            >
-                              <Typography
-                                sx={{ fontSize: 14, color: "red", mr: 1 }}
-                              >
-                                *
-                              </Typography>
-                              <Typography sx={{ fontSize: 14 }}>
-                                Device's name
-                              </Typography>
-                            </Box>
-                            <Typography sx={{ fontSize: 14, mt: 4 }}>
-                              Templates
-                            </Typography>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "right",
-                                mt: 4,
-                              }}
-                            >
-                              <Typography
-                                sx={{ fontSize: 14, color: "red", mr: 1 }}
-                              >
-                                *
-                              </Typography>
-                              <Typography sx={{ fontSize: 14 }}>
-                                Host groups
-                              </Typography>
-                            </Box>
+                          <Box sx={{ textAlign: "left", width: "5%" }}>
+                          <Box
+                            sx={{ display: "flex", flexDirection: "column", alignItems: "left", ml:4}}
+                          >
+                            <Typography sx={{ color: "red", mb: 0.5 }}>*</Typography>
+                            <Typography sx={{ color: "red", mb: 0.5,mt:10.5 }}>*</Typography>
+                          </Box>
+
+                      
                           </Box>
                           <Box sx={{ textAlign: "left" }}>
+                            {/* Device's name */}
+                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                              <TextField
+                                {...textFieldProps}
+                                id="outlined-basic"
+                                label="Device's name"
+                                variant="outlined"
+                                value={hostname}
+                                onChange={(e) => sethostname(e.target.value)}
+                                sx={{
+                                  width: "600px",
+                                  "& .MuiInputBase-input": {
+                                    fontSize: 16,
+                                  },
+                                }}
+                              />
+                            </Box>
+
+                            {/* Templates */}
                             <TextField
                               {...textFieldProps}
-                              value={hostname}
-                              onChange={(e) => sethostname(e.target.value)}
-                              sx={{
-                                mb: 2,
-                                width: 1,
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            />
-                            <TextField
-                              {...textFieldProps}
+                              id="outlined-basic"
+                              label="Templates"
+                              variant="outlined"
                               select
                               value={templates}
                               onChange={handleTemplateChange}
@@ -582,7 +569,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 mb: 2,
                                 width: 1,
                                 "& .MuiInputBase-input": {
-                                  fontSize: 14,
+                                  fontSize: 16,
                                 },
                               }}
                             >
@@ -590,26 +577,29 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 <em>None</em>
                               </MenuItem>
                               {templateOptions.map((template) => (
-                                <MenuItem
-                                  key={template._id}
-                                  value={template._id}
-                                >
+                                <MenuItem key={template._id} value={template._id}>
                                   {template.template_name}
                                 </MenuItem>
                               ))}
                             </TextField>
-                            <TextField
-                              {...textFieldProps}
-                              value={hostgroup}
-                              onChange={(e) => sethostgroup(e.target.value)}
-                              sx={{
-                                mb: 0,
-                                width: 1,
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            />
+
+                            {/* Host groups */}
+                            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                              <TextField
+                                {...textFieldProps}
+                                id="outlined-basic"
+                                label="Host groups"
+                                variant="outlined"
+                                value={hostgroup}
+                                onChange={(e) => sethostgroup(e.target.value)}
+                                sx={{
+                                  width: 1,
+                                  "& .MuiInputBase-input": {
+                                    fontSize: 16,
+                                  },
+                                }}
+                              />
+                            </Box>
                           </Box>
                           <Box
                             sx={{
@@ -622,7 +612,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                         </Box>
                       </Box>
 
-                      <Box sx={{ padding: 3 }}>
+                      <Box sx={{mt: 4}}>  
                         <Typography
                           sx={{
                             fontSize: "1.1rem",
@@ -654,12 +644,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             }}
                           >
                             <Box
-                              sx={{ textAlign: "right", mt: 1, width: "18%" }}
+                              sx={{ textAlign: "left", mt: 1, width: "18%" }}
                             >
                               <Box
                                 sx={{
                                   display: "flex",
-                                  justifyContent: "right",
+                                  justifyContent: "left",
                                 }}
                               >
                                 <Typography
@@ -822,38 +812,45 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             <Box sx={{ textAlign: "left", width: "40%" }}>
                               <TextField
                                 {...textFieldProps}
+                                id="outlined-basic"
+                                label="IP address"
+                                variant="outlined"
                                 value={ip_address}
                                 onChange={(e) => setip_address(e.target.value)}
                                 sx={{
                                   mb: 2,
                                   width: 1,
                                   "& .MuiInputBase-input": {
-                                    fontSize: 14,
+                                    fontSize: 16,
                                   },
                                 }}
                               />
                               <Box sx={{ textAlign: "left" }}>
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
+                              <FormControl sx={{ minWidth: 200 }} size="small">
+                                <Select
+                                  label="SNMP version"
+                                  color="primary"
+                                  value={snmp_version}
+                                  onChange={handleVersionChange}
+                                  displayEmpty
+                                  sx={{
+                                    mb: 2,
+                                    fontSize: 16,
+                                    "& .MuiMenuItem-root": { fontSize: 14 },
+                                    "& .MuiOutlinedInput-root.Mui-focused": {
+                                      borderColor: "#ff8f00", // เปลี่ยนสีกรอบเมื่อโฟกัส
+                                    },
+                                  }}
                                 >
-                                  <Select
-                                    value={snmp_version}
-                                    onChange={handleVersionChange}
-                                    displayEmpty
-                                    sx={{
-                                      mb: 2,
-                                      fontSize: 14,
-                                      "& .MuiMenuItem-root": { fontSize: 14 },
-                                    }}
-                                  >
-                                    <MenuItem value="SNMPv1">SNMPv1</MenuItem>
-                                    <MenuItem value="SNMPv2">SNMPv2</MenuItem>
-                                    <MenuItem value="SNMPv3">SNMPv3</MenuItem>
-                                  </Select>
-                                </FormControl>
+                                  <MenuItem value="SNMPv1">SNMPv1</MenuItem>
+                                  <MenuItem value="SNMPv2">SNMPv2</MenuItem>
+                                  <MenuItem value="SNMPv3">SNMPv3</MenuItem>
+                                </Select>
+                              </FormControl>
+
                                 <TextField
                                   {...textFieldProps}
+
                                   value={snmp_community}
                                   onChange={(e) =>
                                     setsnmp_community(e.target.value)
@@ -872,6 +869,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 />
                                 <TextField
                                   {...textFieldProps}
+                              
                                   value={V3Username}
                                   onChange={(e) =>
                                     setV3Username(e.target.value)
@@ -1023,12 +1021,15 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             <Box>
                               <TextField
                                 {...textFieldProps}
+                                id="outlined-basic"
+                                label="Port"
+                                variant="outlined"
                                 value={snmp_port}
                                 onChange={(e) => setsnmp_port(e.target.value)}
                                 sx={{
                                   width: "90%",
                                   "& .MuiInputBase-input": {
-                                    fontSize: 14,
+                                    fontSize: 16,
                                   },
                                 }}
                               />
