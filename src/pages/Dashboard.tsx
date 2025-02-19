@@ -25,11 +25,12 @@ import {
   TextField,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import DoneIcon from "@mui/icons-material/Done";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TableChartIcon from "@mui/icons-material/TableChart";
@@ -45,7 +46,6 @@ import NotificationImportantIcon from "@mui/icons-material/NotificationImportant
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
 import DraggableDashboard from "../components/DraggableDashboard";
-
 
 // Add new interfaces for graph selection
 interface GraphSelection {
@@ -173,7 +173,6 @@ const GraphSelectionDialog: React.FC<{
   );
 };
 
-
 // API response interfaces
 interface APIComponent {
   id: string;
@@ -291,7 +290,9 @@ const Dashboard = () => {
 
   const [graphSelectionOpen, setGraphSelectionOpen] = useState(false);
   const [pendingGraphAdd, setPendingGraphAdd] = useState(false);
-  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>([]);
+  const [activeComponents, setActiveComponents] = useState<
+    ActiveComponentWithGraph[]
+  >([]);
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
@@ -305,7 +306,9 @@ const Dashboard = () => {
           throw new Error("No user ID found");
         }
 
-        const response = await fetch(`http://localhost:3000/dashboard/user/${userId}`);
+        const response = await fetch(
+          `http://localhost:3000/dashboard/user/${userId}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch dashboards");
         }
@@ -313,18 +316,20 @@ const Dashboard = () => {
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.dashboards)) {
           // Transform API data to match our DashboardLayout interface
-          const transformedDashboards: DashboardLayout[] = data.dashboards.map((dashboard: APIDashboard) => ({
-            id: dashboard._id,
-            name: dashboard.dashboard_name,
-            components: dashboard.components.map((comp: APIComponent) => ({
-              id: comp.componentType,
-              position: comp.position,
-              ...(comp.settings || {})
-            }))
-          }));
+          const transformedDashboards: DashboardLayout[] = data.dashboards.map(
+            (dashboard: APIDashboard) => ({
+              id: dashboard._id,
+              name: dashboard.dashboard_name,
+              components: dashboard.components.map((comp: APIComponent) => ({
+                id: comp.componentType,
+                position: comp.position,
+                ...(comp.settings || {}),
+              })),
+            })
+          );
 
           setDashboards(transformedDashboards);
-          
+
           // Set current dashboard to the first one
           if (transformedDashboards.length > 0) {
             setCurrentDashboardId(transformedDashboards[0].id);
@@ -332,7 +337,9 @@ const Dashboard = () => {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch dashboards");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch dashboards"
+        );
         setSnackbar({
           open: true,
           message: "Failed to load dashboards",
@@ -373,6 +380,17 @@ const Dashboard = () => {
 
     try {
       const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
+      const defaultComponent = {
+        componentType: "digitalClock",
+        position: 0,
+        settings: {},
+      };
+
+      // Create new dashboard
       const response = await fetch("http://localhost:3000/dashboard", {
         method: "POST",
         headers: {
@@ -381,7 +399,7 @@ const Dashboard = () => {
         body: JSON.stringify({
           dashboard_name: `Dashboard ${dashboards.length + 1}`,
           user_id: userId,
-          components: [],
+          components: [defaultComponent],
         }),
       });
 
@@ -390,32 +408,64 @@ const Dashboard = () => {
       }
 
       const data = await response.json();
+      // console.log("Create dashboard response:", data); // Debug log
+
       if (data.status === "success") {
-        // Refresh dashboards
-        const userId = localStorage.getItem("user_id");
-        const refreshResponse = await fetch(`http://localhost:3000/dashboard/user/${userId}`);
+        // Refresh dashboards list
+        const refreshResponse = await fetch(
+          `http://localhost:3000/dashboard/user/${userId}`
+        );
+        if (!refreshResponse.ok) {
+          throw new Error("Failed to refresh dashboards");
+        }
+
         const refreshData = await refreshResponse.json();
-        
+        // console.log("Refresh dashboards response:", refreshData); // Debug log
+
         if (refreshData.status === "success") {
-          const transformedDashboards: DashboardLayout[] = refreshData.dashboards.map((dashboard: APIDashboard) => ({
-            id: dashboard._id,
-            name: dashboard.dashboard_name,
-            components: dashboard.components.map((comp: APIComponent) => ({
+          const transformedDashboards: DashboardLayout[] =
+            refreshData.dashboards.map((dashboard: APIDashboard) => ({
+              id: dashboard._id,
+              name: dashboard.dashboard_name,
+              components: dashboard.components.map((comp: APIComponent) => ({
+                id: comp.componentType,
+                position: comp.position,
+                ...(comp.settings || {}),
+              })),
+            }));
+
+          // Update state
+          setDashboards(transformedDashboards);
+          // Get the latest created dashboard from the refreshed data
+          const newDashboard =
+            refreshData.dashboards[refreshData.dashboards.length - 1];
+          setCurrentDashboardId(newDashboard._id);
+          setActiveComponents(
+            newDashboard.components.map((comp: APIComponent) => ({
               id: comp.componentType,
               position: comp.position,
-              ...(comp.settings || {})
+              ...(comp.settings || {}),
             }))
-          }));
-          
-          setDashboards(transformedDashboards);
-          setCurrentDashboardId(data.dashboard._id);
-          setActiveComponents([]);
+          );
+
+          // Show success message
+          setSnackbar({
+            open: true,
+            message: "New dashboard created successfully",
+            severity: "success",
+          });
+        } else {
+          throw new Error("Failed to refresh dashboards data");
         }
+      } else {
+        throw new Error(data.message || "Failed to create dashboard");
       }
     } catch (error) {
+      console.error("Dashboard creation error:", error);
       setSnackbar({
         open: true,
-        message: "Failed to create dashboard",
+        message:
+          error instanceof Error ? error.message : "Failed to create dashboard",
         severity: "error",
       });
     }
@@ -427,19 +477,24 @@ const Dashboard = () => {
       if (!currentDashboardId || !isEditing) return;
 
       try {
-        const response = await fetch(`http://localhost:3000/dashboard/${currentDashboardId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            components: activeComponents.map(comp => ({
-              componentType: comp.id,
-              position: comp.position,
-              settings: comp.graphSelection ? { graphSelection: comp.graphSelection } : {}
-            }))
-          }),
-        });
+        const response = await fetch(
+          `http://localhost:3000/dashboard/${currentDashboardId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              components: activeComponents.map((comp) => ({
+                componentType: comp.id,
+                position: comp.position,
+                settings: comp.graphSelection
+                  ? { graphSelection: comp.graphSelection }
+                  : {},
+              })),
+            }),
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to update dashboard");
@@ -559,6 +614,66 @@ const Dashboard = () => {
     }
     setIsEditing(!isEditing);
   };
+  const handleDeleteDashboard = async () => {
+    if (!currentDashboardId) return;
+
+    // Don't allow deletion if there's only one dashboard
+    if (dashboards.length <= 1) {
+      setSnackbar({
+        open: true,
+        message: "Cannot delete the last dashboard",
+        severity: "error",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/dashboard/${currentDashboardId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete dashboard");
+      }
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        // Update local state
+        const updatedDashboards = dashboards.filter(
+          (dashboard) => dashboard.id !== currentDashboardId
+        );
+        setDashboards(updatedDashboards);
+
+        // Switch to the first available dashboard
+        if (updatedDashboards.length > 0) {
+          setCurrentDashboardId(updatedDashboards[0].id);
+          setActiveComponents(updatedDashboards[0].components);
+        }
+
+        setSnackbar({
+          open: true,
+          message: "Dashboard deleted successfully",
+          severity: "success",
+        });
+
+        setIsEditing(false); // Exit edit mode after deletion
+      } else {
+        throw new Error(data.message || "Failed to delete dashboard");
+      }
+    } catch (error) {
+      console.error("Error deleting dashboard:", error);
+      setSnackbar({
+        open: true,
+        message:
+          error instanceof Error ? error.message : "Failed to delete dashboard",
+        severity: "error",
+      });
+    }
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
@@ -662,7 +777,7 @@ const Dashboard = () => {
                   <IconButton
                     onClick={toggleEdit}
                     sx={{
-                      mr: 1,
+                      // mr: 1,
                       "&:focus": {
                         outline: "none",
                         border: "none",
@@ -672,6 +787,25 @@ const Dashboard = () => {
                     {isEditing ? <DoneIcon sx={{}} /> : <EditIcon sx={{}} />}
                   </IconButton>
                 </Tooltip>
+                {isEditing ? (
+                  <Tooltip title={"Delete Dashboard"}>
+                    <IconButton
+                      onClick={handleDeleteDashboard}
+                      sx={{
+                        mr: 1,
+                        color: "red",
+                        "&:focus": {
+                          outline: "none",
+                          border: "none",
+                        },
+                      }}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                ) : (
+                  <></>
+                )}
 
                 {!isEditing && (
                   <>
@@ -691,22 +825,28 @@ const Dashboard = () => {
                           {dashboard.name}
                         </MenuItem>
                       ))}
+                      {/* Add divider and New Dashboard menu item if less than 3 dashboards */}
+                      {dashboards.length < 3 && (
+                        <>
+                          <MenuItem divider />
+                          <MenuItem
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent Select from closing
+                              handleAddDashboard();
+                            }}
+                            sx={{
+                              color: "#4CAF50",
+                              "&:hover": {
+                                backgroundColor: "rgba(76, 175, 80, 0.08)",
+                              },
+                            }}
+                          >
+                            <AddIcon sx={{ mr: 1 }} />
+                            New Dashboard
+                          </MenuItem>
+                        </>
+                      )}
                     </Select>
-
-                    {dashboards.length < 3 && (
-                      <Button
-                        variant="contained"
-                        onClick={handleAddDashboard}
-                        sx={{
-                          backgroundColor: "#4CAF50",
-                          "&:hover": {
-                            backgroundColor: "#45a049",
-                          },
-                        }}
-                      >
-                        New Dashboard
-                      </Button>
-                    )}
                   </>
                 )}
 
