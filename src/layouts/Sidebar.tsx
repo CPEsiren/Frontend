@@ -144,8 +144,10 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    if (userRole === "admin") {
-      setSidebarItems([...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id));
+    if (userRole === "admin" || userRole === "superadmin") {
+      setSidebarItems(
+        [...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id)
+      );
     } else {
       setSidebarItems(BaseItems);
     }
@@ -209,7 +211,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               transition: "background-color 0.3s ease",
             }}
           >
-           <Box
+            <Box
               sx={{
                 display: "flex",
                 alignItems: "center",

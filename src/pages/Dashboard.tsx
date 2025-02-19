@@ -356,7 +356,7 @@ const Dashboard = () => {
   // Check user role
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    setIsAdmin(userRole === "admin");
+    setIsAdmin(userRole === "admin" || userRole === "superadmin");
   }, []);
 
   const handleDashboardChange = (event: any) => {
@@ -807,48 +807,64 @@ const Dashboard = () => {
                   <></>
                 )}
 
-                {!isEditing && (
-                  <>
-                    <Select
-                      value={currentDashboardId}
-                      onChange={handleDashboardChange}
-                      sx={{
-                        backgroundColor: "white",
-                        minWidth: 150,
-                        "& .MuiSelect-select": {
-                          py: 1,
-                        },
-                      }}
-                    >
-                      {dashboards.map((dashboard) => (
-                        <MenuItem key={dashboard.id} value={dashboard.id}>
-                          {dashboard.name}
-                        </MenuItem>
-                      ))}
-                      {/* Add divider and New Dashboard menu item if less than 3 dashboards */}
-                      {dashboards.length < 3 && (
-                        <>
-                          <MenuItem divider />
-                          <MenuItem
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent Select from closing
-                              handleAddDashboard();
-                            }}
-                            sx={{
-                              color: "#4CAF50",
-                              "&:hover": {
-                                backgroundColor: "rgba(76, 175, 80, 0.08)",
-                              },
-                            }}
-                          >
-                            <AddIcon sx={{ mr: 1 }} />
-                            New Dashboard
-                          </MenuItem>
-                        </>
-                      )}
-                    </Select>
-                  </>
-                )}
+{!isEditing && (
+  <>
+    {dashboards.length > 0 ? (
+      <Select
+        value={currentDashboardId}
+        onChange={handleDashboardChange}
+        sx={{
+          backgroundColor: "white",
+          minWidth: 150,
+          "& .MuiSelect-select": {
+            py: 1,
+          },
+        }}
+      >
+        {dashboards.map((dashboard) => (
+          <MenuItem key={dashboard.id} value={dashboard.id}>
+            {dashboard.name}
+          </MenuItem>
+        ))}
+        {dashboards.length < 3 && (
+          <>
+            <MenuItem divider />
+            <MenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddDashboard();
+              }}
+              sx={{
+                color: "#4CAF50",
+                "&:hover": {
+                  backgroundColor: "rgba(76, 175, 80, 0.08)",
+                },
+              }}
+            >
+              <AddIcon sx={{ mr: 1 }} />
+              New Dashboard
+            </MenuItem>
+          </>
+        )}
+      </Select>
+    ) : (
+      <Button
+        startIcon={<AddIcon />}
+        variant="contained"
+        onClick={handleAddDashboard}
+        sx={{
+          backgroundColor: "#4CAF50",
+          color: "white",
+          "&:hover": {
+            backgroundColor: "rgba(76, 175, 80, 0.8)",
+          },
+        }}
+      >
+        New Dashboard
+      </Button>
+    )}
+  </>
+)}
 
                 {isEditing && (
                   <Button

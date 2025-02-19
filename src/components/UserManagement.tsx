@@ -34,6 +34,12 @@ const UserManagement = () => {
     severity: "success" as "success" | "error",
   });
 
+  const roleColors = {
+    admin: "red",
+    superadmin: "orange",
+    viewer: "blue",
+  };
+
   const fetchUsers = async () => {
     try {
       const response = await fetch("http://localhost:3000/user");
@@ -160,7 +166,6 @@ const UserManagement = () => {
         elevation={0}
         sx={{
           backgroundColor: "transparent",
-   
         }}
       >
         <Table
@@ -175,19 +180,19 @@ const UserManagement = () => {
             },
           }}
         >
-          <TableHead >
+          <TableHead>
             <TableRow>
-              <TableCell >
+              <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Username
                 </Typography>
               </TableCell>
-              <TableCell >
+              <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Email
                 </Typography>
               </TableCell>
-              <TableCell >
+              <TableCell>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Role
                 </Typography>
@@ -216,16 +221,21 @@ const UserManagement = () => {
                       p: 2,
                       m: 0,
                       color: "white",
-                      backgroundColor: user.role === "admin" ? "red" : "blue",
+                      backgroundColor:
+                        roleColors[user.role] || roleColors.viewer,
                     }}
                   />
                 </TableCell>
                 <TableCell sx={{ textAlign: "left" }}>
                   <IconButton
                     onClick={() => handleSwapRole(user)}
-                    disabled={loading}
+                    disabled={loading || user.role === "superadmin"}
                   >
-                    <SwapHorizIcon sx={{ color: "black" }} />
+                    <SwapHorizIcon
+                      sx={{
+                        color: user.role === "superadmin" ? "gray" : "black",
+                      }}
+                    />
                   </IconButton>
                 </TableCell>
               </TableRow>

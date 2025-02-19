@@ -56,10 +56,8 @@ const Management: React.FC = () => {
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
-    if (role === "admin") {
+    if (role === "admin" || role === "superadmin") {
       setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
     }
 
     const fetchDevices = async () => {

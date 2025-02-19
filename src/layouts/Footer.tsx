@@ -76,7 +76,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
   
   useEffect(() => {
     const role = localStorage.getItem("userRole");
-    if (role === "admin") {
+    if (role === "admin" || role === "superadmin") {
       setIsAdmin(true);
     }
   }, []);
