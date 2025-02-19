@@ -21,13 +21,55 @@ import Trigger from "./pages/Trigger";
 import Account from "./pages/Account";
 import PrivateRoute from "./authenticated/PrivateRoute";
 import Action from "./pages/Action";
+import ViewerDashboard from "./pages/ViewerDashboard";
 
-// Create a PrivateRoute component for protecting routes that require authentication
+// Create a RoleBasedRoute component to handle role-based access
+const RoleBasedRoute = ({
+  element,
+  allowedRoles,
+}: {
+  element: JSX.Element;
+  allowedRoles: string[];
+}) => {
+  const userRole = localStorage.getItem("userRole");
 
-// Create a PublicRoute component to prevent logged-in users from accessing the login page
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    // Redirect based on role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return element;
+};
+
+// Create a ViewerRoute component to handle viewer-only routes
+const ViewerRoute = ({ element }: { element: JSX.Element }) => {
+  const userRole = localStorage.getItem("userRole");
+
+  if (userRole !== "viewer") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return element;
+};
+
 const PublicRoute = ({ children }: any) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-  return isAuthenticated === 'true' ? <Navigate to="/dashboard" replace /> : children;
+  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const userRole = localStorage.getItem("userRole");
+
+  if (isAuthenticated === "true") {
+    // Redirect based on user role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
+    } else {
+      // For admin and superadmin
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
+  return children;
 };
 
 const App = () => {
@@ -45,26 +87,123 @@ const App = () => {
             }
           />
 
-          {/* Protected routes, only accessible after login */}
+          {/* Protected routes */}
           <Route element={<PrivateRoute />}>
-            {/* <Route element={<MainLayout />}> */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/graphs" element={<Graphs />} />
-              <Route path="/storage" element={<Storage />} />
-              <Route path="/management" element={<Management />} />
-              <Route path="/contactus" element={<ContactUs />} />
-              <Route path="/devices" element={<Devices />} />
-              <Route path="/devicedetail/:_id" element={<DeviceDetail />} />
-              <Route path="/templates" element={<Templates />} />
-              <Route path="/trigger" element={<Trigger />} />
-              <Route path="/event" element={<Event />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/action" element={<Action />} />
-            {/* </Route> */}
+            {/* Viewer Dashboard */}
+            <Route
+              path="/viewerdashboard"
+              element={
+                <ViewerRoute element={<ViewerDashboard />} />
+              }
+            />
+
+            {/* Shared routes */}
+            <Route path="/graphs" element={<Graphs />} />
+            <Route path="/contactus" element={<ContactUs />} />
+
+            {/* Admin/Superadmin only routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <RoleBasedRoute
+                  element={<Dashboard />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/storage"
+              element={
+                <RoleBasedRoute
+                  element={<Storage />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/management"
+              element={
+                <RoleBasedRoute
+                  element={<Management />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devices"
+              element={
+                <RoleBasedRoute
+                  element={<Devices />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devicedetail/:_id"
+              element={
+                <RoleBasedRoute
+                  element={<DeviceDetail />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <RoleBasedRoute
+                  element={<Templates />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/trigger"
+              element={
+                <RoleBasedRoute
+                  element={<Trigger />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/event"
+              element={
+                <RoleBasedRoute
+                  element={<Event />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <RoleBasedRoute
+                  element={<Account />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/action"
+              element={
+                <RoleBasedRoute
+                  element={<Action />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
           </Route>
 
-          {/* Catch all other routes and redirect to main login page */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch all other routes and redirect to appropriate dashboard */}
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={localStorage.getItem("userRole") === "viewer" ? "/viewerdashboard" : "/dashboard"}
+                replace
+              />
+            }
+          />
         </Routes>
       </Router>
     </ThemeProvider>

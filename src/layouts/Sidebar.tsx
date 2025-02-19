@@ -33,6 +33,7 @@ interface SidebarItem {
   path?: string;
   newIcon: string;
   subItems?: SubItem[];
+  alternativePaths?: string[]; // Add this new property
 }
 
 interface SidebarProps {
@@ -47,6 +48,7 @@ const BaseItems: SidebarItem[] = [
     icon: <CottageIcon sx={{ fontSize: 20 }} />,
     name: "Dashboard",
     path: "/dashboard",
+    alternativePaths: ["/viewerdashboard"], // Add the viewer dashboard path
     newIcon: "",
   },
   {
@@ -143,9 +145,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
     if (userRole === "admin") {
-      setSidebarItems(
-        [...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id)
-      );
+      setSidebarItems([...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id));
     } else {
       setSidebarItems(BaseItems);
     }
@@ -168,8 +168,26 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
       setExpandedItem(expandedItem === item.id ? null : item.id);
     } else if (item.path) {
       setExpandedItem(null);
-      navigate(item.path);
+      const userRole = localStorage.getItem("userRole");
+      // If user is viewer and clicking dashboard, navigate to viewer dashboard
+      if (userRole === "viewer" && item.path === "/dashboard") {
+        navigate("/viewerdashboard");
+      } else {
+        navigate(item.path);
+      }
     }
+  };
+
+  // Helper function to check if a path matches, including alternative paths
+  const isPathActive = (item: SidebarItem) => {
+    const currentPath = location.pathname;
+    return (
+      (item.path && currentPath === item.path) ||
+      (item.alternativePaths && item.alternativePaths.includes(currentPath)) ||
+      item.subItems?.some((sub) => sub.path === currentPath) ||
+      (item.id === 5 &&
+        (currentPath.includes("trigger") || currentPath.includes("event")))
+    );
   };
 
   return (
@@ -186,26 +204,12 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               borderRadius: "5px",
               p: "10px 25px",
               m: 0,
-              backgroundColor:
-                (item.path && location.pathname === item.path) ||
-                item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 5 &&
-                  (location.pathname.includes("trigger") ||
-                    location.pathname.includes("event")))
-                  ? "#F25A28"
-                  : "transparent",
-              color:
-                (item.path && location.pathname === item.path) ||
-                item.subItems?.some((sub) => sub.path === location.pathname) ||
-                (item.id === 5 &&
-                  (location.pathname.includes("trigger") ||
-                    location.pathname.includes("event")))
-                  ? "#FFFFFB"
-                  : "#242D5D",
+              backgroundColor: isPathActive(item) ? "#F25A28" : "transparent",
+              color: isPathActive(item) ? "#FFFFFB" : "#242D5D",
               transition: "background-color 0.3s ease",
             }}
           >
-            <Box
+           <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -248,7 +252,7 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
               ))}
           </Box>
 
-          {/* Sub-items */}
+          {/* Sub-items section remains the same */}
           {item.subItems &&
             expandedItem === item.id &&
             !isHideSidebar &&
