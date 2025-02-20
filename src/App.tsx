@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -73,11 +74,32 @@ const PublicRoute = ({ children }: any) => {
 };
 
 const App = () => {
+
+  useEffect(() => {
+    const checkTokenExpiry = () => {
+      const token = localStorage.getItem("token");
+      const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+  
+      if (token && tokenTimestamp) {
+        const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
+  
+        if (elapsedTime >= 4 * 60 * 60 * 1000) { 
+          console.log("Token expired. Redirecting to login...");
+          localStorage.clear(); 
+          window.location.href = "/"; 
+        }
+      }
+    };
+    checkTokenExpiry();
+    const interval = setInterval(checkTokenExpiry, 10 * 1000);
+  
+    return () => clearInterval(interval);
+  }, []);
+  
   return (
     <ThemeProvider theme={ThemeConfig}>
       <Router>
         <Routes>
-          {/* Public route - Login page as main route */}
           <Route
             path="/"
             element={
@@ -86,10 +108,7 @@ const App = () => {
               </PublicRoute>
             }
           />
-
-          {/* Protected routes */}
           <Route element={<PrivateRoute />}>
-            {/* Viewer Dashboard */}
             <Route
               path="/viewerdashboard"
               element={
@@ -97,11 +116,8 @@ const App = () => {
               }
             />
 
-            {/* Shared routes */}
             <Route path="/graphs" element={<Graphs />} />
             <Route path="/contactus" element={<ContactUs />} />
-
-            {/* Admin/Superadmin only routes */}
             <Route
               path="/dashboard"
               element={
@@ -194,12 +210,15 @@ const App = () => {
             />
           </Route>
 
-          {/* Catch all other routes and redirect to appropriate dashboard */}
           <Route
             path="*"
             element={
               <Navigate
-                to={localStorage.getItem("userRole") === "viewer" ? "/viewerdashboard" : "/dashboard"}
+                to={
+                  localStorage.getItem("userRole") === "viewer"
+                    ? "/viewerdashboard"
+                    : "/dashboard"
+                }
                 replace
               />
             }
