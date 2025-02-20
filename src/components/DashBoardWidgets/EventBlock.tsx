@@ -26,7 +26,7 @@ const EventBlock = () => {
         }
 
         const result = await response.json();
-        setEvents(result.events || []);
+        setEvents(result.data || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch events");
       } finally {
