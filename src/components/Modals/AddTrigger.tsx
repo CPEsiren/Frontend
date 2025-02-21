@@ -236,12 +236,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     if (!validateForm()) {
       alert("Please fill in all required fields");
       return;
     }
-  
+
     const success = await StoreNewtrigger(
       trigger_name,
       host_id,
@@ -253,28 +253,32 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       expressionParts,
       recoveryParts
     );
-  
+
     if (success) {
       setTrigger_name("");
       setEnabled(true);
       setSeverity("");
       setHost_id("");
-      setExpressionParts([{
-        item: "",
-        operation: "",
-        value: "",
-        operator: "",
-        functionofItem: "",
-        duration: ""
-      }]);
-      setRecoveryParts([{
-        item: "",
-        operation: "",
-        value: "",
-        operator: "",
-        functionofItem: "",
-        duration: ""
-      }]);
+      setExpressionParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          operator: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
+      setRecoveryParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          operator: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
       alert("Trigger added successfully!");
       onClose();
     } else {
@@ -302,26 +306,30 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
         recovery_expression,
         enabled,
         // Store expressionParts as expressionPart in the model
-        expressionPart: expressionParts.map(part => ({
+        expressionPart: expressionParts.map((part) => ({
           item: part.item,
           operation: part.operation,
           value: part.value,
-          operator: part.operator || 'and',
+          operator: part.operator || "and",
           functionofItem: part.functionofItem,
-          duration: part.duration
+          duration: part.duration,
         })),
         // Store recoveryParts as expressionRecoveryPart in the model
-        expressionRecoveryPart: recoveryParts.map(part => ({
+        expressionRecoveryPart: recoveryParts.map((part) => ({
           item: part.item,
           operation: part.operation,
           value: part.value,
-          operator: part.operator || 'and',
+          operator: part.operator || "and",
           functionofItem: part.functionofItem,
-          duration: part.duration
-        }))
+          duration: part.duration,
+        })),
       };
-  
-      await axios.post("http://127.0.0.1:3000/trigger", requestBody);
+
+      await axios.post(`${import.meta.env.VITE_API_URL}/trigger`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       return true;
     } catch (error) {
       console.error("Error recording New Trigger:", error);
@@ -362,7 +370,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://127.0.0.1:3000/host");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/host`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (Array.isArray(response.data)) {
         setHosts(response.data);
       } else if (response.data.data && Array.isArray(response.data.data)) {
@@ -399,10 +411,22 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`http://127.0.0.1:3000/host/${hostId}`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/host/${hostId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
-        setItems(items); // Now we store the complete item objects
+        setItems([
+          { _id: 1, item_name: "Device Status" },
+          { _id: 2, item_name: "Interface Admin Status" },
+          { _id: 3, item_name: "Interface Oper Status" },
+          ...items,
+        ]); // Now we store the complete item objects
       }
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -621,7 +645,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               {expressionParts.map((part, index) => (
                 <Box
                   key={index}
-                  sx={{ display: "flex", gap: 1.5, alignItems: "center",width:1 }}
+                  sx={{
+                    display: "flex",
+                    gap: 1.5,
+                    alignItems: "center",
+                    width: 1,
+                  }}
                 >
                   {/* functionofitem section */}
                   <TextField
@@ -744,7 +773,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       },
                     }}
                   />
-                  
 
                   {/* Operator Selection (show only if not the last row) */}
                   {index < expressionParts.length - 1 && (
@@ -1013,8 +1041,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       },
                     }}
                   />
-
-                  
 
                   {/* Operator Selection (show only if not the last row) */}
                   {index < recoveryParts.length - 1 && (

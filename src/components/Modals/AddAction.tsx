@@ -150,7 +150,12 @@ const AddAction: React.FC<AddTriggerProps> = ({ onClose }) => {
         enabled,
       };
 
-      await axios.post("http://127.0.0.1:3000/action", requestBody);
+      await axios.post(`${import.meta.env.VITE_API_URL}/action`, requestBody, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       return true;
     } catch (error) {
       console.error("Error recording new action:", error);
