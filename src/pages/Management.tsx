@@ -16,41 +16,10 @@ import useWindowSize from "../hooks/useWindowSize";
 import ManageComponent from "../components/DeviceManageComponent";
 import Usermanagemnet from "../components/UserManagement";
 
-interface DeviceDetails {
-  location: string;
-  Room: string;
-  serialNo: string;
-  os: string;
-  type: string;
-  vendor: string;
-  hardware: string;
-}
-
-interface Item {
-  item_name: string;
-  oid: string;
-  type: string;
-  unit: string;
-}
-
-interface Device {
-  _id: string;
-  hostname: string;
-  ip_address: string;
-  snmp_port: string;
-  snmp_version: string;
-  snmp_community: string;
-  hostgroup: string;
-  details: DeviceDetails;
-  items: Item[];
-  status: number;
-}
-
 const Management: React.FC = () => {
   const windowSize = useWindowSize();
   const navigate = useNavigate();
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [devices, setDevices] = useState<Device[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -59,23 +28,6 @@ const Management: React.FC = () => {
     if (role === "admin" || role === "superadmin") {
       setIsAdmin(true);
     }
-
-    const fetchDevices = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/host");
-        if (!response.ok) {
-          throw new Error("Failed to fetch devices");
-        }
-        const result = await response.json();
-        setDevices(result.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching devices:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchDevices();
   }, []);
 
   const handleEdit = (deviceId: string) => {
@@ -108,7 +60,6 @@ const Management: React.FC = () => {
             alignItems: "center",
             marginTop: 5,
             height: "auto",
-          
           }}
         >
           <Typography
@@ -128,7 +79,6 @@ const Management: React.FC = () => {
           marginTop: 2,
           height: "auto",
           display: "flex",
-          
         }}
       >
         <Box
@@ -158,7 +108,6 @@ const Management: React.FC = () => {
               alignItems: "center",
               marginTop: 5,
               height: "auto",
-              
             }}
           >
             <Typography
@@ -177,10 +126,10 @@ const Management: React.FC = () => {
               marginTop: 2,
               height: "auto",
               display: "flex",
-              paddingBottom:5,
+              paddingBottom: 5,
             }}
           >
-           <Box
+            <Box
               sx={{
                 display: "grid",
                 gridTemplateColumns: "1fr",
@@ -194,7 +143,6 @@ const Management: React.FC = () => {
                 px: 3,
                 // paddingLeft: 3,
                 // paddingRight: 3,
-                
               }}
             >
               <Usermanagemnet />

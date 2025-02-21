@@ -70,7 +70,10 @@ interface ComponentProps {
   graphSelection?: GraphSelection;
 }
 
-const availableComponents: Record<string, React.ComponentType<ComponentProps>> = {
+const availableComponents: Record<
+  string,
+  React.ComponentType<ComponentProps>
+> = {
   digitalClock: DigitalClock,
   analogClock: AnalogClock,
   table: TableComponent,
@@ -83,7 +86,9 @@ const ViewerDashboard = () => {
   const windowSize = useWindowSize();
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
-  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>([]);
+  const [activeComponents, setActiveComponents] = useState<
+    ActiveComponentWithGraph[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState>({
@@ -95,7 +100,16 @@ const ViewerDashboard = () => {
   useEffect(() => {
     const fetchDashboards = async () => {
       try {
-        const response = await fetch("http://localhost:3000/dashboard/viewer");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch dashboards");
         }
@@ -122,7 +136,9 @@ const ViewerDashboard = () => {
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch dashboards");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch dashboards"
+        );
         setSnackbar({
           open: true,
           message: "Failed to load dashboards",
@@ -199,7 +215,12 @@ const ViewerDashboard = () => {
             marginTop: 5,
           }}
         >
-          <Typography variant="h4" component="h1" fontWeight={600} color={"#242D5D"}>
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight={600}
+            color={"#242D5D"}
+          >
             DASHBOARD
           </Typography>
 

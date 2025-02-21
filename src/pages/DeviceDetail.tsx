@@ -35,7 +35,16 @@ const DeviceDetailPage = () => {
   const refreshDeviceData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/host/${deviceData?._id}`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/host/${deviceData?._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch device data");
       }
@@ -265,17 +274,24 @@ const DeviceDetailPage = () => {
         </Box>
       </Box>
 
-      <Dialog open={isModalOpen} onClose={handleModalClose} fullWidth maxWidth="lg">
-       <DialogTitle sx={{
-                   borderBottom: 0,
-                   borderColor: "#a9a9a9",
-                   borderTopLeftRadius: 10,
-                   borderTopRightRadius: 10,
-                 }}>
-                 <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
-                   New Item
-                 </Typography>
-               </DialogTitle>
+      <Dialog
+        open={isModalOpen}
+        onClose={handleModalClose}
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle
+          sx={{
+            borderBottom: 0,
+            borderColor: "#a9a9a9",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
+            New Item
+          </Typography>
+        </DialogTitle>
         <DialogContent>
           <AddItemOnly onClose={handleModalClose} deviceId={deviceData._id} />
         </DialogContent>

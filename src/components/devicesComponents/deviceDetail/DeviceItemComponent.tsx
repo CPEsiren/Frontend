@@ -48,7 +48,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
-  
+
   // State management
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [formLoading, setFormLoading] = useState(false);
@@ -70,7 +70,6 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     unit: "",
     interval: 60,
   });
-
 
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -138,7 +137,17 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
   const fetchUpdatedDeviceData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
+      // const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/host/${deviceData._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch updated device data");
       }
@@ -147,7 +156,8 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
         setItems(result.data.items || []);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch items";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch items";
       setError(errorMessage);
       console.error("Error fetching items:", err);
     } finally {
@@ -180,11 +190,12 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     setFormLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/item/edit/${editingItem._id}`,
+        `${import.meta.env.VITE_API_URL}/item/edit/${editingItem._id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(editForm),
         }
@@ -195,8 +206,8 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
       }
 
       // Update the item in the local state
-      setItems(prevItems =>
-        prevItems.map(item =>
+      setItems((prevItems) =>
+        prevItems.map((item) =>
           item._id === editingItem._id ? { ...item, ...editForm } : item
         )
       );
@@ -230,9 +241,13 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/item/${itemToDelete._id}`,
+        `${import.meta.env.VITE_API_URL}/item/${itemToDelete._id}`,
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -241,8 +256,8 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
       }
 
       // Remove the item from the local state
-      setItems(prevItems => 
-        prevItems.filter(item => item._id !== itemToDelete._id)
+      setItems((prevItems) =>
+        prevItems.filter((item) => item._id !== itemToDelete._id)
       );
 
       setSnackbar({
@@ -330,9 +345,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                   opacity: 1,
                 }}
               >
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end" }}
-                >
+                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                   <IconButton
                     size="small"
                     sx={{
