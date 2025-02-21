@@ -358,8 +358,13 @@ const Templates: React.FC = () => {
 
       {/* Add Template Modal */}
       <Dialog open={isModalOpen} onClose={handleClose} fullWidth maxWidth="lg">
-        <DialogTitle sx={{ borderBottom: 1, borderColor: "#a9a9a9" }}>
-          <Typography variant="h6" component="div">
+        <DialogTitle sx={{
+            borderBottom: 0,
+            borderColor: "#a9a9a9",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+          }}>
+          <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
             New Template
           </Typography>
         </DialogTitle>

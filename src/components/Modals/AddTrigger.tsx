@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
+  IconButton,
   InputAdornment,
   List,
   ListItemButton,
@@ -18,6 +19,7 @@ import {
 import axios from "axios";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface ExpressionPart {
   item: string;
@@ -496,613 +498,37 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper elevation={0} sx={{ p: 2, backgroundColor: "#FFFFFB" }}>
+      <Paper elevation={0} sx={{ px: 3, backgroundColor: "#FFFFFB" }}>
         <Box
           component={"form"}
           onSubmit={handleSubmit}
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: 2,
+            mt: 2,
           }}
         >
-          {/* Trigger Name field */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
-              <Typography color="error" {...typographyProps}>
-                *
-              </Typography>
-              <Typography sx={{ ml: 1 }} {...typographyProps}>
-                Trigger Name
-              </Typography>
-            </Box>
-            <TextField
-              {...textFieldProps}
-              value={trigger_name}
-              onChange={(e) => setTrigger_name(e.target.value)}
-              error={errors.trigger_name}
-              helperText={errors.trigger_name ? "Trigger name is required" : ""}
-            />
-          </Box>
-
-          {/* Host selection field */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
-              <Typography color="error" {...typographyProps}>
-                *
-              </Typography>
-              <Typography sx={{ ml: 1 }} {...typographyProps}>
-                Device
-              </Typography>
-            </Box>
-            <TextField
-              select
-              value={host_id}
-              onChange={handleHostChange}
-              disabled={loading}
-              error={errors.host_id}
-              helperText={errors.host_id ? "Host is required" : ""}
-              {...textFieldProps}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {hosts.map((host) => (
-                <MenuItem key={host._id} value={host._id}>
-                  {host.hostname}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-
-          {/* Severity field */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
-              <Typography color="error" {...typographyProps}>
-                *
-              </Typography>
-              <Typography sx={{ ml: 1 }} {...typographyProps}>
-                Severity
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                maxWidth: "calc(100% - 150px)",
-                gap: 1,
-              }}
-            >
-              {[
-                { level: "Not classified", color: "#808080" },
-                { level: "Information", color: "#0000FF" },
-                { level: "Warning", color: "#FFA500" },
-                { level: "Average", color: "#FF4500" },
-                { level: "High", color: "#FF0000" },
-                { level: "Disaster", color: "#8B0000" },
-              ].map(({ level, color }) => (
-                <Button
-                  key={level}
-                  variant={
-                    severity === level.toLowerCase() ? "contained" : "outlined"
-                  }
-                  onClick={() => setSeverity(level.toLowerCase())}
-                  disabled={isFormDisabled}
-                  sx={{
-                    fontSize: 12,
-                    minWidth: "auto",
-                    flex: "1 0 auto",
-                    color: severity === level.toLowerCase() ? "white" : color,
-                    backgroundColor:
-                      severity === level.toLowerCase() ? color : "transparent",
-                    borderColor: color,
-                    "&:hover": {
-                      backgroundColor:
-                        severity === level.toLowerCase() ? color : `${color}22`,
-                    },
-                  }}
-                >
-                  {level}
-                </Button>
-              ))}
-            </Box>
-            {errors.severity && (
-              <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
-                Severity is required
-              </Typography>
-            )}
-          </Box>
-
-          {/* Expression field */}
-          <Box sx={{ gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
-              <Typography color="error" {...typographyProps}>
-                *
-              </Typography>
-              <Typography sx={{ ml: 1 }} {...typographyProps}>
-                Expression
-              </Typography>
-              <Button
-                onClick={handleAddExpression}
-                disabled={isFormDisabled}
-                sx={{
-                  ml: 3,
-                  fontSize: 12,
-                  color: "blue",
-                  cursor: "pointer",
-                  "&:hover": {
-                    textDecoration: "underline",
-                  },
-                }}
-              >
-                Add Expression
-              </Button>
-            </Box>
-
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-            >
-              {expressionParts.map((part, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    gap: 1.5,
-                    alignItems: "center",
-                    width: 1,
-                  }}
-                >
-                  {/* functionofitem section */}
-                  <TextField
-                    select
-                    value={part.functionofItem}
-                    onChange={(e) =>
-                      handleExpressionPartChange(
-                        index,
-                        "functionofItem",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Function"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {functionofItem.map((fn) => (
-                      <MenuItem key={fn.value} value={fn.value}>
-                        {fn.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {/* Duration section */}
-                  <TextField
-                    value={part.duration}
-                    onChange={(e) =>
-                      handleExpressionPartChange(
-                        index,
-                        "duration",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Duration"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-
-                  {/* Item Selection */}
-                  <TextField
-                    select
-                    value={part.item}
-                    onChange={(e) =>
-                      handleExpressionPartChange(index, "item", e.target.value)
-                    }
-                    disabled={isFormDisabled}
-                    error={errors.expression}
-                    size="small"
-                    label="Item"
-                    sx={{
-                      width: "40%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {items.map((item) => (
-                      <MenuItem key={item._id} value={item.item_name}>
-                        {item.item_name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  {/* Operation Selection */}
-                  <TextField
-                    select
-                    value={part.operation}
-                    onChange={(e) =>
-                      handleExpressionPartChange(
-                        index,
-                        "operation",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Operation"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {operations.map((op) => (
-                      <MenuItem key={op.value} value={op.value}>
-                        {op.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    value={part.value}
-                    onChange={(e) =>
-                      handleExpressionPartChange(index, "value", e.target.value)
-                    }
-                    disabled={isFormDisabled}
-                    label="Value"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-
-                  {/* Operator Selection (show only if not the last row) */}
-                  {index < expressionParts.length - 1 && (
-                    <TextField
-                      select
-                      value={part.operator || "and"}
-                      onChange={(e) =>
-                        handleExpressionPartChange(
-                          index,
-                          "operator",
-                          e.target.value
-                        )
-                      }
-                      disabled={isFormDisabled}
-                      label="Operator"
-                      size="small"
-                      sx={{
-                        width: "8%",
-                        backgroundColor: "white",
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    >
-                      {operators.map((op) => (
-                        <MenuItem key={op.value} value={op.value}>
-                          {op.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-
-                  {/* Remove button (only show for rows after the first) */}
-                  {index > 0 && (
-                    <Typography
-                      onClick={() => handleRemoveExpression(index)}
-                      sx={{
-                        fontSize: 12,
-                        color: "red",
-                        cursor: "pointer",
-                        "&:hover": {
-                          textDecoration: "underline",
-                        },
-                      }}
-                    >
-                      Remove
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          {/* OK event generation */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", minWidth: 150 }}>
-              <Typography color="error" {...typographyProps}>
-                *
-              </Typography>
-              <Typography sx={{ ml: 1 }} {...typographyProps}>
-                OK event generation
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                maxWidth: "calc(100% - 150px)",
-                gap: 1,
-              }}
-            >
-              {[
-                { level: "Expression", color: "#808080" },
-                { level: "Recovery expression", color: "#808080" },
-                { level: "None", color: "#808080" },
-              ].map(({ level, color }) => (
-                <Button
-                  key={level}
-                  variant={
-                    ok_eventGen === level.toLowerCase()
-                      ? "contained"
-                      : "outlined"
-                  }
-                  onClick={() => setOk_eventGen(level.toLowerCase())}
-                  disabled={isFormDisabled}
-                  sx={{
-                    fontSize: 12,
-                    minWidth: "auto",
-                    flex: "1 0 auto",
-                    color:
-                      ok_eventGen === level.toLowerCase() ? "white" : color,
-                    backgroundColor:
-                      ok_eventGen === level.toLowerCase()
-                        ? color
-                        : "transparent",
-                    borderColor: color,
-                    "&:hover": {
-                      backgroundColor:
-                        ok_eventGen === level.toLowerCase()
-                          ? color
-                          : `${color}22`,
-                    },
-                  }}
-                >
-                  {level}
-                </Button>
-              ))}
-            </Box>
-            {errors.severity && (
-              <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
-                OK event generation is required
-              </Typography>
-            )}
-          </Box>
-
-          {/* Recovery Expression field */}
-          {ok_eventGen === "recovery expression" && (
-            <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  mt: -2,
-                  mb: -1,
-                }}
-              >
-                <Button
-                  onClick={handleAddRecovery}
-                  disabled={isFormDisabled}
-                  sx={{
-                    fontSize: 12,
-                    color: "blue",
-                    cursor: "pointer",
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  Add Recovery Expression
-                </Button>
-              </Box>
-              {recoveryParts.map((part, index) => (
-                <Box
-                  key={index}
-                  sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
-                >
-                  {/* functionofitem section */}
-                  <TextField
-                    select
-                    value={part.functionofItem}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(
-                        index,
-                        "functionofItem",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Function"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {functionofItem.map((fn) => (
-                      <MenuItem key={fn.value} value={fn.value}>
-                        {fn.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    value={part.duration}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(
-                        index,
-                        "duration",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Duration"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-
-                  {/* Item Selection */}
-                  <TextField
-                    select
-                    value={part.item}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(index, "item", e.target.value)
-                    }
-                    disabled={isFormDisabled}
-                    error={errors.expression}
-                    size="small"
-                    label="Item"
-                    sx={{
-                      width: "40%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {items.map((item) => (
-                      <MenuItem key={item._id} value={item.item_name}>
-                        {item.item_name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  {/* Operation Selection */}
-                  <TextField
-                    select
-                    value={part.operation}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(
-                        index,
-                        "operation",
-                        e.target.value
-                      )
-                    }
-                    disabled={isFormDisabled}
-                    label="Operation"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  >
-                    {operations.map((op) => (
-                      <MenuItem key={op.value} value={op.value}>
-                        {op.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    value={part.value}
-                    onChange={(e) =>
-                      handleRecoveryPartChange(index, "value", e.target.value)
-                    }
-                    disabled={isFormDisabled}
-                    label="Value"
-                    size="small"
-                    sx={{
-                      width: "10%",
-                      backgroundColor: "white",
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-
-                  {/* Operator Selection (show only if not the last row) */}
-                  {index < recoveryParts.length - 1 && (
-                    <TextField
-                      select
-                      value={part.operator || "and"}
-                      onChange={(e) =>
-                        handleRecoveryPartChange(
-                          index,
-                          "operator",
-                          e.target.value
-                        )
-                      }
-                      disabled={isFormDisabled}
-                      label="Operator"
-                      size="small"
-                      sx={{
-                        width: "8%",
-                        backgroundColor: "white",
-                        "& .MuiInputBase-input": {
-                          fontSize: 14,
-                        },
-                      }}
-                    >
-                      {operators.map((op) => (
-                        <MenuItem key={op.value} value={op.value}>
-                          {op.label}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  )}
-
-                  {/* Remove button (only show for rows after the first) */}
-                  {index > 0 && (
-                    <Typography
-                      onClick={() => handleRemoveRecovery(index)}
-                      sx={{
-                        fontSize: 12,
-                        color: "red",
-                        cursor: "pointer",
-                        "&:hover": {
-                          textDecoration: "underline",
-                        },
-                      }}
-                    >
-                      Remove
-                    </Typography>
-                  )}
-                </Box>
-              ))}
-            </Box>
-          )}
-
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              border: "2px solid rgb(232, 232, 232)",
+              borderRadius: 3,
+              p: 3,
+              mb:2
             }}
           >
-            {/* Enabled Switch */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Typography
+              sx={{
+                fontSize: "1.2rem",
+                color: "black",
+                fontWeight: "medium",
+                width: "10%",
+                mb: 2,
+              }}
+            >
+              TRIGGER
+            </Typography>
+            {/* Trigger Name field */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <Box
                 sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
               >
@@ -1110,74 +536,713 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                   *
                 </Typography>
                 <Typography sx={{ ml: 1 }} {...typographyProps}>
-                  Enabled
+                  Trigger Name
                 </Typography>
               </Box>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={enabled}
-                    onChange={(e) => setEnabled(e.target.checked)}
-                    disabled={isFormDisabled}
-                    sx={{
-                      "& .MuiSwitch-switchBase.Mui-checked": {
-                        color: "#4CAF50",
-                        "&:hover": {
-                          backgroundColor: "#4CAF5022",
-                        },
-                      },
-                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                        {
-                          backgroundColor: "#4CAF50",
-                        },
-                      "& .MuiSwitch-switchBase.Mui-disabled": {
-                        color: "#bdbdbd",
-                      },
-                      "& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track":
-                        {
-                          backgroundColor: "#e0e0e0",
-                        },
-                    }}
-                  />
+              <TextField
+                {...textFieldProps}
+                value={trigger_name}
+                onChange={(e) => setTrigger_name(e.target.value)}
+                error={errors.trigger_name}
+                helperText={
+                  errors.trigger_name ? "Trigger name is required" : ""
                 }
-                label=""
               />
             </Box>
 
-            {/* Button section */}
+            {/* Host selection field */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                  Device
+                </Typography>
+              </Box>
+              <TextField
+                select
+                value={host_id}
+                onChange={handleHostChange}
+                disabled={loading}
+                error={errors.host_id}
+                helperText={errors.host_id ? "Host is required" : ""}
+                {...textFieldProps}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {hosts.map((host) => (
+                  <MenuItem key={host._id} value={host._id}>
+                    {host.hostname}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+
+            {/* Severity field */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                  Severity
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  maxWidth: "calc(100% - 150px)",
+                  gap: 1,
+                }}
+              >
+                {[
+                  { level: "Not classified", color: "#808080" },
+                  { level: "Information", color: "#0000FF" },
+                  { level: "Warning", color: "#FFA500" },
+                  { level: "Average", color: "#FF4500" },
+                  { level: "High", color: "#FF0000" },
+                  { level: "Disaster", color: "#8B0000" },
+                ].map(({ level, color }) => (
+                  <Button
+                    key={level}
+                    variant={
+                      severity === level.toLowerCase()
+                        ? "contained"
+                        : "outlined"
+                    }
+                    onClick={() => setSeverity(level.toLowerCase())}
+                    disabled={isFormDisabled}
+                    sx={{
+                      fontSize: 12,
+                      minWidth: "auto",
+                      flex: "1 0 auto",
+                      color: severity === level.toLowerCase() ? "white" : color,
+                      backgroundColor:
+                        severity === level.toLowerCase()
+                          ? color
+                          : "transparent",
+                      borderColor: color,
+                      "&:hover": {
+                        backgroundColor:
+                          severity === level.toLowerCase()
+                            ? color
+                            : `${color}22`,
+                      },
+                    }}
+                  >
+                    {level}
+                  </Button>
+                ))}
+              </Box>
+              {errors.severity && (
+                <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
+                  Severity is required
+                </Typography>
+              )}
+            </Box>
+
+            {/* Expression field */}
+            <Box sx={{ gap: 2, mb: 3 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1, mr: 2 }} {...typographyProps}>
+                  Expression
+                </Typography>
+                {!isFormDisabled ? (
+                  <>
+                    <Button
+                      onClick={handleAddExpression}
+                      disabled={isFormDisabled}
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        bgcolor: "#0281F2",
+                        border: "1px solid #0281F2",
+                        borderRadius: "8px",
+                        gap: 1,
+                        mt: 1,
+                        mb: 1,
+                      }}
+                    >
+                      + Expression
+                    </Button>
+                  </>
+                ) : (
+                  <></>
+                )}
+              </Box>
+
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+              >
+                {expressionParts.map((part, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      gap: 1.5,
+                      alignItems: "center",
+                      width: 1,
+                    }}
+                  >
+                    {/* functionofitem section */}
+                    <TextField
+                      select
+                      value={part.functionofItem}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "functionofItem",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Function"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {functionofItem.map((fn) => (
+                        <MenuItem key={fn.value} value={fn.value}>
+                          {fn.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    {/* Duration section */}
+                    <TextField
+                      value={part.duration}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "duration",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Duration"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+
+                    {/* Item Selection */}
+                    <TextField
+                      select
+                      value={part.item}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "item",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      error={errors.expression}
+                      size="small"
+                      label="Item"
+                      sx={{
+                        width: "40%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {items.map((item) => (
+                        <MenuItem key={item._id} value={item.item_name}>
+                          {item.item_name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    {/* Operation Selection */}
+                    <TextField
+                      select
+                      value={part.operation}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "operation",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Operation"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {operations.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    <TextField
+                      value={part.value}
+                      onChange={(e) =>
+                        handleExpressionPartChange(
+                          index,
+                          "value",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Value"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+
+                    {/* Operator Selection (show only if not the last row) */}
+                    {index < expressionParts.length - 1 && (
+                      <TextField
+                        select
+                        value={part.operator || "and"}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "operator",
+                            e.target.value
+                          )
+                        }
+                        disabled={isFormDisabled}
+                        label="Operator"
+                        size="small"
+                        sx={{
+                          width: "8%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {operators.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+
+                    {/* Remove button (only show for rows after the first) */}
+                    {index > 0 && (
+                      <IconButton
+                        onClick={() => handleRemoveExpression(index)}
+                        sx={{
+                          fontSize: 12,
+                          color: "red",
+                          cursor: "pointer",
+                          "&:hover": {
+                            textDecoration: "underline",
+                          },
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
+            {/* OK event generation */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Box
+                sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                  OK event generation
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  maxWidth: "calc(100% - 150px)",
+                  gap: 1,
+                }}
+              >
+                {[
+                  { level: "Expression", color: "#808080" },
+                  { level: "Recovery expression", color: "#808080" },
+                  { level: "None", color: "#808080" },
+                ].map(({ level, color }) => (
+                  <Button
+                    key={level}
+                    variant={
+                      ok_eventGen === level.toLowerCase()
+                        ? "contained"
+                        : "outlined"
+                    }
+                    onClick={() => setOk_eventGen(level.toLowerCase())}
+                    disabled={isFormDisabled}
+                    sx={{
+                      fontSize: 12,
+                      minWidth: "auto",
+                      flex: "1 0 auto",
+                      color:
+                        ok_eventGen === level.toLowerCase() ? "white" : color,
+                      backgroundColor:
+                        ok_eventGen === level.toLowerCase()
+                          ? color
+                          : "transparent",
+                      borderColor: color,
+                      "&:hover": {
+                        backgroundColor:
+                          ok_eventGen === level.toLowerCase()
+                            ? color
+                            : `${color}22`,
+                      },
+                    }}
+                  >
+                    {level}
+                  </Button>
+                ))}
+              </Box>
+              {errors.severity && (
+                <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
+                  OK event generation is required
+                </Typography>
+              )}
+            </Box>
+
+            {/* Recovery Expression field */}
+            {ok_eventGen === "recovery expression" && !isFormDisabled && (
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    mt: -2,
+                    mb: -1,
+                  }}
+                >
+                  <Button
+                    onClick={handleAddRecovery}
+                    disabled={isFormDisabled}
+                    sx={{
+                      color: "white",
+                      textAlign: "center",
+                      bgcolor: "#0281F2",
+                      border: "1px solid #0281F2",
+                      borderRadius: "8px",
+                      gap: 1,
+                      mt: 2,
+                      mb: 1,
+                    }}
+                  >
+                    + Recovery Expression
+                  </Button>
+                </Box>
+                {recoveryParts.map((part, index) => (
+                  <Box
+                    key={index}
+                    sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                  >
+                    {/* functionofitem section */}
+                    <TextField
+                      select
+                      value={part.functionofItem}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(
+                          index,
+                          "functionofItem",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Function"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {functionofItem.map((fn) => (
+                        <MenuItem key={fn.value} value={fn.value}>
+                          {fn.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      value={part.duration}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(
+                          index,
+                          "duration",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Duration"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+
+                    {/* Item Selection */}
+                    <TextField
+                      select
+                      value={part.item}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(index, "item", e.target.value)
+                      }
+                      disabled={isFormDisabled}
+                      error={errors.expression}
+                      size="small"
+                      label="Item"
+                      sx={{
+                        width: "40%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {items.map((item) => (
+                        <MenuItem key={item._id} value={item.item_name}>
+                          {item.item_name}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    {/* Operation Selection */}
+                    <TextField
+                      select
+                      value={part.operation}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(
+                          index,
+                          "operation",
+                          e.target.value
+                        )
+                      }
+                      disabled={isFormDisabled}
+                      label="Operation"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    >
+                      {operations.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    <TextField
+                      value={part.value}
+                      onChange={(e) =>
+                        handleRecoveryPartChange(index, "value", e.target.value)
+                      }
+                      disabled={isFormDisabled}
+                      label="Value"
+                      size="small"
+                      sx={{
+                        width: "10%",
+                        backgroundColor: "white",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+
+                    {/* Operator Selection (show only if not the last row) */}
+                    {index < recoveryParts.length - 1 && (
+                      <TextField
+                        select
+                        value={part.operator || "and"}
+                        onChange={(e) =>
+                          handleRecoveryPartChange(
+                            index,
+                            "operator",
+                            e.target.value
+                          )
+                        }
+                        disabled={isFormDisabled}
+                        label="Operator"
+                        size="small"
+                        sx={{
+                          width: "8%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        {operators.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
+
+                    {/* Remove button (only show for rows after the first) */}
+                    {index > 0 && (
+                      <IconButton
+                        onClick={() => handleRemoveRecovery(index)}
+                        sx={{
+                          fontSize: 12,
+                          color: "red",
+                          cursor: "pointer",
+                          "&:hover": {
+                            textDecoration: "underline",
+                          },
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            )}
+
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "flex-end",
-                gap: 2,
-                mt: 2,
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={onClose}
-                sx={{ fontSize: 14 }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="outlined"
-                disabled={isFormDisabled}
-                sx={{
-                  fontSize: 14,
-                  color: "black",
-                  borderColor: "black",
-                  "&:hover": {
-                    color: "red",
-                    borderColor: "red",
-                  },
-                }}
-              >
-                Add
-              </Button>
+              {/* Enabled Switch */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", minWidth: 150 }}
+                >
+                  <Typography color="error" {...typographyProps}>
+                    *
+                  </Typography>
+                  <Typography sx={{ ml: 1 }} {...typographyProps}>
+                    Enabled
+                  </Typography>
+                </Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={enabled}
+                      onChange={(e) => setEnabled(e.target.checked)}
+                      disabled={isFormDisabled}
+                      sx={{
+                        "& .MuiSwitch-switchBase.Mui-checked": {
+                          color: "#4CAF50",
+                          "&:hover": {
+                            backgroundColor: "#4CAF5022",
+                          },
+                        },
+                        "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                          {
+                            backgroundColor: "#4CAF50",
+                          },
+                        "& .MuiSwitch-switchBase.Mui-disabled": {
+                          color: "#bdbdbd",
+                        },
+                        "& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track":
+                          {
+                            backgroundColor: "#e0e0e0",
+                          },
+                      }}
+                    />
+                  }
+                  label=""
+                />
+              </Box>
             </Box>
+          </Box>
+          {/* Button section */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 2,
+              mt: 2,
+              mb:1
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={onClose}
+              sx={{
+                fontSize: 14,
+                color: "black",
+                borderColor: "#B9B9B9",
+                borderRadius: 2,
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="outlined"
+              disabled={isFormDisabled}
+              sx={{
+                fontSize: 14,
+                color: "white",
+                bgcolor: "#0281F2",
+                borderColor: "white",
+                borderRadius: 2,
+                "&:hover": {
+                  color: "white",
+                  bgcolor: "#0274d9",
+                  borderColor: "white",
+                },
+              }}
+            >
+              Add
+            </Button>
           </Box>
         </Box>
       </Paper>
