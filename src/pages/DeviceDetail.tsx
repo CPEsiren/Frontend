@@ -266,9 +266,16 @@ const DeviceDetailPage = () => {
       </Box>
 
       <Dialog open={isModalOpen} onClose={handleModalClose} fullWidth maxWidth="lg">
-        <DialogTitle sx={{ borderBottom: 1, borderColor: "#a9a9a9" }}>
-          <Typography variant="h6">New Item</Typography>
-        </DialogTitle>
+       <DialogTitle sx={{
+                   borderBottom: 0,
+                   borderColor: "#a9a9a9",
+                   borderTopLeftRadius: 10,
+                   borderTopRightRadius: 10,
+                 }}>
+                 <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
+                   New Item
+                 </Typography>
+               </DialogTitle>
         <DialogContent>
           <AddItemOnly onClose={handleModalClose} deviceId={deviceData._id} />
         </DialogContent>
