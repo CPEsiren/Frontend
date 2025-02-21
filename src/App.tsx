@@ -1,134 +1,232 @@
 import { useEffect } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import ThemeProvider from "@mui/material/styles/ThemeProvider";
+import { ThemeConfig } from "./config/ThemeConfig";
+import "./App.css";
+import Dashboard from "./pages/Dashboard";
+import Graphs from "./pages/Graphs";
+import Storage from "./pages/Storage";
+import Management from "./pages/Management";
+import ContactUs from "./pages/ContactUs";
+import Devices from "./pages/Devices";
+import DeviceDetail from "./pages/DeviceDetail";
+import Templates from "./pages/Template";
+import Login from "./pages/Login";
+import Event from "./pages/Event";
+import Trigger from "./pages/Trigger";
+import Account from "./pages/Account";
+import PrivateRoute from "./authenticated/PrivateRoute";
+import Action from "./pages/Action";
+import ViewerDashboard from "./pages/ViewerDashboard";
 
-interface LoginAuthenProps {
-  onSuccess: () => void;
-  onError: (errorMessage: string) => void;
-}
+// Create a RoleBasedRoute component to handle role-based access
+const RoleBasedRoute = ({
+  element,
+  allowedRoles,
+}: {
+  element: JSX.Element;
+  allowedRoles: string[];
+}) => {
+  const userRole = localStorage.getItem("userRole");
 
-const authenticateWithServer = async (token: string) => {
-  try {
-    const response = await axios.post("http://localhost:3000/authen/signup", {
-      token,
-    });
-
-    if (!response || !response.data) {
-      throw new Error("No response data received from server");
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    // Redirect based on role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
     }
-
-    localStorage.setItem("isAuthenticated", "true");
-    const userRole = response.data.role || response.data.user?.role;
-    const user_id = response.data._id || response.data.user?._id;
-    const username = response.data.username || response.data.user?.username;
-
-    if (!userRole) {
-      throw new Error("No role found in server response");
-    }
-    localStorage.setItem("userRole", userRole);
-    localStorage.setItem("user_id", user_id);
-    localStorage.setItem("username", username);
-
-    return response.data;
-  } catch (error: any) {
-    console.error("Server authentication error details:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
-    throw error;
+    return <Navigate to="/dashboard" replace />;
   }
+
+  return element;
 };
 
-const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+// Create a ViewerRoute component to handle viewer-only routes
+const ViewerRoute = ({ element }: { element: JSX.Element }) => {
+  const userRole = localStorage.getItem("userRole");
+
+  if (userRole !== "viewer") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return element;
+};
+
+const PublicRoute = ({ children }: any) => {
+  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const userRole = localStorage.getItem("userRole");
+
+  if (isAuthenticated === "true") {
+    // Redirect based on user role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
+    } else {
+      // For admin and superadmin
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
+  return children;
+};
+
+const App = () => {
 
   useEffect(() => {
-    const tokenCleanupInterval = setInterval(() => {
-      const storedToken = localStorage.getItem("token");
+    const checkTokenExpiry = () => {
+      const token = localStorage.getItem("token");
       const tokenTimestamp = localStorage.getItem("tokenTimestamp");
-
-      if (storedToken && tokenTimestamp) {
+  
+      if (token && tokenTimestamp) {
         const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
-
-        if (elapsedTime >= 50 * 60 * 1000) {
-          console.log("Token expired. Clearing from localStorage.");
-          localStorage.removeItem("token");
-          localStorage.removeItem("isAuthenticated");
-          localStorage.removeItem("userRole");
-          localStorage.removeItem("tokenTimestamp");
+  
+        if (elapsedTime >= 4 * 60 * 60 * 1000) { 
+          console.log("Token expired. Redirecting to login...");
+          localStorage.clear(); 
+          window.location.href = "/"; 
         }
       }
-    }, 60 * 1000);
-
-    return () => clearInterval(tokenCleanupInterval);
+    };
+    checkTokenExpiry();
+    const interval = setInterval(checkTokenExpiry, 10 * 1000);
+  
+    return () => clearInterval(interval);
   }, []);
-
-  const handleSuccess = async (credentialResponse: any) => {
-    try {
-      console.log("Google authentication successful");
-
-      const token = credentialResponse.credential;
-      localStorage.setItem("token", token);
-      localStorage.setItem("tokenTimestamp", Date.now().toString());
-
-      const serverResponse = await authenticateWithServer(token);
-
-      if (serverResponse && localStorage.getItem("userRole")) {
-        setTimeout(() => {
-          onSuccess();
-        }, 2000);
-      } else {
-        const errorMessage = !serverResponse
-          ? "No response from server"
-          : "User role not received from server";
-        console.error(errorMessage);
-        onError(errorMessage);
-      }
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Authentication failed";
-      console.error("Authentication error:", errorMessage);
-      onError(`Authentication failed: ${errorMessage}`);
-    }
-  };
-
-  const handleError = () => {
-    const errorMessage = "Failed to authenticate with Google";
-    console.error(errorMessage);
-    onError(errorMessage);
-  };
-
-  const customStyle = {
-    backgroundColor: "transparent",
-    fontSize: "16px",
-    fontWeight: "bold",
-    padding: "15px 20px",
-    borderRadius: "50px",
-    maxWidth: "350px",
-    width: "100%",
-    outline: "none",
-    border: "4px solid #3e51c7",
-    cursor: "pointer",
-  };
-
+  
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        useOneTap
-        text="continue_with"
-        width="350px"
-        shape="pill"
-        containerProps={{
-          style: customStyle,
-        }}
-      />
-    </GoogleOAuthProvider>
+    <ThemeProvider theme={ThemeConfig}>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route element={<PrivateRoute />}>
+            <Route
+              path="/viewerdashboard"
+              element={
+                <ViewerRoute element={<ViewerDashboard />} />
+              }
+            />
+
+            <Route path="/graphs" element={<Graphs />} />
+            <Route path="/contactus" element={<ContactUs />} />
+            <Route
+              path="/dashboard"
+              element={
+                <RoleBasedRoute
+                  element={<Dashboard />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/storage"
+              element={
+                <RoleBasedRoute
+                  element={<Storage />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/management"
+              element={
+                <RoleBasedRoute
+                  element={<Management />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devices"
+              element={
+                <RoleBasedRoute
+                  element={<Devices />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devicedetail/:_id"
+              element={
+                <RoleBasedRoute
+                  element={<DeviceDetail />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <RoleBasedRoute
+                  element={<Templates />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/trigger"
+              element={
+                <RoleBasedRoute
+                  element={<Trigger />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/event"
+              element={
+                <RoleBasedRoute
+                  element={<Event />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <RoleBasedRoute
+                  element={<Account />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/action"
+              element={
+                <RoleBasedRoute
+                  element={<Action />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+          </Route>
+
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={
+                  localStorage.getItem("userRole") === "viewer"
+                    ? "/viewerdashboard"
+                    : "/dashboard"
+                }
+                replace
+              />
+            }
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 };
 
-export default LoginAuthen;
+export default App;
