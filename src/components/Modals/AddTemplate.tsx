@@ -24,21 +24,22 @@ interface AddTemplateProps {
   onSuccess: () => void;
 }
 
-
 // Type for new template before submission (without _id)
-type NewTemplateItem = Omit<Item, '_id'>;
+type NewTemplateItem = Omit<Item, "_id">;
 
 const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
   const windowSize = useWindowSize();
   const [template_name, setTemplateName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [items, setItems] = useState<NewTemplateItem[]>([{
-    item_name: "",
-    oid: "",
-    type: "",
-    unit: "",
-    interval: 0
-  }]);
+  const [items, setItems] = useState<NewTemplateItem[]>([
+    {
+      item_name: "",
+      oid: "",
+      type: "",
+      unit: "",
+      interval: 0,
+    },
+  ]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -46,13 +47,15 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     if (success) {
       setTemplateName("");
       setDescription("");
-      setItems([{
-        item_name: "",
-        oid: "",
-        type: "",
-        unit: "",
-        interval: 0
-      }]);
+      setItems([
+        {
+          item_name: "",
+          oid: "",
+          type: "",
+          unit: "",
+          interval: 0,
+        },
+      ]);
       await onSuccess();
       alert("Template added successfully!");
       onClose();
@@ -65,29 +68,30 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
         alert("Template name is required");
         return false;
       }
-  
+
       // Filter out empty items
       const filledItems = items.filter(
         (item) => item.item_name.trim() || item.oid.trim()
       );
-  
+
       // Construct the template data, explicitly casting items
-      const templateData: Omit<ITemplate, '_id'> = {
+      const templateData: Omit<ITemplate, "_id"> = {
         template_name,
         description,
         items: filledItems as Item[], // Type assertion to ignore _id
       };
-  
+
       const response = await axios.post(
-        "http://127.0.0.1:3000/template",
+        `${import.meta.env.VITE_API_URL}/template`,
         templateData,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-  
+
       return response.status === 200 || response.status === 201;
     } catch (error) {
       console.error("Error storing template:", error);
@@ -103,16 +107,18 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       return false;
     }
   };
-  
 
   const handleAddRow = () => {
-    setItems([...items, {
-      item_name: "",
-      oid: "",
-      type: "",
-      unit: "",
-      interval: 0
-    }]);
+    setItems([
+      ...items,
+      {
+        item_name: "",
+        oid: "",
+        type: "",
+        unit: "",
+        interval: 0,
+      },
+    ]);
   };
 
   const handleDeleteRow = (index: number) => {
@@ -127,9 +133,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     value: string | number
   ) => {
     setItems(
-      items.map((item, i) => 
-        i === index 
-          ? { ...item, [field]: field === 'interval' ? Number(value) : value }
+      items.map((item, i) =>
+        i === index
+          ? { ...item, [field]: field === "interval" ? Number(value) : value }
           : item
       )
     );

@@ -61,7 +61,12 @@ const Templates: React.FC = () => {
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3000/template");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/template`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch templates");
       }
@@ -99,11 +104,12 @@ const Templates: React.FC = () => {
     setFormLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/template/edit/${editingTemplate._id}`,
+        `${import.meta.env.VITE_API_URL}/template/edit/${editingTemplate._id}`,
         editForm,
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -166,7 +172,12 @@ const Templates: React.FC = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:3000/template/${templateToDelete._id}`
+        `${import.meta.env.VITE_API_URL}/template/${templateToDelete._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
 
       if (response.status === 200) {
