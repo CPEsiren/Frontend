@@ -136,7 +136,11 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
           interval: item.interval.toString(), // Convert to string as per API format
         };
 
-        return axios.post("http://localhost:3000/item", itemData);
+        return axios.post(`${import.meta.env.VITE_API_URL}/item`, itemData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
       });
 
       // Wait for all items to be added
