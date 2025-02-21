@@ -225,47 +225,47 @@ const Graphs: React.FC = () => {
       switch (selectedLastTime) {
         case "Last 15 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 15);
-          forStartTime.setMinutes(dateTimeStart.getMinutes() - 1);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 16);
           break;
         case "Last 30 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 30);
-          forStartTime.setMinutes(dateTimeStart.getMinutes() - 1);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 31);
           break;
         case "Last 1 Hour":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 1);
-          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
+          forStartTime.setHours(dateTimeEnd.getHours() - 1.1);
           break;
         case "Last 3 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 3);
-          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
+          forStartTime.setHours(dateTimeEnd.getHours() - 3.1);
           break;
         case "Last 6 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 6);
-          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
+          forStartTime.setHours(dateTimeEnd.getHours() - 6.1);
           break;
         case "Last 12 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 12);
-          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
+          forStartTime.setHours(dateTimeEnd.getHours() - 12.1);
           break;
         case "Last 1 Day":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 1);
-          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
+          forStartTime.setDate(dateTimeEnd.getDate() - 1.01);
           break;
         case "Last 3 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 3);
-          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
+          forStartTime.setDate(dateTimeEnd.getDate() - 3.01);
           break;
         case "Last 7 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 7);
-          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
+          forStartTime.setDate(dateTimeEnd.getDate() - 7.01);
           break;
         case "Last 1 Month":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 1);
-          forStartTime.setMonth(dateTimeStart.getMonth() - 0.1);
+          forStartTime.setMonth(dateTimeEnd.getMonth() - 1);
           break;
         case "Last 6 Months":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 6);
-          forStartTime.setMonth(dateTimeStart.getMonth());
+          forStartTime.setMonth(dateTimeEnd.getMonth() - 6);
           break;
         default:
           // If no match, don't change the date
