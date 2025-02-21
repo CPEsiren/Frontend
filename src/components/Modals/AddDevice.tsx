@@ -1318,9 +1318,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                         }
                                       />
                                     </TableCell>
-                                    <TableCell>
+
+                                    <TableCell sx={{ width: "15%" }}>
                                       <TextField
                                         {...textFieldProps}
+                                        select
                                         value={row.type}
                                         onChange={(e) =>
                                           handleItemChange(
@@ -1329,8 +1331,16 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                             e.target.value
                                           )
                                         }
-                                      />
+                                      >
+                                        <MenuItem value={"integer"}>
+                                          Integer
+                                        </MenuItem>
+                                        <MenuItem value={"counter"}>
+                                          Counter
+                                        </MenuItem>
+                                      </TextField>
                                     </TableCell>
+
                                     <TableCell>
                                       <TextField
                                         {...textFieldProps}
