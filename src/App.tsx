@@ -74,28 +74,28 @@ const PublicRoute = ({ children }: any) => {
 };
 
 const App = () => {
-
   useEffect(() => {
     const checkTokenExpiry = () => {
       const token = localStorage.getItem("token");
       const tokenTimestamp = localStorage.getItem("tokenTimestamp");
-  
+
       if (token && tokenTimestamp) {
         const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
-  
-        if (elapsedTime >= 4 * 60 * 60 * 1000) { 
+
+        if (elapsedTime >= 50 * 60 * 1000) { 
           console.log("Token expired. Redirecting to login...");
-          localStorage.clear(); 
+          localStorage.clear();
           window.location.href = "/"; 
         }
       }
     };
+
     checkTokenExpiry();
-    const interval = setInterval(checkTokenExpiry, 10 * 1000);
-  
+    const interval = setInterval(checkTokenExpiry, 10 * 1000); // ตรวจสอบทุก 10 วินาที
+
     return () => clearInterval(interval);
   }, []);
-  
+
   return (
     <ThemeProvider theme={ThemeConfig}>
       <Router>
@@ -111,11 +111,8 @@ const App = () => {
           <Route element={<PrivateRoute />}>
             <Route
               path="/viewerdashboard"
-              element={
-                <ViewerRoute element={<ViewerDashboard />} />
-              }
+              element={<ViewerRoute element={<ViewerDashboard />} />}
             />
-
             <Route path="/graphs" element={<Graphs />} />
             <Route path="/contactus" element={<ContactUs />} />
             <Route
