@@ -24,7 +24,12 @@ const Devices: React.FC = () => {
   useEffect(() => {
     const fetchDevices = async () => {
       try {
-        const response = await fetch("http://localhost:3000/host");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch devices");
         }
@@ -94,9 +99,28 @@ const Devices: React.FC = () => {
         )}
       </Box>
 
-      <Dialog open={isModalOpen} onClose={toggleModal} fullWidth maxWidth="lg">
-        <DialogTitle sx={{ borderBottom: 1, borderColor: "#a9a9a9" }}>
-          <Typography variant="h6">New Device</Typography>
+      <Dialog
+        open={isModalOpen}
+        onClose={toggleModal}
+        fullWidth
+        maxWidth="lg"
+        PaperProps={{
+          style: {
+            borderRadius: 10,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            borderBottom: 0,
+            borderColor: "#a9a9a9",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
+            New Device
+          </Typography>
         </DialogTitle>
         <DialogContent>
           <AddDevice onClose={toggleModal} />

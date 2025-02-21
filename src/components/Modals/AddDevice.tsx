@@ -29,6 +29,9 @@ import AddIcon from "@mui/icons-material/Add";
 import { createTheme } from "@mui/material/styles";
 import { Pagination, Fade } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
+import RouterIcon from "@mui/icons-material/Router";
+import { Router, Package } from "lucide-react";
+import SearchIcon from "@mui/icons-material/Search";
 
 const theme = createTheme({
   components: {
@@ -181,7 +184,14 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
     const fetchTemplates = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://127.0.0.1:3000/template");
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/template`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         setTemplateOptions(response.data.data);
       } catch (error) {
         console.error("Error fetching templates:", error);
@@ -307,7 +317,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
         requestBody.items = filledItems;
       }
 
-      await axios.post("http://127.0.0.1:3000/host", requestBody);
+      await axios.post(`${import.meta.env.VITE_API_URL}/host`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       return true;
     } catch (error) {
       console.error("Error recording New Host:", error);
@@ -380,7 +394,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:3000/item/interface",
+        `${import.meta.env.VITE_API_URL}/item/interface`,
         {
           ip_address: ip_address,
           port: snmp_port,
@@ -393,6 +407,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
             authenPass: authenPass,
             privacyProtocol: privacyProtocol,
             privacyPass: privacyPass,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -450,45 +469,74 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
           <TabContext value={tabvalue}>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+            <Box
+              sx={{ borderBottom: "1px solid #a9a9a9", borderColor: "divider" }}
+            >
               <TabList
                 sx={{
                   minHeight: 0,
+                  "& .MuiTabs-indicator": {
+                    display: "none",
+                  },
+                  "& .MuiTabs-flexContainer": {
+                    borderBottom: "none",
+                  },
                 }}
                 onChange={handleChange}
                 aria-label="Tabview"
               >
                 <Tab
                   sx={{
+                    ml: 2,
                     minHeight: 0,
                     color: "black",
+                    borderBottom: "none",
                     "&.Mui-selected": {
-                      color: "blue",
+                      color: "#0281F2",
+                      fontWeight: "bold",
                       outline: "none",
                       border: "none",
+                      borderBottom: "3px solid #0281F2",
+                      boxShadow: "none",
                     },
                     "&:focus": {
                       outline: "none",
                     },
+                    "&::after": {
+                      display: "none",
+                    },
                   }}
-                  label="Host"
+                  icon={<Router size={18} />}
+                  iconPosition="start"
+                  label="DEVICE"
                   value="host"
+                  disableRipple
                 />
                 <Tab
                   sx={{
                     minHeight: 0,
                     color: "black",
+                    borderBottom: "none",
                     "&.Mui-selected": {
-                      color: "blue",
+                      color: "#0281F2",
+                      fontWeight: "bold",
                       outline: "none",
                       border: "none",
+                      borderBottom: "2px solid #0281F2",
+                      boxShadow: "none",
                     },
                     "&:focus": {
                       outline: "none",
                     },
+                    "&::after": {
+                      display: "none",
+                    },
                   }}
+                  icon={<Package size={18} />}
+                  iconPosition="start"
                   label="Items"
                   value="item"
+                  disableRipple
                 />
               </TabList>
             </Box>
@@ -497,7 +545,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                 <TabPanel value="host">
                   <Paper
                     elevation={0}
-                    sx={{ px: 2, backgroundColor: "#FFFFFB" }}
+                    sx={{ p: 0, backgroundColor: "#FFFFFB", mt: -2 }}
                   >
                     <Box>
                       <Box
@@ -505,22 +553,27 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                         onSubmit={handleSubmit}
                         sx={{
                           display: "flex",
+                          bgcolor: "white",
                           flexDirection: "column",
-                          gap: 2,
+                          gap: 0,
+                          p: 3,
+                          border: "2px solid rgb(232, 232, 232)",
+                          borderRadius: 3,
+                          mb: 3,
                         }}
                       >
                         <Typography
                           sx={{
-                            mb: -2,
-                            fontSize: "1.1rem",
-                            color: "#a9a9a9",
-                            fontWeight: "semibold",
+                            mb: 2,
+                            fontSize: "1.2rem",
+                            color: "black",
+                            fontWeight: "medium",
                           }}
                           {...typographyProps}
                         >
-                          HOST
+                          DEVICE
                         </Typography>
-                        <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
+                        {/* <Box sx={{ borderTop: "2px solid #d9d9d9", mb: 3 }} /> */}
 
                         {/* Host Section */}
                         <Box
@@ -558,8 +611,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 Host groups
                               </Typography>
                             </Box>
+                            <Typography sx={{ fontSize: 14, mt: 4.5 }}>
+                              Description
+                            </Typography>
                           </Box>
-                          <Box sx={{ textAlign: "left" }}>
+                          <Box sx={{ textAlign: "left", width: "50%" }}>
                             <TextField
                               {...textFieldProps}
                               value={hostname}
@@ -603,7 +659,22 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                               value={hostgroup}
                               onChange={(e) => sethostgroup(e.target.value)}
                               sx={{
-                                mb: 0,
+                                mb: 2,
+                                width: 1,
+                                "& .MuiInputBase-input": {
+                                  fontSize: 14,
+                                },
+                              }}
+                            />
+                            <TextField
+                              multiline
+                              rows={3}
+                              {...textFieldProps}
+                              value={details_description}
+                              onChange={(e) =>
+                                setdetails_description(e.target.value)
+                              }
+                              sx={{
                                 width: 1,
                                 "& .MuiInputBase-input": {
                                   fontSize: 14,
@@ -621,13 +692,21 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           ></Box>
                         </Box>
                       </Box>
-
-                      <Box sx={{ padding: 3 }}>
+                      {/* Interface Section */}
+                      <Box
+                        sx={{
+                          p: 3,
+                          border: "2px solid rgb(232, 232, 232)",
+                          borderRadius: 3,
+                          mb: 2,
+                        }}
+                      >
                         <Typography
                           sx={{
-                            fontSize: "1.1rem",
-                            color: "#a9a9a9",
-                            fontWeight: "semibold",
+                            fontSize: "1.2rem",
+                            color: "black",
+                            fontWeight: "medium",
+                            mb: 2,
                           }}
                           {...typographyProps}
                         >
@@ -637,24 +716,23 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           sx={{
                             display: "flex",
                             flexDirection: "column",
-                            mt: 2,
+                            // mt: 2,
                             // backgroundColor: "#ebf1ff",
-                            borderRadius: 2,
-                            border: "4px solid #ebf1ff",
+                            // borderRadius: 2,
+                            // border: "4px solid #ebf1ff",
                           }}
                         >
-                          {/* Interface Section */}
                           <Box
                             sx={{
                               display: "flex",
                               flexDirection: "row",
-                              gap: 3,
-                              mt: 3,
+                              gap: 2,
+                              mt: 0,
                               // mb: 3,
                             }}
                           >
                             <Box
-                              sx={{ textAlign: "right", mt: 1, width: "18%" }}
+                              sx={{ textAlign: "right", mt: 1, width: "20%" }}
                             >
                               <Box
                                 sx={{
@@ -832,7 +910,13 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                   },
                                 }}
                               />
-                              <Box sx={{ textAlign: "left" }}>
+                              <Box
+                                sx={{
+                                  textAlign: "left",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                }}
+                              >
                                 <FormControl
                                   sx={{ minWidth: 200 }}
                                   size="small"
@@ -1037,34 +1121,36 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                         </Box>
                       </Box>
 
-                      {/* Details Section */}
-                      <Box
+                      {/* Description Section */}
+                      {/* <Box
                         sx={{
                           display: "flex",
                           flexDirection: "column",
                           gap: 2,
-                          mt: 2,
+                          p: 4,
+                          border: "2px solid rgb(232, 232, 232)",
+                          borderRadius: 3,
+                          mb: 0,
                         }}
                       >
                         <Typography
                           sx={{
                             mb: -2,
                             fontSize: "1.1rem",
-                            color: "#a9a9a9",
+                            color: "black",
                             fontWeight: "semibold",
                             mt: 0.5,
                           }}
                           {...typographyProps}
                         >
-                          DETAILS
+                          DESCRIPTION
                         </Typography>
-                        <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
                         <Box
                           sx={{ display: "flex", flexDirection: "row", gap: 2 }}
                         >
                           <Box
                             sx={{
-                              width: "18%",
+                              width: "20%",
                               display: "flex",
                               justifyContent: "right",
                               mt: 4,
@@ -1093,7 +1179,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             />
                           </Box>
                         </Box>
-                      </Box>
+                      </Box> */}
                     </Box>
                   </Paper>
                 </TabPanel>
@@ -1104,12 +1190,19 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                 <TabPanel value="item">
                   <Paper
                     elevation={0}
-                    sx={{ px: 2, backgroundColor: "#FFFFFB" }}
+                    sx={{ px: 0, backgroundColor: "#FFFFFB", mt: -2 }}
                   >
                     <Box
                       component="form"
                       onSubmit={handleSubmit}
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                        p: 3,
+                        border: "2px solid rgb(232, 232, 232)",
+                        borderRadius: 3,
+                      }}
                     >
                       <Box
                         sx={{
@@ -1119,44 +1212,62 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           mb: 1,
                         }}
                       >
-                        <Box sx={{ width: "100%" }}>
+                        <Box sx={{ width: "10%" }}>
                           <Typography
                             sx={{
-                              fontSize: "1.1rem",
-                              color: "#a9a9a9",
-                              fontWeight: "semibold",
+                              fontSize: "1.2rem",
+                              color: "black",
+                              fontWeight: "medium",
                             }}
                           >
                             ITEMS
                           </Typography>
-                          <Box sx={{ borderTop: "2px solid #d9d9d9" }} />
                         </Box>
-                        <IconButton
+                        <Box
+                          width={"72%"}
+                          display={"flex"}
+                          justifyContent={"flex-end"}
+                          marginRight={2}
+                        >
+                          <Button
+                            onClick={handleScanInterface}
+                            sx={{
+                              color: "white",
+                              textAlign: "center",
+                              bgcolor: "#0281F2",
+                              border: "1px solid #0281F2",
+                              borderRadius: "8px",
+                              gap: 1,
+                            }}
+                          >
+                            <SearchIcon />
+                            <Typography>Scan interface</Typography>
+                          </Button>
+                        </Box>
+                        <Button
                           onClick={handleAddRow}
-                          sx={{ color: "primary.main" }}
+                          sx={{
+                            color: "white",
+                            bgcolor: "#F25A28",
+                            border: "1px solid #F25A28",
+                            borderRadius: "8px",
+                            width: "18%",
+                          }}
                         >
                           <AddIcon
                             sx={{
-                              color: "black",
-                              border: "2px solid",
+                              color: "white",
+                              mr: 1,
+                              // border: "2px solid",
                               "&.Mui-selected": {},
                               "&:focus": {
                                 outline: "none",
                               },
                             }}
                           />
-                        </IconButton>
-                      </Box>
-                      <Box sx={{ justifyItems: "flex-end" }}>
-                        <Button
-                          onClick={handleScanInterface}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            color: "blue",
-                          }}
-                        >
-                          Scan interface
+                          <Typography fontSize={14}>
+                            Add another item
+                          </Typography>
                         </Button>
                       </Box>
                       <TableContainer>
@@ -1168,9 +1279,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                               <TableCell>Type</TableCell>
                               <TableCell>Unit</TableCell>
                               <TableCell>Update Interval</TableCell>
-                              {/* <TableCell>History</TableCell>
-                      <TableCell>Trend</TableCell> */}
-                              <TableCell></TableCell>
+                              <TableCell>Action</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -1264,33 +1373,36 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           </TableBody>
                         </Table>
                       </TableContainer>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "center",
-                          mt: 2,
-                        }}
-                      >
-                        <Pagination
-                          count={Math.ceil(
-                            itemRows.length / itemsPerScanInterfacepage
-                          )}
-                          showFirstButton
-                          showLastButton
-                          page={ScanInterfacepage}
-                          onChange={handleChangeScanInterfacepage}
-                          color="primary"
+                      {Math.ceil(itemRows.length / itemsPerScanInterfacepage) >
+                        1 && (
+                        <Box
                           sx={{
-                            "& .MuiPaginationItem-root": {
-                              transition: "all 0.1s ease",
-                              "&:hover": {
-                                backgroundColor: "rgba(0, 0, 0, 0.04)",
-                                transform: "scale(1.1)",
-                              },
-                            },
+                            display: "flex",
+                            justifyContent: "center",
+                            mt: 2,
                           }}
-                        />
-                      </Box>
+                        >
+                          <Pagination
+                            count={Math.ceil(
+                              itemRows.length / itemsPerScanInterfacepage
+                            )}
+                            showFirstButton
+                            showLastButton
+                            page={ScanInterfacepage}
+                            onChange={handleChangeScanInterfacepage}
+                            color="primary"
+                            sx={{
+                              "& .MuiPaginationItem-root": {
+                                transition: "all 0.1s ease",
+                                "&:hover": {
+                                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                                  transform: "scale(1.1)",
+                                },
+                              },
+                            }}
+                          />
+                        </Box>
+                      )}
                     </Box>
                   </Paper>
                 </TabPanel>
@@ -1307,7 +1419,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   variant="outlined"
                   color="error"
                   onClick={onClose}
-                  sx={{ fontSize: 14 }}
+                  sx={{
+                    fontSize: 14,
+                    color: "black",
+                    borderColor: "#B9B9B9",
+                    borderRadius: 2,
+                  }}
                 >
                   Cancel
                 </Button>
@@ -1316,8 +1433,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                   variant="outlined"
                   sx={{
                     fontSize: 14,
-                    color: "black",
-                    borderColor: "black",
+                    color: "white",
+                    bgcolor: "#0281F2",
+                    borderColor: "white",
+                    borderRadius: 2,
                     "&:hover": {
                       color: "red",
                       borderColor: "red",
