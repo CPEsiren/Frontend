@@ -27,9 +27,14 @@ import MetricGraph, { Items } from "../components/graphComponent/MetricGraph";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { SearchIcon } from "lucide-react";
 
+interface IItem {
+  item_name: string;
+}
+
 interface IHost {
   host_id: string;
   hostname: string;
+  items: IItem[];
 }
 
 interface SelectedItems {
@@ -46,12 +51,17 @@ const Graphs: React.FC = () => {
 
   const fetchHosts = async () => {
     try {
-      const res = await fetch("http://localhost:3000/host", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (res.status === 404) {
-        setHosts([{ host_id: "not-found", hostname: "Host Not Found" }]);
+        setHosts([
+          { host_id: "not-found", hostname: "Host Not Found", items: [] },
+        ]);
         setSelectedHost("not-found");
         return;
       }
@@ -59,10 +69,11 @@ const Graphs: React.FC = () => {
       const result = await res.json();
       if (result.status === "success" && Array.isArray(result.data)) {
         const listHost = result.data.map(
-          (host: { _id: string; hostname: string }) => {
+          (host: { _id: string; hostname: string; items: IItem[] }) => {
             return {
               host_id: host._id,
               hostname: host.hostname,
+              items: host.items,
             };
           }
         );
@@ -70,7 +81,9 @@ const Graphs: React.FC = () => {
         setSelectedHost(listHost[0].hostname);
 
         // Set the URL and fetch data immediately after setting the host
-        const initialUrl = `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+        const initialUrl = `${
+          import.meta.env.VITE_API_URL
+        }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
           listHost[0].host_id
         }`;
         setUrl(initialUrl);
@@ -90,25 +103,55 @@ const Graphs: React.FC = () => {
     setSelectedHost(event.target.value);
   };
 
+  const [hostNow, setHostNow] = useState<IHost>({
+    host_id: "",
+    hostname: "",
+    items: [],
+  });
+
   useEffect(() => {
-    const hostNow = hosts.find((host) => host.hostname === selectedHost);
+    const host = hosts.find((host) => host.hostname === selectedHost);
+    if (host) {
+      setHostNow(host);
+    } else {
+      setHostNow({
+        host_id: "",
+        hostname: "",
+        items: [],
+      });
+    }
+
+    setStartTimeForScale(selectedDateTimeStart);
+    setEndTimeForScale(selectedDateTimeEnd);
+
     setUrl(
-      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+      `${
+        import.meta.env.VITE_API_URL
+      }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
         hostNow?.host_id
       }`
     );
   }, [selectedHost]);
 
   //DateTime Range
+  const [startTime, setStartTime] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.setMinutes(now.getMinutes() - 16));
+  });
   const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
     () => {
       const now = new Date();
       return new Date(now.setMinutes(now.getMinutes() - 15));
     }
   );
+  const [startTimeForScale, setStartTimeForScale] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.setMinutes(now.getMinutes() - 15));
+  });
   const [selectedDateTimeEnd, setSelectedDateTimeEnd] = useState<Date>(
     new Date()
   );
+  const [endTimeForScale, setEndTimeForScale] = useState<Date>(new Date());
 
   //Now Range Data
   const [rangeTime, setRangeTime] = useState<string>("15 m");
@@ -177,46 +220,58 @@ const Graphs: React.FC = () => {
     const setLastTime = () => {
       const dateTimeStart = new Date(selectedDateTimeEnd);
       const dateTimeEnd = new Date(selectedDateTimeEnd);
+      const forStartTime = new Date(selectedDateTimeEnd);
 
       switch (selectedLastTime) {
         case "Last 15 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 15);
+          forStartTime.setMinutes(dateTimeStart.getMinutes() - 1);
           break;
         case "Last 30 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 30);
+          forStartTime.setMinutes(dateTimeStart.getMinutes() - 1);
           break;
         case "Last 1 Hour":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 1);
+          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
           break;
         case "Last 3 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 3);
+          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
           break;
         case "Last 6 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 6);
+          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
           break;
-        case "Last 12 Hours": {
+        case "Last 12 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 12);
+          forStartTime.setHours(dateTimeStart.getHours() - 0.15);
           break;
-        }
         case "Last 1 Day":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 1);
+          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
           break;
         case "Last 3 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 3);
+          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
           break;
         case "Last 7 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 7);
+          forStartTime.setDate(dateTimeStart.getDate() - 0.015);
           break;
         case "Last 1 Month":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 1);
+          forStartTime.setMonth(dateTimeStart.getMonth() - 0.1);
           break;
         case "Last 6 Months":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 6);
+          forStartTime.setMonth(dateTimeStart.getMonth());
           break;
         default:
           // If no match, don't change the date
           return;
       }
+      setStartTime(forStartTime);
       setSelectedDateTimeStart(dateTimeStart);
     };
 
@@ -225,8 +280,12 @@ const Graphs: React.FC = () => {
 
   //Apply Button
   const handleApplyClick = () => {
+    setStartTimeForScale(selectedDateTimeStart);
+    setEndTimeForScale(selectedDateTimeEnd);
     setUrl(
-      `http://127.0.0.1:3000/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+      `${
+        import.meta.env.VITE_API_URL
+      }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
         hosts[0].host_id
       }`
     );
@@ -252,6 +311,12 @@ const Graphs: React.FC = () => {
       const now = new Date();
       return new Date(now.setMinutes(now.getMinutes() - 15));
     });
+    setStartTime(() => {
+      const now = new Date();
+      return new Date(now.setMinutes(now.getMinutes() - 16));
+    });
+    setStartTimeForScale(selectedDateTimeStart);
+    setEndTimeForScale(selectedDateTimeEnd);
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
@@ -269,13 +334,20 @@ const Graphs: React.FC = () => {
         const now = new Date();
         setSelectedDateTimeEnd(now);
         const past = new Date(now.getTime() - 15 * 60000);
+        const pastforStartTime = new Date(now.getTime() - 16 * 60000);
+
         setSelectedDateTimeStart(past); // 15 minutes ago
+        setStartTime(pastforStartTime); // 15 minutes ago
+        setStartTimeForScale(past);
+        setEndTimeForScale(now);
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
           const host: IHost = hosts[0];
           setUrl(
-            `http://127.0.0.1:3000/data/between?startTime=${past.toISOString()}&endTime=${now.toISOString()}&host_id=${
+            `${
+              import.meta.env.VITE_API_URL
+            }/data/between?startTime=${pastforStartTime.toISOString()}&endTime=${now.toISOString()}&host_id=${
               host.host_id
             }`
           );
@@ -292,7 +364,12 @@ const Graphs: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(url, { method: "GET" });
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       if (res.status === 404) {
         setData([]);
@@ -337,8 +414,8 @@ const Graphs: React.FC = () => {
     } else {
       // If no saved filters, initialize with all items selected
       const initialSelectedItems: SelectedItems = {};
-      data.forEach((item) => {
-        initialSelectedItems[item.item_id.item_name] = true;
+      hostNow.items.forEach((item) => {
+        initialSelectedItems[item.item_name] = true;
       });
       setSelectedItems(initialSelectedItems);
       // localStorage.setItem(
@@ -355,8 +432,8 @@ const Graphs: React.FC = () => {
   const filteredItems = data.filter(
     (item) => selectedItems[item.item_id.item_name]
   );
-  const filteredItemsForSearch = data.filter((item) =>
-    item.item_id.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredItemsForSearch = hostNow.items.filter((item) =>
+    item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   // Update localStorage whenever filters change
   const handleCheckboxChange = (itemName: string) => {
@@ -371,7 +448,7 @@ const Graphs: React.FC = () => {
   const handleSelectAll = () => {
     const newSelectedItems = { ...selectedItems };
     filteredItemsForSearch.forEach((item) => {
-      newSelectedItems[item.item_id.item_name] = true;
+      newSelectedItems[item.item_name] = true;
     });
     setSelectedItems(newSelectedItems);
     localStorage.setItem("graphFilters", JSON.stringify(newSelectedItems));
@@ -380,7 +457,7 @@ const Graphs: React.FC = () => {
   const handleDeselectAll = () => {
     const newSelectedItems = { ...selectedItems };
     filteredItemsForSearch.forEach((item) => {
-      newSelectedItems[item.item_id.item_name] = false;
+      newSelectedItems[item.item_name] = false;
     });
     setSelectedItems(newSelectedItems);
     localStorage.setItem("graphFilters", JSON.stringify(newSelectedItems));
@@ -546,7 +623,7 @@ const Graphs: React.FC = () => {
               >
                 {filteredItemsForSearch.map((item) => (
                   <FormControlLabel
-                    key={item.item_id.item_name}
+                    key={item.item_name}
                     control={
                       <Checkbox
                         sx={{
@@ -556,10 +633,8 @@ const Graphs: React.FC = () => {
                             color: "blue", // Set background color when checked
                           },
                         }}
-                        checked={selectedItems[item.item_id.item_name] || false}
-                        onChange={() =>
-                          handleCheckboxChange(item.item_id.item_name)
-                        }
+                        checked={selectedItems[item.item_name] || false}
+                        onChange={() => handleCheckboxChange(item.item_name)}
                         size="small"
                       />
                     }
@@ -572,7 +647,7 @@ const Graphs: React.FC = () => {
                           paddingLeft: "4px",
                         }}
                       >
-                        {item.item_id.item_name}
+                        {item.item_name}
                       </Typography>
                     }
                     sx={{
@@ -774,7 +849,12 @@ const Graphs: React.FC = () => {
                     {item.item_id.item_name}
                   </Typography>
                   <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                    <MetricGraph item={item} selectedLastTime={rangeTime} />
+                    <MetricGraph
+                      item={item}
+                      selectedLastTime={rangeTime}
+                      startTimeForScale={startTimeForScale}
+                      endTimeForScale={endTimeForScale}
+                    />
                   </Box>
                 </Paper>
               </Grid>

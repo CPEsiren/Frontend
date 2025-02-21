@@ -15,6 +15,8 @@ export interface Items {
 interface MetricGraphProps {
   item: Items;
   selectedLastTime: string;
+  startTimeForScale: Date;
+  endTimeForScale: Date;
   hideLegendLabel?: boolean;
   isSmall?: boolean; // Add new prop for size
 }
@@ -22,10 +24,12 @@ interface MetricGraphProps {
 const MetricGraph: React.FC<MetricGraphProps> = ({
   item,
   selectedLastTime,
+  startTimeForScale,
+  endTimeForScale,
   hideLegendLabel = false,
   isSmall = false, // Default to normal size
 }) => {
-  const [xAxis, setXAxis] = useState<string[]>([]);
+  const [xAxis, setXAxis] = useState<Date[]>([]);
   const [yAxis, setYAxis] = useState<number[]>([]);
 
   useEffect(() => {
@@ -38,9 +42,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
     const DateXAxis = item.data.map((entry) => {
       const date = new Date(entry.timestamp);
-      const formattedDate = date.toISOString().split("T")[0];
-      const formattedTime = date.toTimeString().split(" ")[0].slice(0, 8);
-      return `${formattedDate}\n${formattedTime}`;
+      return date;
     });
     setXAxis(DateXAxis);
     const value = sortedData.map((entry) => Number(entry.value));
@@ -49,6 +51,28 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
   const createConstantArray = (value: number, length: number) => {
     return Array(length).fill(value);
+  };
+
+  const formatYAxisLabel = (value: number | null) => {
+    if (value === null) return "";
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+    return value.toString();
+  };
+
+  const formatDateTime = (date: Date) => {
+    const dateStr = date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    return `${dateStr}\n${timeStr}`;
   };
 
   return (
@@ -82,6 +106,10 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               label: hideLegendLabel ? "" : item.item_id.item_name,
               curve: "linear",
               color: "#2196f3",
+              area: true,
+              showMark: false,
+              valueFormatter: formatYAxisLabel,
+              connectNulls: false,
             },
             {
               data: createConstantArray(item.max_value, yAxis.length),
@@ -89,6 +117,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               curve: "linear",
               color: "#ff9800",
               showMark: false,
+              valueFormatter: formatYAxisLabel,
               id: "max",
             },
             {
@@ -97,6 +126,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               curve: "linear",
               color: "#4caf50",
               showMark: false,
+              valueFormatter: formatYAxisLabel,
               id: "avg",
             },
             {
@@ -105,14 +135,17 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               curve: "linear",
               color: "#f44336",
               showMark: false,
+              valueFormatter: formatYAxisLabel,
               id: "min",
             },
           ]}
           xAxis={[
             {
-              scaleType: "point",
+              scaleType: "time",
               data: xAxis,
               label: "Date\nTime",
+              min: startTimeForScale.getTime(),
+              max: endTimeForScale.getTime(),
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
@@ -121,6 +154,8 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 fontSize: isSmall ? 8 : 10,
                 fill: "#666",
               },
+              valueFormatter: (value) => formatDateTime(new Date(value)),
+              tickNumber: isSmall ? 5 : 7,
             },
           ]}
           yAxis={[
@@ -134,6 +169,8 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 fontSize: isSmall ? 8 : 10,
                 fill: "#666",
               },
+              valueFormatter: formatYAxisLabel,
+              tickNumber: isSmall ? 5 : 7,
             },
           ]}
           sx={{
@@ -170,6 +207,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               },
             },
           }}
+          grid={{ vertical: true, horizontal: true }}
         />
       </Box>
     </Box>
