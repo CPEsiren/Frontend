@@ -1224,7 +1224,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                           </Typography>
                         </Box>
                         <Box
-                          width={"72%"}
+                          width={"75%"}
                           display={"flex"}
                           justifyContent={"flex-end"}
                           marginRight={2}
@@ -1251,7 +1251,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             bgcolor: "#F25A28",
                             border: "1px solid #F25A28",
                             borderRadius: "8px",
-                            width: "18%",
+                            width: "15%",
                           }}
                         >
                           <AddIcon
@@ -1266,7 +1266,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                             }}
                           />
                           <Typography fontSize={14}>
-                            Add another item
+                            Another item
                           </Typography>
                         </Button>
                       </Box>
@@ -1438,8 +1438,9 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                     borderColor: "white",
                     borderRadius: 2,
                     "&:hover": {
-                      color: "red",
-                      borderColor: "red",
+                      color: "white",
+                      bgcolor: "#0274d9",
+                      borderColor: "white",
                     },
                   }}
                 >
