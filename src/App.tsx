@@ -74,27 +74,29 @@ const PublicRoute = ({ children }: any) => {
 };
 
 const App = () => {
+  
   useEffect(() => {
     const checkTokenExpiry = () => {
       const token = localStorage.getItem("token");
       const tokenTimestamp = localStorage.getItem("tokenTimestamp");
-
+  
       if (token && tokenTimestamp) {
         const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
-
-        if (elapsedTime >= 50 * 60 * 1000) { 
+  
+        if (elapsedTime >= 20 * 60 * 1000) { 
           console.log("Token expired. Redirecting to login...");
           localStorage.clear();
           window.location.href = "/"; 
         }
       }
     };
-
+  
     checkTokenExpiry();
-    const interval = setInterval(checkTokenExpiry, 10 * 1000); // ตรวจสอบทุก 10 วินาที
-
+    const interval = setInterval(checkTokenExpiry, 10 * 1000); 
+  
     return () => clearInterval(interval);
   }, []);
+  
 
   return (
     <ThemeProvider theme={ThemeConfig}>
