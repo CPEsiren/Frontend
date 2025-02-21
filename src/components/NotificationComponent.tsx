@@ -223,47 +223,7 @@ const NotificationComponent: React.FC = () => {
               Add another email
             </Button>
           )}
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              maxWidth: "calc(100% - 150px)",
-              gap: 1,
-              ml: 2,
-            }}
-          >
-            {[
-              { level: "Not classified", color: "#808080" },
-              { level: "Information", color: "#0000FF" },
-              { level: "Warning", color: "#FFA500" },
-              { level: "Average", color: "#FF4500" },
-              { level: "High", color: "#FF0000" },
-              { level: "Disaster", color: "#8B0000" },
-            ].map(({ level, color }) => (
-              <Button
-                key={level}
-                // variant={
-                //   severity === level.toLowerCase() ? "contained" : "outlined"
-                // }
-                // onClick={() => setSeverity(level.toLowerCase())}
-                disabled={!isEditMode}
-                sx={{
-                  fontSize: 12,
-                  minWidth: "auto",
-                  flex: "1 0 auto",
-                  color: color,
-                  backgroundColor: "transparent",
-                  borderColor: color,
-                  "&:hover": {
-                    backgroundColor: `${color}22`,
-                  },
-                  border: isEditMode ? "1px solid black" : "1px solid #f3f3f3",
-                }}
-              >
-                {level}
-              </Button>
-            ))}
-          </Box>
+         
         </Box>
       </Box>
 
@@ -318,47 +278,7 @@ const NotificationComponent: React.FC = () => {
               )}
             </Box>
           ))}
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              maxWidth: "calc(100% - 150px)",
-              gap: 1,
-              ml: 2,
-            }}
-          >
-            {[
-              { level: "Not classified", color: "#808080" },
-              { level: "Information", color: "#0000FF" },
-              { level: "Warning", color: "#FFA500" },
-              { level: "Average", color: "#FF4500" },
-              { level: "High", color: "#FF0000" },
-              { level: "Disaster", color: "#8B0000" },
-            ].map(({ level, color }) => (
-              <Button
-                key={level}
-                // variant={
-                //   severity === level.toLowerCase() ? "contained" : "outlined"
-                // }
-                // onClick={() => setSeverity(level.toLowerCase())}
-                disabled={!isEditMode}
-                sx={{
-                  fontSize: 12,
-                  minWidth: "auto",
-                  flex: "1 0 auto",
-                  color: color,
-                  backgroundColor: "transparent",
-                  borderColor: color,
-                  "&:hover": {
-                    backgroundColor: `${color}22`,
-                  },
-                  border: isEditMode ? "1px solid black" : "1px solid #f3f3f3",
-                }}
-              >
-                {level}
-              </Button>
-            ))}
-          </Box>
+        
 
           {isEditMode && (
             <Button

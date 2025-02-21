@@ -46,6 +46,7 @@ import NotificationImportantIcon from "@mui/icons-material/NotificationImportant
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
 import DraggableDashboard from "../components/DraggableDashboard";
+import { SelectChangeEvent } from "@mui/material";
 
 // Add new interfaces for graph selection
 interface GraphSelection {
@@ -297,6 +298,11 @@ const Dashboard = () => {
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [viewerDashboards, setViewerDashboards] = useState<DashboardLayout[]>(
+    []
+  );
+  const [isViewerDashboard, setIsViewerDashboard] = useState(false);
 
   useEffect(() => {
     const fetchDashboards = async () => {
@@ -356,15 +362,136 @@ const Dashboard = () => {
   // Check user role
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    setIsAdmin(userRole === "admin");
+    setIsAdmin(userRole === "admin" || userRole === "superadmin");
+    setIsSuperAdmin(userRole === "superadmin");
   }, []);
 
-  const handleDashboardChange = (event: any) => {
-    const dashboardId = event.target.value;
-    setCurrentDashboardId(dashboardId);
-    const dashboard = dashboards.find((d) => d.id === dashboardId);
-    if (dashboard) {
-      setActiveComponents(dashboard.components);
+  // Fetch both user and viewer dashboards
+  useEffect(() => {
+    const fetchAllDashboards = async () => {
+      try {
+        setIsLoading(true);
+        const userId = localStorage.getItem("user_id");
+        if (!userId) {
+          throw new Error("No user ID found");
+        }
+
+        // Fetch user dashboards
+        const userDashboardResponse = await fetch(
+          `http://localhost:3000/dashboard/user/${userId}`
+        );
+        if (!userDashboardResponse.ok) {
+          throw new Error("Failed to fetch user dashboards");
+        }
+
+        const userDashboardData = await userDashboardResponse.json();
+        let transformedUserDashboards: DashboardLayout[] = [];
+
+        if (
+          userDashboardData.status === "success" &&
+          Array.isArray(userDashboardData.dashboards)
+        ) {
+          transformedUserDashboards = userDashboardData.dashboards.map(
+            (dashboard: APIDashboard) => ({
+              id: dashboard._id,
+              name: dashboard.dashboard_name,
+              components: dashboard.components.map((comp: APIComponent) => ({
+                id: comp.componentType,
+                position: comp.position,
+                ...(comp.settings || {}),
+              })),
+            })
+          );
+          setDashboards(transformedUserDashboards);
+        }
+
+        // If superadmin, fetch viewer dashboards
+        let transformedViewerDashboards: DashboardLayout[] = [];
+        if (isSuperAdmin) {
+          const viewerDashboardResponse = await fetch(
+            "http://localhost:3000/dashboard/viewer"
+          );
+          if (viewerDashboardResponse.ok) {
+            const viewerDashboardData = await viewerDashboardResponse.json();
+            if (
+              viewerDashboardData.status === "success" &&
+              Array.isArray(viewerDashboardData.dashboards)
+            ) {
+              transformedViewerDashboards = viewerDashboardData.dashboards.map(
+                (dashboard: APIDashboard) => ({
+                  id: dashboard._id,
+                  name: `${dashboard.dashboard_name}`,
+                  components: dashboard.components.map(
+                    (comp: APIComponent) => ({
+                      id: comp.componentType,
+                      position: comp.position,
+                      ...(comp.settings || {}),
+                    })
+                  ),
+                })
+              );
+              setViewerDashboards(transformedViewerDashboards);
+            }
+          }
+        }
+
+        // Set initial dashboard and components
+        const allDashboards = [
+          ...transformedUserDashboards,
+          ...transformedViewerDashboards,
+        ];
+        if (allDashboards.length > 0) {
+          const firstDashboard = allDashboards[0];
+          setCurrentDashboardId(firstDashboard.id);
+          setActiveComponents(firstDashboard.components);
+          setIsViewerDashboard(
+            transformedViewerDashboards.some((d) => d.id === firstDashboard.id)
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching dashboards:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch dashboards"
+        );
+        setSnackbar({
+          open: true,
+          message: "Failed to load dashboards",
+          severity: "error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllDashboards();
+  }, [isSuperAdmin]);
+
+  const handleDashboardChange = (event: SelectChangeEvent<string>) => {
+    const selectedId = event.target.value;
+    console.log("Selected Dashboard ID:", selectedId);
+    console.log("Available Dashboards:", dashboards);
+    console.log("Available Viewer Dashboards:", viewerDashboards);
+
+    // If the target is the "New Dashboard" option, handle it separately
+    if (selectedId === "new") {
+      handleAddDashboard();
+      return;
+    }
+
+    // Find the selected dashboard from either user or viewer dashboards
+    const selectedViewerDashboard = viewerDashboards.find(
+      (d) => d.id === selectedId
+    );
+    const selectedUserDashboard = dashboards.find((d) => d.id === selectedId);
+    const selectedDashboard = selectedViewerDashboard || selectedUserDashboard;
+
+    console.log("Selected Dashboard:", selectedDashboard);
+
+    if (selectedDashboard) {
+      setCurrentDashboardId(selectedId);
+      setActiveComponents(selectedDashboard.components);
+      setIsViewerDashboard(!!selectedViewerDashboard);
+      setIsEditing(false); // Exit edit mode when switching dashboards
     }
   };
 
@@ -770,29 +897,31 @@ const Dashboard = () => {
           >
             DASHBOARD
           </Typography>
-          {isAdmin ? (
-            <>
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          {isAdmin && (
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              {/* Allow editing for superadmin regardless of dashboard type */}
+              {(!isViewerDashboard || (isViewerDashboard && isSuperAdmin)) && (
                 <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
                   <IconButton
                     onClick={toggleEdit}
                     sx={{
-                      // mr: 1,
                       "&:focus": {
                         outline: "none",
                         border: "none",
                       },
                     }}
                   >
-                    {isEditing ? <DoneIcon sx={{}} /> : <EditIcon sx={{}} />}
+                    {isEditing ? <DoneIcon /> : <EditIcon />}
                   </IconButton>
                 </Tooltip>
-                {isEditing ? (
-                  <Tooltip title={"Delete Dashboard"}>
+              )}
+
+              {isEditing &&
+                (!isViewerDashboard || (isViewerDashboard && isSuperAdmin)) && (
+                  <Tooltip title="Delete Dashboard">
                     <IconButton
                       onClick={handleDeleteDashboard}
                       sx={{
-                        mr: 1,
                         color: "red",
                         "&:focus": {
                           outline: "none",
@@ -803,35 +932,87 @@ const Dashboard = () => {
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
-                ) : (
-                  <></>
                 )}
 
-                {!isEditing && (
-                  <>
+              {!isEditing && (
+                <>
+                  {(dashboards.length > 0 ||
+                    (isSuperAdmin && viewerDashboards.length > 0)) && (
                     <Select
                       value={currentDashboardId}
                       onChange={handleDashboardChange}
+                      displayEmpty
+                      renderValue={(value) => {
+                        const selectedUserDash = dashboards.find(
+                          (d) => d.id === value
+                        );
+                        const selectedViewerDash = viewerDashboards.find(
+                          (d) => d.id === value
+                        );
+                        return (
+                          (selectedUserDash || selectedViewerDash)?.name ||
+                          "Select Dashboard"
+                        );
+                      }}
                       sx={{
                         backgroundColor: "white",
-                        minWidth: 150,
+                        minWidth: 200,
                         "& .MuiSelect-select": {
                           py: 1,
                         },
                       }}
                     >
-                      {dashboards.map((dashboard) => (
-                        <MenuItem key={dashboard.id} value={dashboard.id}>
-                          {dashboard.name}
-                        </MenuItem>
-                      ))}
-                      {/* Add divider and New Dashboard menu item if less than 3 dashboards */}
-                      {dashboards.length < 3 && (
+                      
+                      {dashboards.length > 0 && (
+                        <>
+                          <MenuItem disabled>Your Dashboards</MenuItem>
+                          {dashboards.map((dashboard) => (
+                            <MenuItem
+                              key={dashboard.id}
+                              value={dashboard.id}
+                              onClick={() => {
+                                console.log("Clicked dashboard:", dashboard.id);
+                                setCurrentDashboardId(dashboard.id);
+                                setActiveComponents(dashboard.components);
+                                setIsViewerDashboard(false);
+                              }}
+                            >
+                              {dashboard.name}
+                            </MenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {isSuperAdmin && viewerDashboards.length > 0 && (
+                        <>
+                          {dashboards.length > 0 && <MenuItem divider />}
+                          <MenuItem disabled>Viewer Dashboards</MenuItem>
+                          {viewerDashboards.map((dashboard) => (
+                            <MenuItem
+                              key={dashboard.id}
+                              value={dashboard.id}
+                              onClick={() => {
+                                console.log(
+                                  "Clicked viewer dashboard:",
+                                  dashboard.id
+                                );
+                                setCurrentDashboardId(dashboard.id);
+                                setActiveComponents(dashboard.components);
+                                setIsViewerDashboard(true);
+                              }}
+                            >
+                              {dashboard.name}
+                            </MenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {!isViewerDashboard && dashboards.length < 3 && (
                         <>
                           <MenuItem divider />
                           <MenuItem
                             onClick={(e) => {
-                              e.stopPropagation(); // Prevent Select from closing
+                              e.stopPropagation();
                               handleAddDashboard();
                             }}
                             sx={{
@@ -847,10 +1028,30 @@ const Dashboard = () => {
                         </>
                       )}
                     </Select>
-                  </>
-                )}
+                  )}
 
-                {isEditing && (
+                  {dashboards.length === 0 &&
+                    (!isSuperAdmin || viewerDashboards.length === 0) && (
+                      <Button
+                        startIcon={<AddIcon />}
+                        variant="contained"
+                        onClick={handleAddDashboard}
+                        sx={{
+                          backgroundColor: "#4CAF50",
+                          color: "white",
+                          "&:hover": {
+                            backgroundColor: "rgba(76, 175, 80, 0.8)",
+                          },
+                        }}
+                      >
+                        New Dashboard
+                      </Button>
+                    )}
+                </>
+              )}
+
+              {isEditing &&
+                (!isViewerDashboard || (isViewerDashboard && isSuperAdmin)) && (
                   <Button
                     startIcon={<AddIcon />}
                     variant="contained"
@@ -866,10 +1067,7 @@ const Dashboard = () => {
                     Add Component
                   </Button>
                 )}
-              </Box>
-            </>
-          ) : (
-            <></>
+            </Box>
           )}
         </Box>
       )}

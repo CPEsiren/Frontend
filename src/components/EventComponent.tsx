@@ -32,8 +32,8 @@ const EventComponent = () => {
 
         const result = await response.json();
 
-        if (result.events && result.events.length > 0) {
-          setevents(result.events);
+        if (result.data && result.data.length > 0) {
+          setevents(result.data);
         } else {
           console.log("No events found");
         }
