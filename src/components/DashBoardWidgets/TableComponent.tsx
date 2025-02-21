@@ -142,7 +142,17 @@ const TableComponent = () => {
       setError(null);
 
       try {
-        const response = await fetch("http://localhost:3000/dashboard/count");
+        // const response = await fetch("http://localhost:3000/dashboard/count");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/dashboard/count`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch dashboard data");
         }

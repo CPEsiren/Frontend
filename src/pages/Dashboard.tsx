@@ -70,8 +70,12 @@ const GraphSelectionDialog: React.FC<{
       if (!open) return;
 
       try {
-        const res = await fetch("http://localhost:3000/host", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
           method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
         if (!res.ok) throw new Error("Failed to fetch hosts");
 
@@ -86,10 +90,25 @@ const GraphSelectionDialog: React.FC<{
           const now = new Date();
           const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
 
+          // const dataRes = await fetch(
+          //   `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
+          //     host._id
+          //   }`
+          // );
+
           const dataRes = await fetch(
-            `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
+            `${
+              import.meta.env.VITE_API_URL
+            }/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
               host._id
-            }`
+            }`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
 
           if (!dataRes.ok) throw new Error("Failed to fetch graph data");
@@ -313,7 +332,14 @@ const Dashboard = () => {
         }
 
         const response = await fetch(
-          `http://localhost:3000/dashboard/user/${userId}`
+          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (!response.ok) {
           throw new Error("Failed to fetch dashboards");
@@ -378,7 +404,14 @@ const Dashboard = () => {
 
         // Fetch user dashboards
         const userDashboardResponse = await fetch(
-          `http://localhost:3000/dashboard/user/${userId}`
+          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (!userDashboardResponse.ok) {
           throw new Error("Failed to fetch user dashboards");
@@ -409,7 +442,14 @@ const Dashboard = () => {
         let transformedViewerDashboards: DashboardLayout[] = [];
         if (isSuperAdmin) {
           const viewerDashboardResponse = await fetch(
-            "http://localhost:3000/dashboard/viewer"
+            `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
           if (viewerDashboardResponse.ok) {
             const viewerDashboardData = await viewerDashboardResponse.json();
@@ -518,17 +558,21 @@ const Dashboard = () => {
       };
 
       // Create new dashboard
-      const response = await fetch("http://localhost:3000/dashboard", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dashboard_name: `Dashboard ${dashboards.length + 1}`,
-          user_id: userId,
-          components: [defaultComponent],
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/dashboard`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            dashboard_name: `Dashboard ${dashboards.length + 1}`,
+            user_id: userId,
+            components: [defaultComponent],
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to create dashboard");
@@ -540,7 +584,14 @@ const Dashboard = () => {
       if (data.status === "success") {
         // Refresh dashboards list
         const refreshResponse = await fetch(
-          `http://localhost:3000/dashboard/user/${userId}`
+          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (!refreshResponse.ok) {
           throw new Error("Failed to refresh dashboards");
@@ -605,11 +656,13 @@ const Dashboard = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:3000/dashboard/${currentDashboardId}`,
+          // `http://localhost:3000/dashboard/${currentDashboardId}`,
+          `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
           {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({
               components: activeComponents.map((comp) => ({
@@ -756,9 +809,13 @@ const Dashboard = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/dashboard/${currentDashboardId}`,
+        `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -962,7 +1019,6 @@ const Dashboard = () => {
                         },
                       }}
                     >
-                      
                       {dashboards.length > 0 && (
                         <>
                           <MenuItem disabled>Your Dashboards</MenuItem>

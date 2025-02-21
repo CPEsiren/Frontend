@@ -40,7 +40,7 @@ const AccountComponent = () => {
     const nameParts = userData.username.split(" ");
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
-    const picture = userData.picture || "default-profile-image-url"; 
+    const picture = userData.picture || "default-profile-image-url";
 
     return {
       ...userData,
@@ -53,7 +53,17 @@ const AccountComponent = () => {
   const fetchUserData = async () => {
     const userId = localStorage.getItem("user_id");
     try {
-      const response = await fetch(`http://localhost:3000/user/${userId}`);
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch user: ${response.statusText}`);
       }
@@ -153,14 +163,14 @@ const AccountComponent = () => {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", ml: 2, padding: 3 }}>
-        <Avatar
-        src={user?.picture || 'default-profile-image-url'} 
-        alt="Profile Picture"
-        sx={{
-          width: 100,
-          height: 100,
-        }}
-      />
+          <Avatar
+            src={user?.picture || "default-profile-image-url"}
+            alt="Profile Picture"
+            sx={{
+              width: 100,
+              height: 100,
+            }}
+          />
           <Box sx={{ ml: 5 }}>
             <Box sx={{ display: "flex", gap: 1, mb: 0.8 }}>
               <Typography

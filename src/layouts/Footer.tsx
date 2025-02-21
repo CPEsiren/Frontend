@@ -58,7 +58,13 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     const loggedInUserId = localStorage.getItem("user_id");
     if (loggedInUserId) {
       try {
-        const response = await axios.get("http://localhost:3000/user");
+        const response = await axios.get( `${import.meta.env.VITE_API_URL}/user`,{
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         const userData = response.data.users.find((user: IUser) => user._id === loggedInUserId);
         if (userData) {
       

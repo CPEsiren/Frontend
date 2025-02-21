@@ -9,9 +9,15 @@ interface LoginAuthenProps {
 
 const authenticateWithServer = async (token: string) => {
   try {
-    const response = await axios.post("http://localhost:3000/authen/signup", {
-      token,
-    });
+    // const response = await axios.post("http://localhost:3000/authen/signup", {
+    //   token,
+    // });
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/authen/signup`,
+      {
+        token,
+      }
+    );
 
     if (!response || !response.data) {
       throw new Error("No response data received from server");
