@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import MetricGraph from "../graphComponent/MetricGraph";
+import { Item } from "../Modals/AddTrigger";
+import { DataEntry } from "../../interface/InterfaceCollection";
 
 interface GraphInDashboardProps {
   graphSelection?: {
@@ -8,13 +10,26 @@ interface GraphInDashboardProps {
   };
 }
 
+interface GraphData {
+  item_id: Item;
+  avg_value: number;
+  max_value: number;
+  min_value: number;
+  data: DataEntry[];
+  hostname: string;
+}
+
 const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
   graphSelection,
 }) => {
-  const [graphData, setGraphData] = useState<any>(null);
+  const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   // Add state for tracking the time range
-  const [timeRange, setTimeRange] = useState("15min");
+  const timeRange = "15min";
+  const [startTime, setStartTime] = useState<Date>(
+    new Date(Date.now() - 16 * 60000)
+  );
+  const [endTime, setEndTime] = useState<Date>(new Date());
 
   useEffect(() => {
     const fetchGraphData = async () => {
@@ -24,8 +39,12 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
       }
 
       try {
-        const res = await fetch("http://localhost:3000/host", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
           method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
         if (!res.ok) throw new Error("Failed to fetch hosts");
 
@@ -40,12 +59,22 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
 
           const now = new Date();
           const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
+          setStartTime(new Date(now.getTime() - 16 * 60000));
+          setEndTime(now);
 
-          const dataUrl = `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
+          const dataUrl = `${
+            import.meta.env.VITE_API_URL
+          }/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
             host._id
           }`;
 
-          const dataRes = await fetch(dataUrl);
+          const dataRes = await fetch(dataUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
           if (!dataRes.ok) throw new Error("Failed to fetch graph data");
 
           const dataResult = await dataRes.json();
@@ -57,9 +86,10 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
           ) {
             const hostname = dataResult.data[0]._id.hostname;
             const selectedGraph = dataResult.data[0].items.find(
-              (item: any) => item.item_id.item_name === graphSelection.graphName
+              (item: GraphData) =>
+                item.item_id.item_name === graphSelection.graphName
             );
-          
+
             if (selectedGraph) {
               setGraphData({
                 item_id: selectedGraph.item_id,
@@ -70,7 +100,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
                 hostname: hostname,
               });
             }
-          }          
+          }
         }
       } catch (error) {
         console.error("Error fetching graph data:", error);
@@ -109,6 +139,8 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
         <MetricGraph
           item={graphData}
           selectedLastTime={timeRange}
+          startTimeForScale={startTime}
+          endTimeForScale={endTime}
           isSmall={true}
         />
       </Box>
