@@ -24,7 +24,12 @@ const EventComponent = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch("http://localhost:3000/event");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/event`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },})
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

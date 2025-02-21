@@ -142,7 +142,13 @@ const ManageComponent = () => {
 
   const fetchDevices = async () => {
     try {
-      const response = await fetch("http://localhost:3000/host");
+      const response = await fetch( `${import.meta.env.VITE_API_URL}/host`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) {
         console.log("No devices found");
         return;
@@ -210,11 +216,13 @@ const ManageComponent = () => {
     setFormLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/host/edit/${editingDevice._id}`,
+        // `http://localhost:3000/host/edit/${editingDevice._id}`,
+        `${import.meta.env.VITE_API_URL}/host/edit/${editingDevice._id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(editForm),
         }
@@ -254,9 +262,14 @@ const ManageComponent = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/host/${deviceToDelete._id}`,
+        // `http://localhost:3000/host/${deviceToDelete._id}`,
+        `${import.meta.env.VITE_API_URL}/host/${deviceToDelete._id}`,
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 

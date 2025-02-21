@@ -42,7 +42,13 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:3000/user");
+      const response = await fetch( `${import.meta.env.VITE_API_URL}/user`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch users: ${response.statusText}`);
       }
@@ -68,11 +74,13 @@ const UserManagement = () => {
       const newRole = user.role === "admin" ? "viewer" : "admin";
 
       const response = await fetch(
-        `http://localhost:3000/user/editrole/${user._id}`,
+        // `http://localhost:3000/user/editrole/${user._id}`,
+        `${import.meta.env.VITE_API_URL}/user/editrole/${user._id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ role: newRole }),
         }

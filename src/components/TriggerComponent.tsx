@@ -122,7 +122,16 @@ const TriggerComponent = () => {
   const fetchTriggerData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://127.0.0.1:3000/trigger`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/trigger`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (response.data.status === "success" && response.data.data) {
         const DataIndexHost = response.data.data;
         setDataGroupByHost(DataIndexHost); // Now we store the complete item objects
@@ -353,7 +362,17 @@ const TriggerComponent = () => {
     if (!removeIdTrigger) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:3000/trigger/${removeIdTrigger}`);
+      // await axios.delete(`http://127.0.0.1:3000/trigger/${removeIdTrigger}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/trigger/${removeIdTrigger}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       fetchTriggerData();
 
@@ -381,7 +400,14 @@ const TriggerComponent = () => {
     if (!hostId) return;
 
     try {
-      const response = await axios.get(`http://127.0.0.1:3000/host/${hostId}`);
+      // const response = await axios.get(`http://127.0.0.1:3000/host/${hostId}`);
+
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/host/${hostId}`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },});
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
         setItems(items);
@@ -461,7 +487,8 @@ const TriggerComponent = () => {
         duration: parseInt(part.duration) || 0,
       }));
 
-      await axios.put(`http://127.0.0.1:3000/trigger/${editIdTrigger}`, {
+      // await axios.put(`http://127.0.0.1:3000/trigger/${editIdTrigger}`, {
+        await axios.put(`${import.meta.env.VITE_API_URL}/trigger/${editIdTrigger}`, {
         trigger_name: editTriggerName,
         severity: editSeverity,
         expression: editExpression,
@@ -470,6 +497,12 @@ const TriggerComponent = () => {
         enabled: editEnabled,
         expressionPart: formattedExpressionParts,
         expressionRecoveryPart: formattedRecoveryParts,
+      },{
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       fetchTriggerData();
@@ -917,8 +950,8 @@ const TriggerComponent = () => {
                         </MenuItem>
                       ))}
                     </TextField>
-                     {/* Duration section */}
-                     <TextField
+                    {/* Duration section */}
+                    <TextField
                       value={part.duration}
                       onChange={(e) =>
                         handleExpressionPartChange(
@@ -1013,7 +1046,6 @@ const TriggerComponent = () => {
                         },
                       }}
                     />
-                   
 
                     {/* Operator Selection (show only if not the last row) */}
                     {index < expressionParts.length - 1 && (
