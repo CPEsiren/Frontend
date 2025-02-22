@@ -47,151 +47,7 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import { SearchIcon } from "lucide-react";
 import DraggableDashboard from "../components/DraggableDashboard";
 import { SelectChangeEvent } from "@mui/material";
-
-// Add new interfaces for graph selection
-interface GraphSelection {
-  graphName: string;
-}
-
-interface ActiveComponentWithGraph extends ActiveComponent {
-  graphSelection?: GraphSelection;
-}
-
-const GraphSelectionDialog: React.FC<{
-  open: boolean;
-  onClose: () => void;
-  onSelect: (graphName: string) => void;
-}> = ({ open, onClose, onSelect }) => {
-  const [availableGraphs, setAvailableGraphs] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    const fetchGraphs = async () => {
-      if (!open) return;
-
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch hosts");
-
-        const result = await res.json();
-        if (
-          result.status === "success" &&
-          Array.isArray(result.data) &&
-          result.data.length > 0
-        ) {
-          const host = result.data[0];
-
-          const now = new Date();
-          const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
-
-          // const dataRes = await fetch(
-          //   `http://127.0.0.1:3000/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
-          //     host._id
-          //   }`
-          // );
-
-          const dataRes = await fetch(
-            `${
-              import.meta.env.VITE_API_URL
-            }/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
-              host._id
-            }`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-
-          if (!dataRes.ok) throw new Error("Failed to fetch graph data");
-
-          const dataResult = await dataRes.json();
-          if (
-            dataResult.status === "success" &&
-            Array.isArray(dataResult.data)
-          ) {
-            const sortedData = dataResult.data[0].items.sort((a: any, b: any) =>
-              a.item_id.item_name.localeCompare(b.item_id.item_name)
-            );
-            setAvailableGraphs(sortedData);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching graphs:", error);
-      }
-    };
-
-    fetchGraphs();
-  }, [open]);
-
-  const filteredGraphs = availableGraphs.filter((graph) =>
-    graph.item_id.item_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Select Graph</DialogTitle>
-      <DialogContent>
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search graphs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ mt: 1 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
-        <List sx={{ maxHeight: 400, overflow: "auto" }}>
-          {filteredGraphs.length > 0 ? (
-            filteredGraphs.map((graph) => (
-              <ListItem
-                key={graph.item_id.item_name}
-                onClick={() => onSelect(graph.item_id.item_name)}
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "action.hover",
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <ShowChartIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={graph.item_id.item_name}
-                  secondary={`Unit: ${graph.item_id.unit}`}
-                />
-              </ListItem>
-            ))
-          ) : (
-            <ListItem>
-              <ListItemText
-                primary="No matching graphs found"
-                sx={{ textAlign: "center", color: "text.secondary" }}
-              />
-            </ListItem>
-          )}
-        </List>
-      </DialogContent>
-    </Dialog>
-  );
-};
+import GraphSelectionDialog from "../components/DashBoardWidgets/GraphSelectionDialog";
 
 // API response interfaces
 interface APIComponent {
@@ -223,7 +79,7 @@ interface ComponentConfig {
   id: string;
   name: string;
   icon: JSX.Element;
-  component: React.ComponentType<any>; // Update to accept props
+  component: React.ComponentType<any>;
   defaultSize: {
     xs: number;
     sm?: number;
@@ -245,7 +101,17 @@ interface SnackbarState {
   message: string;
   severity: "success" | "error";
 }
+
+interface GraphSelection {
+  graphName: string;
+}
+
+interface ActiveComponentWithGraph extends ActiveComponent {
+  graphSelection?: GraphSelection;
+}
+
 const DASHBOARD_STORAGE_KEY = "dashboard_layout";
+
 const availableComponents: ComponentConfig[] = [
   {
     id: "digitalClock",
@@ -341,13 +207,13 @@ const Dashboard = () => {
             },
           }
         );
+        
         if (!response.ok) {
           throw new Error("Failed to fetch dashboards");
         }
 
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.dashboards)) {
-          // Transform API data to match our DashboardLayout interface
           const transformedDashboards: DashboardLayout[] = data.dashboards.map(
             (dashboard: APIDashboard) => ({
               id: dashboard._id,
@@ -362,16 +228,13 @@ const Dashboard = () => {
 
           setDashboards(transformedDashboards);
 
-          // Set current dashboard to the first one
           if (transformedDashboards.length > 0) {
             setCurrentDashboardId(transformedDashboards[0].id);
             setActiveComponents(transformedDashboards[0].components);
           }
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch dashboards"
-        );
+        setError(err instanceof Error ? err.message : "Failed to fetch dashboards");
         setSnackbar({
           open: true,
           message: "Failed to load dashboards",
@@ -687,9 +550,7 @@ const Dashboard = () => {
     updateDashboard();
   }, [activeComponents, currentDashboardId, isEditing]);
   const handleAddComponent = (componentId: string) => {
-    const componentConfig = availableComponents.find(
-      (c) => c.id === componentId
-    );
+    const componentConfig = availableComponents.find((c) => c.id === componentId);
     if (!componentConfig) return;
 
     const isAlreadyAdded = activeComponents.some(
@@ -697,7 +558,6 @@ const Dashboard = () => {
     );
     if (isAlreadyAdded && !componentConfig.allowMultiple) return;
 
-    // If it's a graph component, show selection dialog
     if (componentId === "graph") {
       setPendingGraphAdd(true);
       setGraphSelectionOpen(true);
@@ -735,24 +595,6 @@ const Dashboard = () => {
       message: "Graph widget added successfully",
       severity: "success",
     });
-
-    // Save to localStorage after updating
-    try {
-      const updatedLayout = [
-        ...activeComponents,
-        {
-          id: "graph",
-          position: activeComponents.length,
-          graphSelection: { graphName },
-        },
-      ];
-      localStorage.setItem(
-        DASHBOARD_STORAGE_KEY,
-        JSON.stringify(updatedLayout)
-      );
-    } catch (error) {
-      console.error("Error saving layout:", error);
-    }
   };
 
   const handleRemoveComponent = (position: number) => {
