@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Item, ITrigger } from "../interface/InterfaceCollection";
 import axios from "axios";
 import {
@@ -12,10 +12,6 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
-  InputAdornment,
-  List,
-  ListItemButton,
-  ListItemText,
   Paper,
   Snackbar,
   Stack,
@@ -32,7 +28,6 @@ import {
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { SearchIcon } from "lucide-react";
 interface GroupedTriggers {
   triggers: ITrigger[];
   host_id: {
@@ -103,15 +98,6 @@ const TriggerComponent = () => {
     severity: "success" as "success" | "error",
   });
 
-  // Add error states for form validation
-  const [errors, setErrors] = useState({
-    trigger_name: false,
-    host_id: false,
-    severity: false,
-    expression: false,
-    ok_eventGen: false,
-    recoveryExpression: false,
-  });
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
@@ -167,20 +153,10 @@ const TriggerComponent = () => {
       duration: "",
     },
   ]);
-  const [ok_eventGen, setOk_eventGen] = useState<string>("");
   const handleRemoveRecovery = (index: number) => {
     if (recoveryParts.length > 1) {
       const newParts = recoveryParts.filter((_, i) => i !== index);
       setRecoveryParts(newParts);
-
-      // Update the final expression
-      const validParts = newParts.filter(
-        (part) => part.item && part.operation && part.value
-      );
-      const newRecovery = validParts
-        .map((part) => `${part.item} ${part.operation} ${part.value}`)
-        .join(" and ");
-      setExpression(newRecovery);
     }
   };
   const handleAddRecovery = () => {
@@ -198,46 +174,14 @@ const TriggerComponent = () => {
     const newParts = [...recoveryParts];
     newParts[index] = { ...newParts[index], [field]: value };
     setRecoveryParts(newParts);
-
-    // Update the final expression
-    const validParts = newParts.filter(
-      (part) => part.item && part.operation && part.value && part.functionofItem
-    );
-    const newRecovery = validParts
-      .map((part, idx) => {
-        // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
-        const expr = `${functionCall} ${part.operation} ${part.value}`;
-        return idx < validParts.length - 1
-          ? `${expr} ${part.operator || "and"}`
-          : expr;
-      })
-      .join(" ");
-    setRecoveryExpression(newRecovery);
   };
 
   const handleRemoveExpression = (index: number) => {
     if (expressionParts.length > 1) {
       const newParts = expressionParts.filter((_, i) => i !== index);
       setExpressionParts(newParts);
-
-      // Update the final expression
-      const validParts = newParts.filter(
-        (part) => part.item && part.operation && part.value
-      );
-      const newExpression = validParts
-        .map((part) => `${part.item} ${part.operation} ${part.value}`)
-        .join(" and ");
-      setExpression(newExpression);
     }
   };
-
-  //Expression
-  const [expression, setExpression] = useState<string>("");
-  const [recoveryExpression, setRecoveryExpression] = useState<string>("");
 
   const handleExpressionPartChange = (
     index: number,
@@ -247,25 +191,6 @@ const TriggerComponent = () => {
     const newParts = [...expressionParts];
     newParts[index] = { ...newParts[index], [field]: value };
     setExpressionParts(newParts);
-
-    // Update the final expression
-    const validParts = newParts.filter(
-      (part) => part.item && part.operation && part.value && part.functionofItem
-    );
-    const newExpression = validParts
-      .map((part, idx) => {
-        // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
-        const expr = `${functionCall} ${part.operation} ${part.value}`;
-        return idx < validParts.length - 1
-          ? `${expr} ${part.operator || "and"}`
-          : expr;
-      })
-      .join(" ");
-    setExpression(newExpression);
   };
 
   const handleAddExpression = () => {
@@ -277,20 +202,14 @@ const TriggerComponent = () => {
 
   const [editTriggerName, setEditTriggerName] = useState("");
   const [editIdTrigger, setEditIdTrigger] = useState("");
-  const [edithostId, setEditHostId] = useState("");
   const [editSeverity, setEditSeverity] = useState("");
-  const [editExpression, setEditExpression] = useState("");
-  const [editRecoveryExpression, setEditRecoveryExpression] = useState("");
   const [editOk_eve, setEditOk_eve] = useState("");
   const [editEnabled, setEditEnabled] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const handleEditClick = (trigger: ITrigger) => {
     setEditTriggerName(trigger.trigger_name);
     setEditIdTrigger(trigger._id);
-    setEditHostId(trigger.host_id);
     setEditSeverity(trigger.severity);
-    setEditExpression(trigger.expression);
-    setEditRecoveryExpression(trigger.recovery_expression);
     setEditOk_eve(trigger.ok_event_generation);
     setEditEnabled(trigger.enabled);
 
@@ -402,12 +321,16 @@ const TriggerComponent = () => {
     try {
       // const response = await axios.get(`http://127.0.0.1:3000/host/${hostId}`);
 
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/host/${hostId}`,{
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },});
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/host/${hostId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
         setItems(items);
@@ -420,47 +343,6 @@ const TriggerComponent = () => {
       setItems([]);
     }
   };
-
-  //Expression
-  //Dialog add Item in edit
-  const [openDialogExpression, setOpenDialogExpression] = useState(false);
-  const [searchTermExpression, setSearchTermExpression] = useState("");
-  const handleOpenDialogExpression = () => {
-    setOpenDialogExpression(true);
-    setSearchTermExpression("");
-  };
-  const handleCloseDialogExpression = () => {
-    setOpenDialogExpression(false);
-  };
-  const handleItemSelectExpression = (itemName: string) => {
-    setEditExpression((prev) => prev + (prev ? " " : "") + itemName);
-    handleCloseDialogExpression();
-  };
-
-  //Recovery Expression
-  //Dialog add Item in edit
-  const [openDialogRecoveryExpression, setOpenDialogRecoveryExpression] =
-    useState(false);
-  const [searchTermRecoveryExpression, setSearchTermRecoveryExpression] =
-    useState("");
-  const handleOpenDialogRecoveryExpression = () => {
-    setOpenDialogRecoveryExpression(true);
-    fetchItems(edithostId);
-    setSearchTermRecoveryExpression("");
-  };
-  const handleCloseDialogRecoveryExpression = () => {
-    setOpenDialogRecoveryExpression(false);
-  };
-  const handleItemSelectRecoveryExpression = (itemName: string) => {
-    setEditRecoveryExpression((prev) => prev + (prev ? " " : "") + itemName);
-    handleCloseDialogRecoveryExpression();
-  };
-
-  const filteredItemsExpression = useMemo(() => {
-    return items.filter((item) =>
-      item.item_name.toLowerCase().includes(searchTermExpression.toLowerCase())
-    );
-  }, [items, searchTermExpression]);
 
   const handleEditSubmit = async () => {
     if (!editIdTrigger) return;
@@ -477,6 +359,20 @@ const TriggerComponent = () => {
         duration: parseInt(part.duration) || 0,
       }));
 
+      const editExpression = expressionParts
+        .map((part, idx) => {
+          // Format: functionofItem(item,duration) operation value
+          const durationInMinutes = part.duration ? `${part.duration}m` : "";
+          const functionCall = part.duration
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
+          const expr = `${functionCall} ${part.operation} ${part.value}`;
+          return idx < expressionParts.length - 1
+            ? `${expr} ${part.operator || "and"}`
+            : expr;
+        })
+        .join(" ");
+
       // Format recovery expression parts for submission
       const formattedRecoveryParts = recoveryParts.map((part) => ({
         item: part.item,
@@ -487,23 +383,41 @@ const TriggerComponent = () => {
         duration: parseInt(part.duration) || 0,
       }));
 
+      const editRecoveryExpression = recoveryParts
+        .map((part, idx) => {
+          // Format: functionofItem(item,duration) operation value
+          const durationInMinutes = part.duration ? `${part.duration}m` : "";
+          const functionCall = part.duration
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
+          const expr = `${functionCall} ${part.operation} ${part.value}`;
+          return idx < recoveryParts.length - 1
+            ? `${expr} ${part.operator || "and"}`
+            : expr;
+        })
+        .join(" ");
+
       // await axios.put(`http://127.0.0.1:3000/trigger/${editIdTrigger}`, {
-        await axios.put(`${import.meta.env.VITE_API_URL}/trigger/${editIdTrigger}`, {
-        trigger_name: editTriggerName,
-        severity: editSeverity,
-        expression: editExpression,
-        ok_event_generation: editOk_eve,
-        recovery_expression: editRecoveryExpression,
-        enabled: editEnabled,
-        expressionPart: formattedExpressionParts,
-        expressionRecoveryPart: formattedRecoveryParts,
-      },{
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/trigger/${editIdTrigger}`,
+        {
+          trigger_name: editTriggerName,
+          severity: editSeverity,
+          expression: editExpression,
+          ok_event_generation: editOk_eve,
+          recovery_expression: editRecoveryExpression,
+          enabled: editEnabled,
+          expressionPart: formattedExpressionParts,
+          expressionRecoveryPart: formattedRecoveryParts,
         },
-      });
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       fetchTriggerData();
 
@@ -1251,7 +1165,6 @@ const TriggerComponent = () => {
                             e.target.value
                           )
                         }
-                        error={errors.expression}
                         size="small"
                         label="Item"
                         sx={{
@@ -1411,80 +1324,6 @@ const TriggerComponent = () => {
               </Box>
             </Box>
           </Paper>
-
-          {/* Dialog for item selection for Expression */}
-          <Dialog
-            open={openDialogExpression}
-            onClose={handleCloseDialogExpression}
-          >
-            <DialogTitle>Select an Item</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search items..."
-                value={searchTermExpression}
-                onChange={(e) => setSearchTermExpression(e.target.value)}
-                margin="normal"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <List>
-                {filteredItemsExpression.map((item) => (
-                  <ListItemButton
-                    key={item._id}
-                    onClick={() => handleItemSelectExpression(item.item_name)}
-                  >
-                    <ListItemText primary={item.item_name} />
-                  </ListItemButton>
-                ))}
-              </List>
-            </DialogContent>
-          </Dialog>
-
-          {/* Dialog for item selection for Recovery Expression */}
-          <Dialog
-            open={openDialogRecoveryExpression}
-            onClose={handleCloseDialogRecoveryExpression}
-          >
-            <DialogTitle>Select an Item</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Search items..."
-                value={searchTermRecoveryExpression}
-                onChange={(e) =>
-                  setSearchTermRecoveryExpression(e.target.value)
-                }
-                margin="normal"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <List>
-                {filteredItemsExpression.map((item) => (
-                  <ListItemButton
-                    key={item._id}
-                    onClick={() =>
-                      handleItemSelectRecoveryExpression(item.item_name)
-                    }
-                  >
-                    <ListItemText primary={item.item_name} />
-                  </ListItemButton>
-                ))}
-              </List>
-            </DialogContent>
-          </Dialog>
         </DialogContent>
         <DialogActions>
           <Button
