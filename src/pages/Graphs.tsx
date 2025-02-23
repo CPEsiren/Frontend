@@ -73,18 +73,24 @@ const Graphs: React.FC = () => {
             return {
               host_id: host._id,
               hostname: host.hostname,
-              items: host.items,
+              items: [...host.items].sort((a: IItem, b: IItem) =>
+                a.item_name.localeCompare(b.item_name)
+              ),
             };
           }
         );
-        setHosts(listHost);
-        setSelectedHost(listHost[0].hostname);
+        // Sort hosts alphabetically by hostname
+        const sortedHosts = listHost.sort((a: IHost, b: IHost) =>
+          a.hostname.localeCompare(b.hostname)
+        );
+        setHosts(sortedHosts);
+        setSelectedHost(sortedHosts[0].hostname);
 
         // Set the URL and fetch data immediately after setting the host
         const initialUrl = `${
           import.meta.env.VITE_API_URL
         }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
-          listHost[0].host_id
+          sortedHosts[0].host_id
         }`;
         setUrl(initialUrl);
       }
@@ -99,20 +105,51 @@ const Graphs: React.FC = () => {
   useEffect(() => {
     fetchHosts();
   }, []);
-  const handleHostChange = (event: SelectChangeEvent<string>) => {
-    setSelectedHost(event.target.value);
-  };
 
-  const [hostNow, setHostNow] = useState<IHost>({
-    host_id: "",
-    hostname: "",
-    items: [],
+  const [startTime1, setStartTime1] = useState<Date>(() => {
+    const now = new Date();
+    return new Date(now.setMinutes(now.getMinutes() - 16));
   });
 
+  const [selectedDateTimeStart1, setSelectedDateTimeStart1] = useState<Date>(
+    () => {
+      const now = new Date();
+      return new Date(now.setMinutes(now.getMinutes() - 15));
+    }
+  );
+
+  const [selectedDateTimeEnd1, setSelectedDateTimeEnd1] = useState<Date>(
+    new Date()
+  );
+
+  // Update the useEffect for host changes
   useEffect(() => {
     const host = hosts.find((host) => host.hostname === selectedHost);
     if (host) {
       setHostNow(host);
+
+      // Update URL with the new host's ID
+      setUrl(
+        `${
+          import.meta.env.VITE_API_URL
+        }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+          host.host_id
+        }`
+      );
+
+      // Reset filters for new host
+      const initialSelectedItems: SelectedItems = {};
+      host.items.forEach((item) => {
+        initialSelectedItems[item.item_name] = true;
+      });
+      setSelectedItems(initialSelectedItems);
+      localStorage.setItem(
+        "graphFilters",
+        JSON.stringify(initialSelectedItems)
+      );
+
+      setStartTimeForScale(selectedDateTimeStart);
+      setEndTimeForScale(selectedDateTimeEnd);
     } else {
       setHostNow({
         host_id: "",
@@ -120,18 +157,20 @@ const Graphs: React.FC = () => {
         items: [],
       });
     }
+  }, [selectedHost, startTime1, selectedDateTimeEnd1]);
 
-    setStartTimeForScale(selectedDateTimeStart);
-    setEndTimeForScale(selectedDateTimeEnd);
+  // Update handleHostChange to trigger a data refresh
+  const handleHostChange = (event: SelectChangeEvent<string>) => {
+    setSelectedHost(event.target.value);
+    setData([]); // Clear existing data
+    setCurrentPage(1); // Reset to first page
+  };
 
-    setUrl(
-      `${
-        import.meta.env.VITE_API_URL
-      }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
-        hostNow?.host_id
-      }`
-    );
-  }, [selectedHost]);
+  const [hostNow, setHostNow] = useState<IHost>({
+    host_id: "",
+    hostname: "",
+    items: [],
+  });
 
   //DateTime Range
   const [startTime, setStartTime] = useState<Date>(() => {
@@ -432,9 +471,11 @@ const Graphs: React.FC = () => {
   const filteredItems = data.filter(
     (item) => selectedItems[item.item_id.item_name]
   );
-  const filteredItemsForSearch = hostNow.items.filter((item) =>
-    item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredItemsForSearch = hostNow.items
+    .filter((item: IItem) =>
+      item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a: IItem, b: IItem) => a.item_name.localeCompare(b.item_name));
   // Update localStorage whenever filters change
   const handleCheckboxChange = (itemName: string) => {
     const newSelectedItems = {
@@ -804,7 +845,7 @@ const Graphs: React.FC = () => {
           </Box>
         </Box>
         {/* Graph */}
-        <Grid container spacing={3} sx={{mb:2}}>
+        <Grid container spacing={3} sx={{ mb: 2 }}>
           {data.length === 0 ? (
             <Grid item xs={12}>
               <Paper
@@ -862,7 +903,16 @@ const Graphs: React.FC = () => {
           )}
         </Grid>
         {filteredItems.length > graphsPerPage && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, mb: 2,pb:3,pt:1 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              mt: 2,
+              mb: 2,
+              pb: 3,
+              pt: 1,
+            }}
+          >
             <Pagination
               count={Math.ceil(filteredItems.length / graphsPerPage)}
               page={currentPage}
