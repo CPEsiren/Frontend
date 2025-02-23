@@ -10,6 +10,10 @@ import {
   SelectChangeEvent,
   Paper,
   Tabs,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -815,7 +819,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 }}>
+                                <Typography sx={{ fontSize: 14 ,mt:0.3 }}>
                                   Security Level
                                 </Typography>
                               </Box>
@@ -835,7 +839,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 }}>
+                                <Typography sx={{ fontSize: 14 ,mt:0.1}}>
                                   Authen Protocol
                                 </Typography>
                               </Box>
@@ -872,7 +876,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 }}>
+                                <Typography sx={{ fontSize: 14 ,mt:0.2}}>
                                   Privacy Protocol
                                 </Typography>
                               </Box>
@@ -892,7 +896,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 }}>
+                                <Typography sx={{ fontSize: 14 ,mt:0.3}}>
                                   Privacy Passphrase
                                 </Typography>
                               </Box>
@@ -917,25 +921,21 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                   flexDirection: "column",
                                 }}
                               >
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
+                       {/* SNMP Version */}
+                              <FormControl component="fieldset" sx={{ minWidth: 200 ,mb:2 }}>
+                                {/* <FormLabel component="legend" sx={{ fontSize: 14 }}>SNMP Version</FormLabel> */}
+                                <RadioGroup
+                                  value={snmp_version}
+                                  onChange={handleVersionChange}
+                                  row
                                 >
-                                  <Select
-                                    value={snmp_version}
-                                    onChange={handleVersionChange}
-                                    displayEmpty
-                                    sx={{
-                                      mb: 2,
-                                      fontSize: 14,
-                                      "& .MuiMenuItem-root": { fontSize: 14 },
-                                    }}
-                                  >
-                                    <MenuItem value="SNMPv1">SNMPv1</MenuItem>
-                                    <MenuItem value="SNMPv2">SNMPv2</MenuItem>
-                                    <MenuItem value="SNMPv3">SNMPv3</MenuItem>
-                                  </Select>
-                                </FormControl>
+                                  <FormControlLabel value="SNMPv1" control={<Radio size="small" />} label="SNMPv1" />
+                                  <FormControlLabel value="SNMPv2" control={<Radio size="small" />} label="SNMPv2" />
+                                  <FormControlLabel value="SNMPv3" control={<Radio size="small" />} label="SNMPv3" />
+                                </RadioGroup>
+                              </FormControl>
+
+                              
                                 <TextField
                                   {...textFieldProps}
                                   value={snmp_community}
@@ -967,72 +967,54 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     "& .MuiInputBase-input": {
                                       fontSize: 14,
                                     },
-                                    mb: 2,
+                                    mb: 2.5,
                                   }}
                                 />
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
-                                >
-                                  <Select
-                                    value={SecurLevel}
-                                    onChange={(e) => {
-                                      setSecurLevel(e.target.value);
-                                      if (e.target.value === "noAuthNoPriv") {
-                                        setAuthenProtocol("");
-                                        setAuthenPass("");
-                                      } else if (
-                                        e.target.value === "authNoPriv"
-                                      ) {
-                                        setPrivacyProtocol("");
-                                        setPrivacyPass("");
-                                      }
-                                    }}
-                                    displayEmpty
-                                    sx={{
-                                      display:
-                                        snmp_version === "SNMPv3" ? "" : "none",
-                                      mb: 2,
-                                      fontSize: 14,
-                                      "& .MuiMenuItem-root": { fontSize: 14 },
-                                    }}
-                                  >
-                                    <MenuItem value="noAuthNoPriv">
-                                      noAuthNoPriv
-                                    </MenuItem>
-                                    <MenuItem value="authNoPriv">
-                                      authNoPriv
-                                    </MenuItem>
-                                    <MenuItem value="authPriv">
-                                      authPriv
-                                    </MenuItem>
-                                  </Select>
-                                </FormControl>
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
-                                >
-                                  <Select
-                                    value={authenProtocol}
-                                    onChange={(e) =>
-                                      setAuthenProtocol(e.target.value)
+                                <FormControl sx={{ minWidth: 200 }} size="small">
+                                <RadioGroup
+                                  value={SecurLevel}
+                                  onChange={(e) => {
+                                    setSecurLevel(e.target.value);
+                                    if (e.target.value === "noAuthNoPriv") {
+                                      setAuthenProtocol("");
+                                      setAuthenPass("");
+                                    } else if (e.target.value === "authNoPriv") {
+                                      setPrivacyProtocol("");
+                                      setPrivacyPass("");
                                     }
-                                    displayEmpty
-                                    sx={{
-                                      display:
-                                        SecurLevel === "authNoPriv" ||
-                                        SecurLevel === "authPriv"
-                                          ? ""
-                                          : "none",
-                                      mb: 2,
-                                      fontSize: 14,
-                                      "& .MuiMenuItem-root": { fontSize: 14 },
-                                    }}
-                                  >
-                                    <MenuItem value="MD5">MD5</MenuItem>
-                                    <MenuItem value="SHA">SHA</MenuItem>
-                                  </Select>
-                                </FormControl>
+                                  }}
+                                  row 
+                                  sx={{
+                                    display: snmp_version === "SNMPv3" ? "" : "none",
+                                    mb: 2,
+                                    mt: -0.5,
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  <FormControlLabel value="noAuthNoPriv" control={<Radio size="small" />} label="noAuthNoPriv" />
+                                  <FormControlLabel value="authNoPriv" control={<Radio size="small" />} label="authNoPriv" />
+                                  <FormControlLabel value="authPriv" control={<Radio size="small" />} label="authPriv" />
+                                </RadioGroup>
+                              </FormControl>
+
+                              <FormControl sx={{ minWidth: 200 }} size="small">
+                                <RadioGroup
+                                  value={authenProtocol}
+                                  onChange={(e) => setAuthenProtocol(e.target.value)}
+                                  row // This makes the radio buttons appear horizontally
+                                  sx={{
+                                    display:
+                                      SecurLevel === "authNoPriv" || SecurLevel === "authPriv" ? "" : "none",
+                                    mb: 2,
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  <FormControlLabel value="MD5" control={<Radio size="small" />} label="MD5" />
+                                  <FormControlLabel value="SHA" control={<Radio size="small" />} label="SHA" />
+                                </RadioGroup>
+                              </FormControl>
+
+
                                 <TextField
                                   {...textFieldProps}
                                   value={authenPass}
@@ -1052,11 +1034,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     mb: 2,
                                   }}
                                 />
-                                <FormControl
-                                  sx={{ minWidth: 200 }}
-                                  size="small"
-                                >
-                                  <Select
+                                <FormControl sx={{ minWidth: 200 }} size="small">
+                                  <RadioGroup
                                     value={privacyProtocol}
                                     onChange={(e) => {
                                       setPrivacyProtocol(e.target.value);
@@ -1064,20 +1043,20 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                         setPrivacyPass("");
                                       }
                                     }}
-                                    displayEmpty
+                                    row // This makes the radio buttons appear horizontally
                                     sx={{
-                                      display:
-                                        SecurLevel === "authPriv" ? "" : "none",
+                                      display: SecurLevel === "authPriv" ? "" : "none",
                                       mb: 2,
                                       fontSize: 14,
-                                      "& .MuiMenuItem-root": { fontSize: 14 },
                                     }}
                                   >
-                                    <MenuItem value="NONE">NONE</MenuItem>
-                                    <MenuItem value="DES">DES</MenuItem>
-                                    <MenuItem value="AES">AES</MenuItem>
-                                  </Select>
+                                    <FormControlLabel value="NONE" control={<Radio size="small" />} label="NONE" />
+                                    <FormControlLabel value="DES" control={<Radio size="small" />} label="DES" />
+                                    <FormControlLabel value="AES" control={<Radio size="small" />} label="AES" />
+                                  </RadioGroup>
                                 </FormControl>
+
+
                                 <TextField
                                   {...textFieldProps}
                                   value={privacyPass}
@@ -1093,8 +1072,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     width: 1,
                                     "& .MuiInputBase-input": {
                                       fontSize: 14,
+                                  
                                     },
                                     mb: 2,
+                                    mt: 0.3,
                                   }}
                                 />
                               </Box>
