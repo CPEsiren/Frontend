@@ -1,118 +1,119 @@
 import React, { useState, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
-import MetricGraph from "../graphComponent/MetricGraph";
-import { Item } from "../Modals/AddTrigger";
-import { DataEntry } from "../../interface/InterfaceCollection";
+import MetricGraph, { Items } from "../graphComponent/MetricGraph";
 
 interface GraphInDashboardProps {
   graphSelection?: {
-    graphName: string;
+    itemId: string;
+    hostId: string;
   };
-}
-
-interface GraphData {
-  item_id: Item;
-  avg_value: number;
-  max_value: number;
-  min_value: number;
-  data: DataEntry[];
-  hostname: string;
 }
 
 const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
   graphSelection,
 }) => {
-  const [graphData, setGraphData] = useState<GraphData | null>(null);
+  const [graphData, setGraphData] = useState<Items | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  // Add state for tracking the time range
-  const timeRange = "15min";
+  const [rangeTime, setRangeTime] = useState("15 m");
+
   const [startTime, setStartTime] = useState<Date>(
     new Date(Date.now() - 16 * 60000)
   );
-  const [endTime, setEndTime] = useState<Date>(new Date());
+  const [startTimeForScale, setStartTimeForScale] = useState<Date>(
+    new Date(Date.now() - 15 * 60000)
+  );
+  const [endTimeForScale, setEndTimeForScale] = useState<Date>(new Date());
 
   useEffect(() => {
     const fetchGraphData = async () => {
-      if (!graphSelection?.graphName) {
+      if (!graphSelection?.itemId || !graphSelection?.hostId) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch hosts");
+        const now = new Date();
+        const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
+        const forStartTime = new Date(now.getTime() - 16 * 60000);
 
-        const result = await res.json();
+        setStartTime(forStartTime);
+        setStartTimeForScale(fifteenMinutesAgo);
+        setEndTimeForScale(now);
 
-        if (
-          result.status === "success" &&
-          Array.isArray(result.data) &&
-          result.data.length > 0
-        ) {
-          const host = result.data[0];
-
-          const now = new Date();
-          const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
-          setStartTime(new Date(now.getTime() - 16 * 60000));
-          setEndTime(now);
-
-          const dataUrl = `${
+        const response = await fetch(
+          `${
             import.meta.env.VITE_API_URL
-          }/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
-            host._id
-          }`;
-
-          const dataRes = await fetch(dataUrl, {
+          }/data/between?startTime=${forStartTime.toISOString()}&endTime=${now.toISOString()}&host_id=${
+            graphSelection.hostId
+          }`,
+          {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          });
-          if (!dataRes.ok) throw new Error("Failed to fetch graph data");
+          }
+        );
 
-          const dataResult = await dataRes.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (
+          result.status === "success" &&
+          result.data &&
+          result.data.length > 0
+        ) {
+          const host = result.data[0];
+          const selectedItemData = host.items.find(
+            (item: any) => item.item_id._id === graphSelection.itemId
+          );
 
           if (
-            dataResult.status === "success" &&
-            Array.isArray(dataResult.data) &&
-            dataResult.data.length > 0
+            selectedItemData &&
+            selectedItemData.data &&
+            selectedItemData.data.length > 0
           ) {
-            const hostname = dataResult.data[0]._id.hostname;
-            const selectedGraph = dataResult.data[0].items.find(
-              (item: GraphData) =>
-                item.item_id.item_name === graphSelection.graphName
-            );
+            const transformedData: Items = {
+              item_id: {
+                _id: selectedItemData.item_id._id,
+                oid: selectedItemData.item_id.oid,
+                item_name: selectedItemData.item_id.item_name,
+                type: selectedItemData.item_id.type,
+                unit: selectedItemData.item_id.unit,
+                interval: selectedItemData.item_id.interval,
+              },
+              data: selectedItemData.data.map((entry: any) => ({
+                timestamp: entry.timestamp,
+                value: Number(entry.value),
+              })),
+              avg_value: Number(selectedItemData.avg_value) || 0,
+              max_value: Number(selectedItemData.max_value) || 0,
+              min_value: Number(selectedItemData.min_value) || 0,
+            };
 
-            if (selectedGraph) {
-              setGraphData({
-                item_id: selectedGraph.item_id,
-                data: selectedGraph.data,
-                avg_value: selectedGraph.avg_value || 0,
-                max_value: selectedGraph.max_value || 0,
-                min_value: selectedGraph.min_value || 0,
-                hostname: hostname,
-              });
-            }
+            setGraphData(transformedData);
+          } else {
+            setGraphData(null);
           }
+        } else {
+          setGraphData(null);
         }
       } catch (error) {
         console.error("Error fetching graph data:", error);
+        setGraphData(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchGraphData();
-    const interval = setInterval(fetchGraphData, 60000);
+
+    const interval = setInterval(fetchGraphData, 10000);
     return () => clearInterval(interval);
-  }, [graphSelection?.graphName]);
+  }, [graphSelection?.itemId, graphSelection?.hostId]);
 
   if (isLoading) {
     return (
@@ -122,7 +123,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
     );
   }
 
-  if (!graphData) {
+  if (!graphData || !graphData.data || graphData.data.length === 0) {
     return (
       <Box sx={{ p: 2 }}>
         <Typography>No graph data available</Typography>
@@ -133,15 +134,16 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
   return (
     <Box sx={{ p: 2, height: "100%" }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
-        {graphData.hostname}
+        {graphData.item_id.item_name} on {graphSelection?.hostId}
       </Typography>
       <Box sx={{ height: "calc(100% - 52px)" }}>
         <MetricGraph
           item={graphData}
-          selectedLastTime={timeRange}
-          startTimeForScale={startTime}
-          endTimeForScale={endTime}
+          selectedLastTime={rangeTime}
+          startTimeForScale={startTimeForScale}
+          endTimeForScale={endTimeForScale}
           isSmall={true}
+          hideLegendLabel={false}
         />
       </Box>
     </Box>

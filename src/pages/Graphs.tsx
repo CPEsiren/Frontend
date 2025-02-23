@@ -804,7 +804,7 @@ const Graphs: React.FC = () => {
           </Box>
         </Box>
         {/* Graph */}
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{mb:2}}>
           {data.length === 0 ? (
             <Grid item xs={12}>
               <Paper
@@ -862,7 +862,7 @@ const Graphs: React.FC = () => {
           )}
         </Grid>
         {filteredItems.length > graphsPerPage && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, mb: 2,pb:3,pt:1 }}>
             <Pagination
               count={Math.ceil(filteredItems.length / graphsPerPage)}
               page={currentPage}

@@ -10,14 +10,39 @@ import {
   ListItemIcon,
   ListItemText,
   InputAdornment,
+  IconButton,
+  Typography,
 } from "@mui/material";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
-import { SearchIcon } from "lucide-react";
+import StorageIcon from "@mui/icons-material/Storage";
+import SearchIcon from "@mui/icons-material/Search";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+interface Item {
+  _id: string;
+  item_name: string;
+  unit?: string;
+}
+
+interface Host {
+  _id: string;
+  hostname: string;
+  ip_address: string;
+  snmp_port: string;
+  snmp_version: string;
+  snmp_community: string;
+  hostgroup: string;
+  status: number;
+  items: Item[];
+  interfaces: any[];
+  createAt: string;
+  updateAt: string;
+}
 
 interface GraphSelectionDialogProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (graphName: string) => void;
+  onSelect: (itemId: string, hostId: string) => void;
 }
 
 const GraphSelectionDialog: React.FC<GraphSelectionDialogProps> = ({
@@ -25,11 +50,15 @@ const GraphSelectionDialog: React.FC<GraphSelectionDialogProps> = ({
   onClose,
   onSelect,
 }) => {
-  const [availableGraphs, setAvailableGraphs] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [step, setStep] = useState<number>(1); // 1 for host selection, 2 for graph selection
+  const [hosts, setHosts] = useState<Host[]>([]);
+  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
+  const [hostSearchQuery, setHostSearchQuery] = useState<string>("");
+  const [graphSearchQuery, setGraphSearchQuery] = useState<string>("");
 
+  // Fetch hosts when dialog opens
   useEffect(() => {
-    const fetchGraphs = async () => {
+    const fetchHosts = async () => {
       if (!open) return;
 
       try {
@@ -43,108 +72,184 @@ const GraphSelectionDialog: React.FC<GraphSelectionDialogProps> = ({
         if (!res.ok) throw new Error("Failed to fetch hosts");
 
         const result = await res.json();
-        if (
-          result.status === "success" &&
-          Array.isArray(result.data) &&
-          result.data.length > 0
-        ) {
-          const host = result.data[0];
-
-          const now = new Date();
-          const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60000);
-
-          const dataRes = await fetch(
-            `${
-              import.meta.env.VITE_API_URL
-            }/data/between?startTime=${fifteenMinutesAgo.toISOString()}&endTime=${now.toISOString()}&host_id=${
-              host._id
-            }`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
+        if (result.status === "success" && Array.isArray(result.data)) {
+          // Sort hosts by hostname when setting the initial data
+          const sortedHosts = result.data.sort((a: Host, b: Host) => 
+            a.hostname.toLowerCase().localeCompare(b.hostname.toLowerCase())
           );
-
-          if (!dataRes.ok) throw new Error("Failed to fetch graph data");
-
-          const dataResult = await dataRes.json();
-          if (
-            dataResult.status === "success" &&
-            Array.isArray(dataResult.data)
-          ) {
-            const sortedData = dataResult.data[0].items.sort((a: any, b: any) =>
-              a.item_id.item_name.localeCompare(b.item_id.item_name)
-            );
-            setAvailableGraphs(sortedData);
-          }
+          setHosts(sortedHosts);
         }
       } catch (error) {
-        console.error("Error fetching graphs:", error);
+        console.error("Error fetching hosts:", error);
       }
     };
 
-    fetchGraphs();
+    fetchHosts();
   }, [open]);
 
-  const filteredGraphs = availableGraphs.filter((graph) =>
-    graph.item_id.item_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredHosts = hosts
+    .filter((host) =>
+      host.hostname.toLowerCase().includes(hostSearchQuery.toLowerCase())
+    )
+    .sort((a: Host, b: Host) => 
+      a.hostname.toLowerCase().localeCompare(b.hostname.toLowerCase())
+    );
+
+  const filteredGraphs = (selectedHost?.items || [])
+    .filter((item) =>
+      item.item_name.toLowerCase().includes(graphSearchQuery.toLowerCase())
+    )
+    .sort((a: Item, b: Item) => 
+      a.item_name.toLowerCase().localeCompare(b.item_name.toLowerCase())
+    );
+
+  const handleHostSelect = (host: Host) => {
+    // Sort items array when selecting a host
+    const sortedItems = [...host.items].sort((a: Item, b: Item) =>
+      a.item_name.toLowerCase().localeCompare(b.item_name.toLowerCase())
+    );
+    setSelectedHost({ ...host, items: sortedItems });
+    setStep(2);
+  };
+
+  const handleGraphSelect = (item: Item) => {
+    if (selectedHost) {
+      setGraphSearchQuery(""); // Reset the graph search query
+      onSelect(item._id, selectedHost._id);
+      onClose();
+    }
+  };
+
+  const handleBack = () => {
+    setStep(1);
+    setSelectedHost(null);
+    setGraphSearchQuery("");
+  };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Select Graph</DialogTitle>
-      <DialogContent>
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search graphs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ mt: 1 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
-        <List sx={{ maxHeight: 400, overflow: "auto" }}>
-          {filteredGraphs.length > 0 ? (
-            filteredGraphs.map((graph) => (
-              <ListItem
-                key={graph.item_id.item_name}
-                onClick={() => onSelect(graph.item_id.item_name)}
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": {
-                    backgroundColor: "action.hover",
-                  },
-                }}
-              >
-                <ListItemIcon>
-                  <ShowChartIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={graph.item_id.item_name}
-                  secondary={`Unit: ${graph.item_id.unit}`}
-                />
-              </ListItem>
-            ))
-          ) : (
-            <ListItem>
-              <ListItemText
-                primary="No matching graphs found"
-                sx={{ textAlign: "center", color: "text.secondary" }}
-              />
-            </ListItem>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box display="flex" alignItems="center">
+          {step === 2 && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleBack}
+              sx={{ mr: 1 }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
           )}
-        </List>
+          {step === 1 ? "Select Host" : "Select Graph"}
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        {step === 1 ? (
+          // Host Selection Step
+          <>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search hosts..."
+              value={hostSearchQuery}
+              onChange={(e) => setHostSearchQuery(e.target.value)}
+              sx={{ mt: 1, mb: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <List sx={{ maxHeight: 400, overflow: "auto" }}>
+              {filteredHosts.length > 0 ? (
+                filteredHosts.map((host) => (
+                  <ListItem
+                    key={host._id}
+                    onClick={() => handleHostSelect(host)}
+                    sx={{
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <StorageIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={host.hostname}
+                      secondary={`${host.ip_address}:${host.snmp_port} (${host.hostgroup})`}
+                    />
+                  </ListItem>
+                ))
+              ) : (
+                <ListItem>
+                  <ListItemText
+                    primary="No hosts found"
+                    sx={{ textAlign: "center", color: "text.secondary" }}
+                  />
+                </ListItem>
+              )}
+            </List>
+          </>
+        ) : (
+          // Graph Selection Step
+          <>
+            {selectedHost && (
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                Host: {selectedHost.hostname} ({selectedHost.ip_address})
+              </Typography>
+            )}
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search graphs..."
+              value={graphSearchQuery}
+              onChange={(e) => setGraphSearchQuery(e.target.value)}
+              sx={{ mb: 2 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <List sx={{ maxHeight: 400, overflow: "auto" }}>
+              {filteredGraphs.length > 0 ? (
+                filteredGraphs.map((item) => (
+                  <ListItem
+                    key={item._id}
+                    onClick={() => handleGraphSelect(item)}
+                    sx={{
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: "action.hover",
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <ShowChartIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.item_name}
+                      secondary={`Unit: ${item.unit || 'N/A'}`}
+                    />
+                  </ListItem>
+                ))
+              ) : (
+                <ListItem>
+                  <ListItemText
+                    primary="No graphs found"
+                    sx={{ textAlign: "center", color: "text.secondary" }}
+                  />
+                </ListItem>
+              )}
+            </List>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

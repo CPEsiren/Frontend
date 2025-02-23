@@ -9,7 +9,6 @@ import {
   Typography,
   Box,
   IconButton,
-  Grid,
   Button,
   Dialog,
   DialogTitle,
@@ -21,16 +20,14 @@ import {
   Tooltip,
   Snackbar,
   Alert,
-  InputAdornment,
-  TextField,
   Select,
   MenuItem,
-  CircularProgress,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import RemoveIcon from '@mui/icons-material/Remove';
 import DoneIcon from "@mui/icons-material/Done";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TableChartIcon from "@mui/icons-material/TableChart";
@@ -44,7 +41,6 @@ import Calendar from "../components/DashBoardWidgets/Calendar";
 import EventBlock from "../components/DashBoardWidgets/EventBlock";
 import NotificationImportantIcon from "@mui/icons-material/NotificationImportant";
 import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
-import { SearchIcon } from "lucide-react";
 import DraggableDashboard from "../components/DraggableDashboard";
 import { SelectChangeEvent } from "@mui/material";
 import GraphSelectionDialog from "../components/DashBoardWidgets/GraphSelectionDialog";
@@ -54,7 +50,10 @@ interface APIComponent {
   id: string;
   position: number;
   componentType: string;
-  settings: Record<string, any>;
+  graphSelection?: {
+    itemId: string;
+    hostId: string;
+  };
   _id: string;
 }
 
@@ -68,11 +67,6 @@ interface APIDashboard {
   createdAt: string;
   updatedAt: string;
   __v: number;
-}
-
-interface APIResponse {
-  status: string;
-  dashboards: APIDashboard[];
 }
 
 interface ComponentConfig {
@@ -92,7 +86,8 @@ interface ActiveComponent {
   id: string;
   position: number;
   graphSelection?: {
-    graphName: string;
+    itemId: string;
+    hostId: string;
   };
 }
 
@@ -103,10 +98,14 @@ interface SnackbarState {
 }
 
 interface GraphSelection {
-  graphName: string;
+  itemId: string;
+  hostId: string;
 }
 
-interface ActiveComponentWithGraph extends ActiveComponent {
+interface ActiveComponentWithGraph {
+  id: string;
+  position: number;
+  componentType?: string;
   graphSelection?: GraphSelection;
 }
 
@@ -207,7 +206,7 @@ const Dashboard = () => {
             },
           }
         );
-        
+
         if (!response.ok) {
           throw new Error("Failed to fetch dashboards");
         }
@@ -215,31 +214,34 @@ const Dashboard = () => {
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.dashboards)) {
           const transformedDashboards: DashboardLayout[] = data.dashboards.map(
-            (dashboard: APIDashboard) => ({
+            (dashboard: any) => ({
               id: dashboard._id,
               name: dashboard.dashboard_name,
-              components: dashboard.components.map((comp: APIComponent) => ({
-                id: comp.componentType,
-                position: comp.position,
-                ...(comp.settings || {}),
-              })),
+              components: dashboard.components.map(
+                (comp: any, index: number) => ({
+                  id: comp.componentType,
+                  position: index,
+                  componentType: comp.componentType,
+                  graphSelection:
+                    comp.componentType === "graph"
+                      ? comp.graphSelection
+                      : undefined,
+                })
+              ),
             })
           );
 
           setDashboards(transformedDashboards);
-
           if (transformedDashboards.length > 0) {
             setCurrentDashboardId(transformedDashboards[0].id);
             setActiveComponents(transformedDashboards[0].components);
           }
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch dashboards");
-        setSnackbar({
-          open: true,
-          message: "Failed to load dashboards",
-          severity: "error",
-        });
+      } catch (error) {
+        console.error("Error fetching dashboards:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to fetch dashboards"
+        );
       } finally {
         setIsLoading(false);
       }
@@ -252,7 +254,6 @@ const Dashboard = () => {
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
     setIsAdmin(userRole === "admin" || userRole === "superadmin");
-    setIsSuperAdmin(userRole === "superadmin");
   }, []);
 
   // Fetch both user and viewer dashboards
@@ -294,7 +295,7 @@ const Dashboard = () => {
               components: dashboard.components.map((comp: APIComponent) => ({
                 id: comp.componentType,
                 position: comp.position,
-                ...(comp.settings || {}),
+                graphSelection: comp.graphSelection,
               })),
             })
           );
@@ -328,7 +329,7 @@ const Dashboard = () => {
                     (comp: APIComponent) => ({
                       id: comp.componentType,
                       position: comp.position,
-                      ...(comp.settings || {}),
+                      graphSelection: comp.graphSelection,
                     })
                   ),
                 })
@@ -471,7 +472,7 @@ const Dashboard = () => {
               components: dashboard.components.map((comp: APIComponent) => ({
                 id: comp.componentType,
                 position: comp.position,
-                ...(comp.settings || {}),
+                graphSelection: comp.graphSelection,
               })),
             }));
 
@@ -485,7 +486,7 @@ const Dashboard = () => {
             newDashboard.components.map((comp: APIComponent) => ({
               id: comp.componentType,
               position: comp.position,
-              ...(comp.settings || {}),
+              // ...(comp.settings || {}),
             }))
           );
 
@@ -519,7 +520,6 @@ const Dashboard = () => {
 
       try {
         const response = await fetch(
-          // `http://localhost:3000/dashboard/${currentDashboardId}`,
           `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
           {
             method: "PUT",
@@ -531,9 +531,8 @@ const Dashboard = () => {
               components: activeComponents.map((comp) => ({
                 componentType: comp.id,
                 position: comp.position,
-                settings: comp.graphSelection
-                  ? { graphSelection: comp.graphSelection }
-                  : {},
+                graphSelection:
+                  comp.id === "graph" ? comp.graphSelection : undefined,
               })),
             }),
           }
@@ -550,24 +549,21 @@ const Dashboard = () => {
     updateDashboard();
   }, [activeComponents, currentDashboardId, isEditing]);
   const handleAddComponent = (componentId: string) => {
-    const componentConfig = availableComponents.find((c) => c.id === componentId);
-    if (!componentConfig) return;
-
-    const isAlreadyAdded = activeComponents.some(
-      (comp) => comp.id === componentId && !componentConfig.allowMultiple
-    );
-    if (isAlreadyAdded && !componentConfig.allowMultiple) return;
-
     if (componentId === "graph") {
       setPendingGraphAdd(true);
       setGraphSelectionOpen(true);
       return;
     }
 
-    setActiveComponents((prev) => {
-      const newLayout = [...prev, { id: componentId, position: prev.length }];
-      return newLayout;
-    });
+    setActiveComponents((prev) => [
+      ...prev,
+      {
+        id: componentId,
+        position: prev.length,
+        componentType: componentId,
+      },
+    ]);
+
     setComponentDialog(false);
     setSnackbar({
       open: true,
@@ -576,25 +572,25 @@ const Dashboard = () => {
     });
   };
 
-  const handleGraphSelection = (graphName: string) => {
-    setActiveComponents((prev) => {
-      const newComponent = {
-        id: "graph",
-        position: prev.length,
-        graphSelection: { graphName },
-      };
-      return [...prev, newComponent];
-    });
-
+  const handleGraphSelection = (itemId: string, hostId: string) => {
+    if (pendingGraphAdd) {
+      setActiveComponents((prev) => [
+        ...prev,
+        {
+          id: "graph",
+          position: prev.length,
+          componentType: "graph",
+          graphSelection: { 
+            itemId,
+            hostId // Make sure to include hostId in graphSelection
+          },
+        },
+      ]);
+    }
+    
     setGraphSelectionOpen(false);
     setComponentDialog(false);
     setPendingGraphAdd(false);
-
-    setSnackbar({
-      open: true,
-      message: "Graph widget added successfully",
-      severity: "success",
-    });
   };
 
   const handleRemoveComponent = (position: number) => {
@@ -737,8 +733,7 @@ const Dashboard = () => {
 
   const renderComponent = (
     activeComp: ActiveComponentWithGraph,
-    componentConfig: ComponentConfig,
-    index: number
+    componentConfig: ComponentConfig
   ) => {
     const Component = componentConfig.component;
 
@@ -753,24 +748,14 @@ const Dashboard = () => {
               right: 2,
               top: 2,
               zIndex: 10,
-              backgroundColor: "white",
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-              },
-              boxShadow: "0 0 4px rgba(0,0,0,0.1)",
+              color:"black"
             }}
           >
-            <AddIcon
-              sx={{
-                transform: "rotate(45deg)",
-                zIndex: 11,
-              }}
-            />
+            <RemoveIcon />
           </IconButton>
         )}
-        <Component
-          graphKey={`graph-${activeComp.position}`}
-          graphSelection={activeComp.graphSelection}
+        <Component 
+          graphSelection={activeComp.graphSelection} // This will pass both itemId and hostId
         />
       </Box>
     );
@@ -989,7 +974,6 @@ const Dashboard = () => {
           renderComponent={renderComponent}
         />
 
-        {/* Graph Selection Dialog */}
         <GraphSelectionDialog
           open={graphSelectionOpen}
           onClose={() => {

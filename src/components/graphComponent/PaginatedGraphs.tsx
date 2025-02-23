@@ -13,9 +13,17 @@ import MetricGraph, { Items } from './MetricGraph';
 
 interface PaginatedGraphsProps {
   items: Items[];
+  selectedLastTime: string;           // Added prop
+  startTimeForScale: Date;           // Added prop
+  endTimeForScale: Date;             // Added prop
 }
 
-const PaginatedGraphs: React.FC<PaginatedGraphsProps> = ({ items }) => {
+const PaginatedGraphs: React.FC<PaginatedGraphsProps> = ({ 
+  items, 
+  selectedLastTime,
+  startTimeForScale,
+  endTimeForScale 
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
   const theme = useTheme();
@@ -63,7 +71,13 @@ const PaginatedGraphs: React.FC<PaginatedGraphsProps> = ({ items }) => {
                 flexDirection: 'column',
               }}
             >
-              <MetricGraph item={item} />
+              <MetricGraph 
+                item={item}
+                selectedLastTime={selectedLastTime}
+                startTimeForScale={startTimeForScale}
+                endTimeForScale={endTimeForScale}
+                isSmall={isSmallScreen}
+              />
             </Paper>
           </Grid>
         ))}

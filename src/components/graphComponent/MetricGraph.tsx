@@ -96,10 +96,16 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
           "& canvas": {
             height: isSmall ? "250px !important" : "400px !important",
           },
+          p:2
         }}
       >
         <LineChart
+          // width={1}
           height={isSmall ? 250 : 400}
+          margin={{
+            left: isSmall ? 50 : 55, // Increased left margin for y-axis label
+            bottom: isSmall ? 55 : 60, // Increased bottom margin for x-axis label
+          }}
           series={[
             {
               data: yAxis,
@@ -148,11 +154,14 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               max: endTimeForScale.getTime(),
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
+                lineHeight: isSmall ? 1 : 1.2,
                 fill: "#666",
+                transform: `translateY(${isSmall ? 3 : 7}px)`, // Move label down
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
                 fill: "#666",
+                transform: `translateY(${isSmall ? 1 : 2}px)`, // Move label down
               },
               valueFormatter: (value) => formatDateTime(new Date(value)),
               tickNumber: isSmall ? 5 : 7,
@@ -164,6 +173,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
+                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
@@ -193,6 +203,23 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
             " .MuiLineElement-series-min": {
               strokeWidth: isSmall ? 0.5 : 1,
               strokeDasharray: "5 5",
+            },
+            // Add styles for axis areas
+            "& .MuiChartsAxis-root": {
+              "& .MuiChartsAxis-line": {
+                stroke: "#666",
+                strokeWidth: 1,
+              },
+              "& .MuiChartsAxis-label": {
+                fill: "#666",
+                fontWeight: "bold",
+              },
+              "& .MuiChartsAxis-tick": {
+                stroke: "#666",
+              },
+              "& .MuiChartsAxis-tickLabel": {
+                fill: "#666",
+              },
             },
           }}
           slotProps={{

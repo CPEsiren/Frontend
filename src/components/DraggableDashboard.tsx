@@ -18,7 +18,8 @@ interface ComponentConfig {
 }
 
 interface GraphSelection {
-  graphName: string;
+  itemId: string;
+    hostId: string;
 }
 
 interface ActiveComponent {

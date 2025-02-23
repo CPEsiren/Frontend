@@ -22,7 +22,7 @@ const AnalogClock = () => {
 
   return (
     <>
-      <Box sx={{ m: 2 }}>
+      <Box sx={{ m: 0,p:2 }}>
         <Box
           sx={{
             width: "150px", // Increased from 120px, original was 200px
