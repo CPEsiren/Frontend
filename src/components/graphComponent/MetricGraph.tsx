@@ -80,7 +80,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
       sx={{
         position: "relative",
         width: "100%",
-        height: isSmall ? "220px" : "450px",
+        height: isSmall ? "245px" : "455px",
         mt: isSmall ? -1 : 0,
         pb: isSmall ? 5 : 0,
         pt: isSmall ? 1 : 2,
@@ -96,12 +96,11 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
           "& canvas": {
             height: isSmall ? "250px !important" : "400px !important",
           },
-          p:2
+          p: 2,
         }}
       >
         <LineChart
-          // width={1}
-          height={isSmall ? 250 : 400}
+          height={isSmall ? 260 : 420}
           margin={{
             left: isSmall ? 50 : 55, // Increased left margin for y-axis label
             bottom: isSmall ? 55 : 60, // Increased bottom margin for x-axis label
@@ -173,7 +172,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
-                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
+                transform: `translateX(-${isSmall ? 11 : 14}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
@@ -212,7 +211,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               },
               "& .MuiChartsAxis-label": {
                 fill: "#666",
-                fontWeight: "bold",
+                fontWeight: "medium",
               },
               "& .MuiChartsAxis-tick": {
                 stroke: "#666",

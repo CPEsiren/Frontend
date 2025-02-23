@@ -15,6 +15,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
   const [graphData, setGraphData] = useState<Items | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [rangeTime, setRangeTime] = useState("15 m");
+  const [hostname, setHostname] = useState("");
 
   const [startTime, setStartTime] = useState<Date>(
     new Date(Date.now() - 16 * 60000)
@@ -60,6 +61,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
         }
 
         const result = await response.json();
+        // console.log(result);
 
         if (
           result.status === "success" &&
@@ -67,6 +69,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
           result.data.length > 0
         ) {
           const host = result.data[0];
+          setHostname(host._id.hostname);
           const selectedItemData = host.items.find(
             (item: any) => item.item_id._id === graphSelection.itemId
           );
@@ -133,9 +136,17 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
 
   return (
     <Box sx={{ p: 2, height: "100%" }}>
-      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
-        {graphData.item_id.item_name} on {graphSelection?.hostId}
-      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "row" }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ mb: 2, fontWeight: "bold", color: "#db5100" }}
+        >
+          {graphData.item_id.item_name}&nbsp;
+        </Typography>
+        <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
+          on {hostname}
+        </Typography>
+      </Box>
       <Box sx={{ height: "calc(100% - 52px)" }}>
         <MetricGraph
           item={graphData}
