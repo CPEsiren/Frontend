@@ -136,17 +136,15 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
 
   return (
     <Box sx={{ p: 2, height: "100%" }}>
-      <Box sx={{ display: "flex", flexDirection: "row" }}>
-        <Typography
-          variant="subtitle2"
-          sx={{ mb: 2, fontWeight: "bold", color: "#db5100" }}
-        >
-          {graphData.item_id.item_name}&nbsp;
-        </Typography>
-        <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
-          on {hostname}
-        </Typography>
-      </Box>
+      <Typography
+        variant="subtitle2"
+        sx={{ mb: 0.5, fontWeight: "bold", color: "#db5100" }}
+      >
+        {graphData.item_id.item_name}&nbsp;
+      </Typography>
+      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
+        on {hostname}
+      </Typography>
       <Box sx={{ height: "calc(100% - 52px)" }}>
         <MetricGraph
           item={graphData}

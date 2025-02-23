@@ -27,7 +27,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import RemoveIcon from '@mui/icons-material/Remove';
+import RemoveIcon from "@mui/icons-material/Remove";
 import DoneIcon from "@mui/icons-material/Done";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TableChartIcon from "@mui/icons-material/TableChart";
@@ -80,15 +80,6 @@ interface ComponentConfig {
     md?: number;
   };
   allowMultiple: boolean;
-}
-
-interface ActiveComponent {
-  id: string;
-  position: number;
-  graphSelection?: {
-    itemId: string;
-    hostId: string;
-  };
 }
 
 interface SnackbarState {
@@ -172,7 +163,7 @@ const Dashboard = () => {
     message: "",
     severity: "success",
   });
-
+  // Add state to track Select menu open status
   const [graphSelectionOpen, setGraphSelectionOpen] = useState(false);
   const [pendingGraphAdd, setPendingGraphAdd] = useState(false);
   const [activeComponents, setActiveComponents] = useState<
@@ -187,6 +178,14 @@ const Dashboard = () => {
     []
   );
   const [isViewerDashboard, setIsViewerDashboard] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
+
+const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: boolean) => {
+  setCurrentDashboardId(dashboard.id);
+  setActiveComponents(dashboard.components);
+  setIsViewerDashboard(isViewer);
+  setSelectOpen(false);
+};
 
   useEffect(() => {
     const fetchDashboards = async () => {
@@ -254,6 +253,7 @@ const Dashboard = () => {
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
     setIsAdmin(userRole === "admin" || userRole === "superadmin");
+    setIsSuperAdmin(userRole === "superadmin"); // Add this line
   }, []);
 
   // Fetch both user and viewer dashboards
@@ -302,9 +302,10 @@ const Dashboard = () => {
           setDashboards(transformedUserDashboards);
         }
 
-        // If superadmin, fetch viewer dashboards
-        let transformedViewerDashboards: DashboardLayout[] = [];
-        if (isSuperAdmin) {
+        // Check if user is superadmin before fetching viewer dashboards
+        const userRole = localStorage.getItem("userRole");
+        if (userRole === "superadmin") {
+          console.log("Fetching viewer dashboards for superadmin"); // Debug log
           const viewerDashboardResponse = await fetch(
             `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
             {
@@ -315,41 +316,47 @@ const Dashboard = () => {
               },
             }
           );
+
           if (viewerDashboardResponse.ok) {
             const viewerDashboardData = await viewerDashboardResponse.json();
+            console.log("Viewer dashboard response:", viewerDashboardData); // Debug log
+
             if (
               viewerDashboardData.status === "success" &&
               Array.isArray(viewerDashboardData.dashboards)
             ) {
-              transformedViewerDashboards = viewerDashboardData.dashboards.map(
-                (dashboard: APIDashboard) => ({
-                  id: dashboard._id,
-                  name: `${dashboard.dashboard_name}`,
-                  components: dashboard.components.map(
-                    (comp: APIComponent) => ({
-                      id: comp.componentType,
-                      position: comp.position,
-                      graphSelection: comp.graphSelection,
-                    })
-                  ),
-                })
-              );
+              const transformedViewerDashboards =
+                viewerDashboardData.dashboards.map(
+                  (dashboard: APIDashboard) => ({
+                    id: dashboard._id,
+                    name: `${dashboard.dashboard_name} (Viewer)`, // Add (Viewer) suffix for clarity
+                    components: dashboard.components.map(
+                      (comp: APIComponent) => ({
+                        id: comp.componentType,
+                        position: comp.position,
+                        graphSelection: comp.graphSelection,
+                      })
+                    ),
+                  })
+                );
               setViewerDashboards(transformedViewerDashboards);
             }
+          } else {
+            console.error("Failed to fetch viewer dashboards");
           }
         }
 
         // Set initial dashboard and components
         const allDashboards = [
           ...transformedUserDashboards,
-          ...transformedViewerDashboards,
+          ...(userRole === "superadmin" ? viewerDashboards : []),
         ];
         if (allDashboards.length > 0) {
           const firstDashboard = allDashboards[0];
           setCurrentDashboardId(firstDashboard.id);
           setActiveComponents(firstDashboard.components);
           setIsViewerDashboard(
-            transformedViewerDashboards.some((d) => d.id === firstDashboard.id)
+            viewerDashboards.some((d) => d.id === firstDashboard.id)
           );
         }
       } catch (err) {
@@ -372,30 +379,27 @@ const Dashboard = () => {
 
   const handleDashboardChange = (event: SelectChangeEvent<string>) => {
     const selectedId = event.target.value;
-    console.log("Selected Dashboard ID:", selectedId);
-    console.log("Available Dashboards:", dashboards);
-    console.log("Available Viewer Dashboards:", viewerDashboards);
-
+  
     // If the target is the "New Dashboard" option, handle it separately
     if (selectedId === "new") {
       handleAddDashboard();
+      setSelectOpen(false); // Close the select menu
       return;
     }
-
+  
     // Find the selected dashboard from either user or viewer dashboards
     const selectedViewerDashboard = viewerDashboards.find(
       (d) => d.id === selectedId
     );
     const selectedUserDashboard = dashboards.find((d) => d.id === selectedId);
     const selectedDashboard = selectedViewerDashboard || selectedUserDashboard;
-
-    console.log("Selected Dashboard:", selectedDashboard);
-
+  
     if (selectedDashboard) {
       setCurrentDashboardId(selectedId);
       setActiveComponents(selectedDashboard.components);
       setIsViewerDashboard(!!selectedViewerDashboard);
       setIsEditing(false); // Exit edit mode when switching dashboards
+      setSelectOpen(false); // Close the select menu
     }
   };
 
@@ -580,14 +584,14 @@ const Dashboard = () => {
           id: "graph",
           position: prev.length,
           componentType: "graph",
-          graphSelection: { 
+          graphSelection: {
             itemId,
-            hostId // Make sure to include hostId in graphSelection
+            hostId, // Make sure to include hostId in graphSelection
           },
         },
       ]);
     }
-    
+
     setGraphSelectionOpen(false);
     setComponentDialog(false);
     setPendingGraphAdd(false);
@@ -748,13 +752,13 @@ const Dashboard = () => {
               right: 2,
               top: 2,
               zIndex: 10,
-              color:"black"
+              color: "black",
             }}
           >
             <RemoveIcon />
           </IconButton>
         )}
-        <Component 
+        <Component
           graphSelection={activeComp.graphSelection} // This will pass both itemId and hostId
         />
       </Box>
@@ -822,9 +826,12 @@ const Dashboard = () => {
                 <>
                   {(dashboards.length > 0 ||
                     (isSuperAdmin && viewerDashboards.length > 0)) && (
-                    <Select
+                      <Select
                       value={currentDashboardId}
                       onChange={handleDashboardChange}
+                      open={selectOpen}
+                      onOpen={() => setSelectOpen(true)}
+                      onClose={() => setSelectOpen(false)}
                       displayEmpty
                       renderValue={(value) => {
                         const selectedUserDash = dashboards.find(
@@ -853,11 +860,9 @@ const Dashboard = () => {
                             <MenuItem
                               key={dashboard.id}
                               value={dashboard.id}
-                              onClick={() => {
-                                console.log("Clicked dashboard:", dashboard.id);
-                                setCurrentDashboardId(dashboard.id);
-                                setActiveComponents(dashboard.components);
-                                setIsViewerDashboard(false);
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDashboardMenuItemClick(dashboard, false);
                               }}
                             >
                               {dashboard.name}
@@ -865,7 +870,7 @@ const Dashboard = () => {
                           ))}
                         </>
                       )}
-
+                    
                       {isSuperAdmin && viewerDashboards.length > 0 && (
                         <>
                           {dashboards.length > 0 && <MenuItem divider />}
@@ -874,14 +879,9 @@ const Dashboard = () => {
                             <MenuItem
                               key={dashboard.id}
                               value={dashboard.id}
-                              onClick={() => {
-                                console.log(
-                                  "Clicked viewer dashboard:",
-                                  dashboard.id
-                                );
-                                setCurrentDashboardId(dashboard.id);
-                                setActiveComponents(dashboard.components);
-                                setIsViewerDashboard(true);
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDashboardMenuItemClick(dashboard, true);
                               }}
                             >
                               {dashboard.name}
@@ -889,14 +889,16 @@ const Dashboard = () => {
                           ))}
                         </>
                       )}
-
+                    
                       {!isViewerDashboard && dashboards.length < 3 && (
                         <>
                           <MenuItem divider />
                           <MenuItem
+                            value="new"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleAddDashboard();
+                              setSelectOpen(false);
                             }}
                             sx={{
                               color: "#4CAF50",
