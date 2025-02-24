@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 
 interface TodoItem {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
@@ -16,10 +16,10 @@ interface TodoListProps {
   onUpdate?: (todos: TodoItem[]) => void;
 }
 
-const TodoList: React.FC<TodoListProps> = ({ todoItems = [] }) => {
+const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
   const [todos, setTodos] = useState<TodoItem[]>(todoItems);
   const [newTodo, setNewTodo] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
 
   useEffect(() => {
@@ -30,32 +30,47 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [] }) => {
     if (newTodo.trim() !== "") {
       const newTodos = [
         ...todos,
-        { id: Date.now(), text: newTodo.trim(), completed: false },
+        { id: Date.now().toString(), text: newTodo.trim(), completed: false },
       ];
       setTodos(newTodos);
       setNewTodo("");
+
+      // Call onUpdate to save to database
+      if (onUpdate) {
+        onUpdate(newTodos);
+      }
     }
   };
 
-  const handleToggleTodo = (id: number) => {
+  const handleToggleTodo = (id: string) => {
     const newTodos = todos.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
     setTodos(newTodos);
+
+    // Call onUpdate to save to database
+    if (onUpdate) {
+      onUpdate(newTodos);
+    }
   };
 
-  const handleEditTodo = (id: number, text: string) => {
+  const handleEditTodo = (id: string, text: string) => {
     setEditingId(id);
     setEditingText(text);
   };
 
-  const handleSaveEdit = (id: number) => {
+  const handleSaveEdit = (id: string) => {
     const newTodos = todos.map((todo) =>
       todo.id === id ? { ...todo, text: editingText } : todo
     );
     setTodos(newTodos);
     setEditingId(null);
     setEditingText("");
+
+    // Call onUpdate to save to database
+    if (onUpdate) {
+      onUpdate(newTodos);
+    }
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -65,104 +80,114 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [] }) => {
   };
 
   return (
-    <Box
-      sx={{
-        borderRadius: 2,
-        height: "100%",
-        p: 2,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ fontFamily: "monospace", fontWeight: "bold", mb: 2 }}
-      >
-        Todo List
-      </Typography>
-
-      <Box sx={{ display: "flex", gap: 1, mb: 2, alignItems: "center" }}>
-        <TextField
-          size="small"
-          placeholder="Add new todo"
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          onKeyPress={handleKeyPress}
-          sx={{ flex: 1 }}
-        />
-        <IconButton
-          onClick={handleAddTodo}
+    <>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Box
           sx={{
-            backgroundColor: "primary.main",
-            color: "white",
-            "&:hover": { backgroundColor: "primary.dark" },
+            borderRadius: 2,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+            pt: 2,
+            px: 1.5,
+            bgcolor: "Highlight",
+            mb: 1,
           }}
         >
-          <AddIcon />
-        </IconButton>
-      </Box>
-
-      <Box
-        sx={{
-          flex: 1,
-          overflow: "auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-        }}
-      >
-        {todos.map((todo) => (
-          <Box
-            key={todo.id}
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: "bold", mb: 2, color: "white" }}
+          >
+            Todo List
+          </Typography>
+        </Box>
+        <Box
+          sx={{ display: "flex", gap: 1, mb: 2, alignItems: "center", p: 1 }}
+        >
+          <TextField
+            size="small"
+            placeholder="Add new todo"
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            onKeyPress={handleKeyPress}
+            sx={{ flex: 1 }}
+          />
+          <IconButton
+            onClick={handleAddTodo}
             sx={{
-              display: "flex",
-              alignItems: "center",
-              p: 1,
-              borderRadius: 1,
-              backgroundColor: "background.paper",
-              "&:hover": { backgroundColor: "action.hover" },
+              // backgroundColor: "primary.main",
+              color: "primary.main",
+              "&:hover": { backgroundColor: "primary.main", color: "white" },
             }}
           >
-            <Checkbox
-              checked={todo.completed}
-              onChange={() => handleToggleTodo(todo.id)}
-            />
+            <AddIcon fontSize={"medium"} />
+          </IconButton>
+        </Box>
 
-            {editingId === todo.id ? (
-              <TextField
-                size="small"
-                value={editingText}
-                onChange={(e) => setEditingText(e.target.value)}
-                onBlur={() => handleSaveEdit(todo.id)}
-                onKeyPress={(e) => e.key === "Enter" && handleSaveEdit(todo.id)}
-                autoFocus
-                sx={{ flex: 1 }}
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            px: 1,
+          }}
+        >
+          {todos.map((todo) => (
+            <Box
+              key={todo.id}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 0.3,
+                borderRadius: 1,
+                backgroundColor: "background.paper",
+                "&:hover": { backgroundColor: "action.hover" },
+              }}
+            >
+              <Checkbox
+                checked={todo.completed}
+                onChange={() => handleToggleTodo(todo.id)}
               />
-            ) : (
-              <Typography
-                sx={{
-                  flex: 1,
-                  textDecoration: todo.completed ? "line-through" : "none",
-                  color: todo.completed ? "text.secondary" : "text.primary",
-                }}
-              >
-                {todo.text}
-              </Typography>
-            )}
 
-            {editingId === todo.id ? (
-              <IconButton onClick={() => handleSaveEdit(todo.id)}>
-                <CheckIcon />
-              </IconButton>
-            ) : (
-              <IconButton onClick={() => handleEditTodo(todo.id, todo.text)}>
-                <EditIcon />
-              </IconButton>
-            )}
-          </Box>
-        ))}
+              {editingId === todo.id ? (
+                <TextField
+                  size="small"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onBlur={() => handleSaveEdit(todo.id)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && handleSaveEdit(todo.id)
+                  }
+                  autoFocus
+                  sx={{ flex: 1 }}
+                />
+              ) : (
+                <Typography
+                  sx={{
+                    flex: 1,
+                    textDecoration: todo.completed ? "line-through" : "none",
+                    color: todo.completed ? "text.secondary" : "text.primary",
+                  }}
+                >
+                  {todo.text}
+                </Typography>
+              )}
+
+              {editingId === todo.id ? (
+                <IconButton onClick={() => handleSaveEdit(todo.id)}>
+                  <CheckIcon />
+                </IconButton>
+              ) : (
+                <IconButton onClick={() => handleEditTodo(todo.id, todo.text)}>
+                  <EditIcon />
+                </IconButton>
+              )}
+            </Box>
+          ))}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

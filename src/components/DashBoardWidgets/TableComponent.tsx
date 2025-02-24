@@ -244,7 +244,7 @@ const TableComponent = () => {
           },
           "& .MuiTableCell-head": {
             fontWeight: "bold",
-            backgroundColor: "#f5f5f5",
+            backgroundColor: "white",
             fontSize: "0.8rem",
           },
         }}
@@ -254,9 +254,9 @@ const TableComponent = () => {
           size="small"
           sx={{
             "& .MuiTableRow-root": {
-              "&:nth-of-type(odd)": {
-                backgroundColor: "#fafafa",
-              },
+              // "&:nth-of-type(odd)": {
+              //   backgroundColor: "white",
+              // },
             },
           }}
         >

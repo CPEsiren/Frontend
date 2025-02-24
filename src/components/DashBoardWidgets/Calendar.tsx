@@ -161,7 +161,17 @@ const Calendar = () => {
             width: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 0.5,
+              bgcolor: "rgba(0, 4, 255, 0.12)",
+              px: 1,
+              py: 0.3,
+              borderRadius: 2,
+            }}
+          >
             <Typography
               sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#535353" }}
             >
