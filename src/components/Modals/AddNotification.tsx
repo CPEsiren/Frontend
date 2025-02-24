@@ -938,8 +938,24 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                     flexDirection: "column",
                     gap: 2,
                     width: "50%",
+                    backgroundColor: (theme) => theme.palette.error.main + "20",
+                    borderRadius: "8px",
+                    padding: 2,
                   }}
                 >
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      padding: 1,
+                      backgroundColor: (theme) => theme.palette.error.main,
+                      color: (theme) => theme.palette.error.contrastText,
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Typography variant="h5" align="center" fontWeight="bold">
+                      Problem Message
+                    </Typography>
+                  </Paper>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -958,9 +974,10 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       onChange={handleProblemTitleChange}
                       placeholder="Enter alert title"
                       fullWidth
+                      color="error"
                     />
                     <Button
-                      sx={{ position: "absolute", right: "50%" }}
+                      sx={{ position: "absolute", right: "52%" }}
                       onClick={() => openPlaceholderProblemDialog("title")}
                     >
                       <AddIcon />
@@ -986,9 +1003,10 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       rows={10}
                       maxRows={20}
                       fullWidth
+                      color="error"
                     />
                     <Button
-                      sx={{ position: "absolute", right: "50%" }}
+                      sx={{ position: "absolute", right: "52%" }}
                       onClick={() => openPlaceholderProblemDialog("body")}
                     >
                       <AddIcon />
@@ -1005,8 +1023,25 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                     flexDirection: "column",
                     gap: 2,
                     width: "50%",
+                    backgroundColor: (theme) =>
+                      theme.palette.success.main + "20",
+                    borderRadius: "8px",
+                    padding: 2,
                   }}
                 >
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      padding: 1,
+                      backgroundColor: (theme) => theme.palette.success.main,
+                      color: (theme) => theme.palette.success.contrastText,
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Typography variant="h5" align="center" fontWeight="bold">
+                      Recovery Message
+                    </Typography>
+                  </Paper>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -1025,6 +1060,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       onChange={handleRecoveryTitleChange}
                       placeholder="Enter alert title"
                       fullWidth
+                      color="success"
                     />
                     <Button
                       sx={{ position: "absolute", right: "5%" }}
@@ -1053,6 +1089,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       rows={10}
                       maxRows={20}
                       fullWidth
+                      color="success"
                     />
                     <Button
                       sx={{ position: "absolute", right: "5%" }}
