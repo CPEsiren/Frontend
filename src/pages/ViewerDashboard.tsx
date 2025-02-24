@@ -174,18 +174,28 @@ const ViewerDashboard = () => {
     return defaultGridSizes[componentId as keyof typeof defaultGridSizes] || { xs: 12, md: 6 };
   };
 
+  const componentHeights: Record<string, string> = {
+    digitalClock: "17rem",
+    analogClock: "17rem",
+    table: "17rem",
+    graph: "23rem",
+    calendar: "17rem",
+    eventblock: "17rem",
+  };
+  
+  // Then update the renderComponent function
   const renderComponent = (component: ActiveComponentWithGraph) => {
     const Component = availableComponents[component.id];
-
+  
     if (!Component) {
       console.warn(`Component type ${component.id} not found`);
       return null;
     }
-
+  
     return (
       <Box
         sx={{
-          height: "100%",
+          height: componentHeights[component.id] || "auto",
           backgroundColor: "white",
           borderRadius: 2,
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
@@ -193,9 +203,11 @@ const ViewerDashboard = () => {
           p: 2,
         }}
       >
-        <Component 
-          graphSelection={component.graphSelection}
-        />
+        <Box sx={{ height: '100%' }}>
+          <Component 
+            graphSelection={component.graphSelection}
+          />
+        </Box>
       </Box>
     );
   };

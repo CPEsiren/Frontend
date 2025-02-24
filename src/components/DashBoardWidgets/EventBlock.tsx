@@ -19,18 +19,14 @@ const EventBlock = () => {
   useEffect(() => {
     const fetchLatestEvents = async () => {
       try {
-         // const response = await fetch("http://localhost:3000/event");
-         const response = await fetch(`${import.meta.env.VITE_API_URL}/event`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-         );
-
-       
+        // const response = await fetch("http://localhost:3000/event");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/event`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -97,8 +93,10 @@ const EventBlock = () => {
   }
 
   return (
-    <Box padding={1}>
-      <Box sx={{ display: "flex", flexDirection: "row", px: 1, pt: 0, mb: 1 }}>
+    <Box padding={1} sx={{ height: "100%" }}>
+      <Box
+        sx={{ display: "flex", flexDirection: "row", px: 1, pt: 0, mb: 1.2 }}
+      >
         <Typography variant="h6" sx={{ mr: 2, fontWeight: "medium" }}>
           Event
         </Typography>
@@ -121,11 +119,20 @@ const EventBlock = () => {
           onClick={() => setFilter("RESOLVED")}
         />
       </Box>
-      <Box sx={{ overflow: "auto", maxHeight: "200px" }}>
+      <Box sx={{ overflow: "auto", height: "100%" }}>
         {getFilteredEvents().length === 0 ? (
-          <Typography align="center" sx={{ mt: 2 }}>
-            No events found
-          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "80%",
+            }}
+          >
+            <Typography align="center" sx={{ color: "text.secondary" }}>
+              No {filter === "ALL" ? "Events" : filter} found
+            </Typography>
+          </Box>
         ) : (
           getFilteredEvents().map((event) => (
             <Card key={event._id} sx={{ mb: 0.5, p: 0 }}>

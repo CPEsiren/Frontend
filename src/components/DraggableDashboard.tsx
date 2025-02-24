@@ -14,12 +14,13 @@ interface ComponentConfig {
     sm?: number;
     md?: number;
   };
+  height: string; // Add height property
   allowMultiple: boolean;
 }
 
 interface GraphSelection {
   itemId: string;
-    hostId: string;
+  hostId: string;
 }
 
 interface ActiveComponent {
@@ -39,10 +40,10 @@ const DraggableItem = styled(Paper, {
     !["isDragging", "isDragOver", "dragPosition"].includes(prop as string),
 })<DraggableItemProps>(({ theme, isDragging, isDragOver, dragPosition }) => ({
   position: "relative",
-  height: "100%",
+  
   backgroundColor: "white",
   borderRadius: theme.shape.borderRadius * 2,
-  padding: 0,
+  padding: theme.spacing(1), // Add consistent padding
   border: "1px solid #eee",
   cursor: "pointer",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -51,12 +52,11 @@ const DraggableItem = styled(Paper, {
   boxShadow: isDragging
     ? "0 8px 16px rgba(0,0,0,0.1)"
     : "0 1px 3px rgba(0,0,0,0.05)",
+  display: "flex", // Add flex display
+  flexDirection: "column", // Stack children vertically
   "&:hover": {
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
     transform: "translateY(-2px)",
-    // "& .dragHandle": {
-    //   opacity: 1,
-    // },
   },
   "&::before":
     dragPosition === "before"
@@ -221,7 +221,7 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
         const { defaultSize } = componentConfig;
 
         return (
-          <Grid item key={activeComp.position} {...defaultSize}>
+          <Grid item key={activeComp.position} {...defaultSize} sx={{mb:0}}>
             <DraggableItem
               draggable={isEditing}
               onDragStart={(e) => handleDragStart(e, index)}
@@ -242,7 +242,15 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
                   </IconButton>
                 </DragHandle>
               )}
-              <Box sx={{ height: "100%", pl: isEditing ? 4 : 0 }}>
+              <Box
+                sx={{
+                  flexGrow: 1, // Take remaining space
+                  height: "100%",
+                  pl: isEditing ? 4 : 0,
+                  position: "relative",
+                  overflow: "hidden", // Prevent content overflow
+                }}
+              >
                 {renderComponent(activeComp, componentConfig, index)}
               </Box>
             </DraggableItem>

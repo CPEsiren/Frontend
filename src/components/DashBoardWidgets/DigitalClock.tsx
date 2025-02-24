@@ -23,12 +23,10 @@ const DigitalClock = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        px: 2,
-        py: 4,
         backgroundColor: '#f5f5f5',
         borderRadius: 2,
         minHeight: '150px',
-        height:"71%"
+        height:"100%"
       }}
     >
       <Typography variant="h3" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>

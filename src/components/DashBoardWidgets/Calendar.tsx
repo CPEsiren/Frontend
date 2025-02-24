@@ -141,7 +141,6 @@ const Calendar = () => {
       sx={{
         p: 3,
         borderRadius: 1.8,
-        minHeight: "80%",
       }}
     >
       <Box
@@ -221,7 +220,7 @@ const Calendar = () => {
               fontWeight: 600,
               color: "text.secondary",
               fontSize: "0.8rem",
-              my:1
+              my: 1,
             }}
           >
             {day}

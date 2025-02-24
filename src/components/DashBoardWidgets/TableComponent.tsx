@@ -232,7 +232,7 @@ const TableComponent = () => {
   }
 
   return (
-    <Box sx={{ width: "100%", overflow: "hidden" }}>
+    <Box sx={{ width: "100%", overflow: "hidden", height: "100%" }}>
       <TableContainer
         component={Paper}
         sx={{

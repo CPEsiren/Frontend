@@ -38,67 +38,17 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import DraggableDashboard from "../components/DraggableDashboard";
 import { SelectChangeEvent } from "@mui/material";
 import GraphSelectionDialog from "../components/DashBoardWidgets/GraphSelectionDialog";
-
-interface DashboardLayout {
-  id: string;
-  name: string;
-  components: ActiveComponentWithGraph[];
-}
-
-// API response interfaces
-interface APIComponent {
-  id: string;
-  position: number;
-  componentType: string;
-  graphSelection?: {
-    itemId: string;
-    hostId: string;
-  };
-  _id: string;
-}
-
-interface APIDashboard {
-  _id: string;
-  dashboard_name: string;
-  user_id: string;
-  isDefault: boolean;
-  components: APIComponent[];
-  isViewer: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-interface ComponentConfig {
-  id: string;
-  name: string;
-  icon: JSX.Element;
-  component: React.ComponentType<any>;
-  defaultSize: {
-    xs: number;
-    sm?: number;
-    md?: number;
-  };
-  allowMultiple: boolean;
-}
-
-interface SnackbarState {
-  open: boolean;
-  message: string;
-  severity: "success" | "error";
-}
-
-interface GraphSelection {
-  itemId: string;
-  hostId: string;
-}
-
-interface ActiveComponentWithGraph {
-  id: string;
-  position: number;
-  componentType?: string;
-  graphSelection?: GraphSelection;
-}
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import {
+  ActiveComponentWithGraph,
+  APIComponent,
+  APIDashboard,
+  ComponentConfig,
+  DashboardLayout,
+  SnackbarState,
+  TodoItem,
+} from "../components/DashBoardWidgets/interface_Dashboard";
+import TodoList from "../components/DashBoardWidgets/TodoList";
 
 const DASHBOARD_STORAGE_KEY = "dashboard_layout";
 
@@ -109,6 +59,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <AccessTimeFilledIcon />,
     component: DigitalClock,
     defaultSize: { xs: 10, sm: 5, md: 4 },
+    height: "17rem", // Smaller height for digital clock
     allowMultiple: false,
   },
   {
@@ -117,6 +68,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <AccessTimeIcon />,
     component: AnalogClock,
     defaultSize: { xs: 12, sm: 6, md: 4 },
+    height: "17rem", // Taller for analog clock
     allowMultiple: false,
   },
   {
@@ -125,6 +77,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <TableChartIcon />,
     component: TableComponent,
     defaultSize: { xs: 12, md: 6 },
+    height: "17rem", // Taller for table content
     allowMultiple: false,
   },
   {
@@ -133,6 +86,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <ShowChartIcon />,
     component: Graph,
     defaultSize: { xs: 12, md: 6 },
+    height: "23rem", // Taller for graphs
     allowMultiple: true,
   },
   {
@@ -141,6 +95,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <CalendarTodayIcon />,
     component: Calendar,
     defaultSize: { xs: 12, sm: 6, md: 4 },
+    height: "17rem", // Medium height for calendar
     allowMultiple: false,
   },
   {
@@ -149,6 +104,16 @@ const availableComponents: ComponentConfig[] = [
     icon: <NotificationImportantIcon />,
     component: EventBlock,
     defaultSize: { xs: 12, sm: 6, md: 6 },
+    height: "17rem", // Medium height for events
+    allowMultiple: false,
+  },
+  {
+    id: "todolist",
+    name: "Todo List",
+    icon: <FormatListBulletedIcon />,
+    component: TodoList,
+    defaultSize: { xs: 12, sm: 6, md: 6 },
+    height: "17rem", // Medium height for events
     allowMultiple: false,
   },
 ];
@@ -228,6 +193,8 @@ const Dashboard = () => {
                     comp.componentType === "graph"
                       ? comp.graphSelection
                       : undefined,
+                  todoItems:
+                    comp.id === "todolist" ? comp.todoItems : undefined,
                 })
               ),
             })
@@ -299,6 +266,7 @@ const Dashboard = () => {
                 id: comp.componentType,
                 position: comp.position,
                 graphSelection: comp.graphSelection,
+                todoItems: comp.todoItems,
               })),
             })
           );
@@ -322,7 +290,6 @@ const Dashboard = () => {
 
           if (viewerDashboardResponse.ok) {
             const viewerDashboardData = await viewerDashboardResponse.json();
-            console.log("Viewer dashboard response:", viewerDashboardData); // Debug log
 
             if (
               viewerDashboardData.status === "success" &&
@@ -338,6 +305,7 @@ const Dashboard = () => {
                         id: comp.componentType,
                         position: comp.position,
                         graphSelection: comp.graphSelection,
+                        todoItems: comp.todoItems,
                       })
                     ),
                   })
@@ -487,6 +455,7 @@ const Dashboard = () => {
                 id: comp.componentType,
                 position: comp.position,
                 graphSelection: comp.graphSelection,
+                todoItems: comp.todoItems,
               })),
             }));
 
@@ -547,6 +516,7 @@ const Dashboard = () => {
                 position: comp.position,
                 graphSelection:
                   comp.id === "graph" ? comp.graphSelection : undefined,
+                todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
               })),
             }),
           }
@@ -626,6 +596,7 @@ const Dashboard = () => {
 
   const toggleEdit = () => {
     if (isEditing) {
+      // Save only when clicking DoneIcon to finish editing
       try {
         localStorage.setItem(
           DASHBOARD_STORAGE_KEY,
@@ -756,15 +727,72 @@ const Dashboard = () => {
   ) => {
     const Component = componentConfig.component;
 
+    const handleTodoUpdate = async (newTodos: TodoItem[]) => {
+      try {
+        // First update local state
+        const updatedComponents = activeComponents.map((comp) =>
+          comp.position === activeComp.position
+            ? { ...comp, todoItems: newTodos }
+            : comp
+        );
+        setActiveComponents(updatedComponents);
+
+        // Then update in database
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              components: updatedComponents.map((comp) => ({
+                componentType: comp.id,
+                position: comp.position,
+                graphSelection:
+                  comp.id === "graph" ? comp.graphSelection : undefined,
+                todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+              })),
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update dashboard");
+        }
+
+        setSnackbar({
+          open: true,
+          message: "Todo list updated successfully",
+          severity: "success",
+        });
+      } catch (error) {
+        console.error("Error updating todos:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to update todo list",
+          severity: "error",
+        });
+      }
+    };
+
     return (
-      <Box sx={{ position: "relative", height: "100%" }}>
+      <Box
+        sx={{
+          position: "relative",
+          height: componentConfig.height,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {isEditing && !isViewerDashboard && (
           <IconButton
             size="small"
             onClick={() => handleRemoveComponent(activeComp.position)}
             sx={{
               position: "absolute",
-              right: 2,
+              right: 4,
               top: 2,
               zIndex: 10,
               color: "black",
@@ -773,7 +801,13 @@ const Dashboard = () => {
             <RemoveIcon />
           </IconButton>
         )}
-        <Component graphSelection={activeComp.graphSelection} />
+        <Box sx={{ flexGrow: 1, height: "100%" }}>
+          <Component
+            graphSelection={activeComp.graphSelection}
+            todoItems={activeComp.todoItems}
+            onUpdate={handleTodoUpdate}
+          />
+        </Box>
       </Box>
     );
   };
@@ -802,9 +836,9 @@ const Dashboard = () => {
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               {/* Allow editing for superadmin regardless of dashboard type */}
               {(!isViewerDashboard || (isViewerDashboard && isSuperAdmin)) && (
-                <Tooltip title={isEditing ? "Save & Done" : "Edit Dashboard"}>
+                <Tooltip title={isEditing ? "Save Changes" : "Edit Dashboard"}>
                   <IconButton
-                    onClick={toggleEdit}
+                    onClick={toggleEdit} // This will now save only when clicking DoneIcon
                     sx={{
                       "&:focus": {
                         outline: "none",
@@ -998,44 +1032,47 @@ const Dashboard = () => {
       </Box>
 
       {/* Add Component Dialog */}
-<Dialog
-  open={componentDialog}
-  onClose={() => setComponentDialog(false)}
-  maxWidth="xs"
-  fullWidth
->
-  <DialogTitle>Add Component</DialogTitle>
-  <DialogContent>
-    <List>
-      {availableComponents
-        .filter(component => !isViewerDashboard || component.id !== "eventblock")
-        .map((component) => {
-          const canAdd = canAddComponent(component.id);
-          return (
-            <ListItem
-              key={component.id}
-              onClick={() => canAdd && handleAddComponent(component.id)}
-              component="div"
-              sx={{
-                cursor: canAdd ? "pointer" : "not-allowed",
-                opacity: canAdd ? 1 : 0.5,
-                "&:hover": {
-                  backgroundColor: canAdd ? "action.hover" : undefined,
-                },
-                pointerEvents: canAdd ? "auto" : "none",
-              }}
-            >
-              <ListItemIcon>{component.icon}</ListItemIcon>
-              <ListItemText
-                primary={component.name}
-                secondary={!canAdd ? "Already added" : undefined}
-              />
-            </ListItem>
-          );
-        })}
-    </List>
-  </DialogContent>
-</Dialog>
+      <Dialog
+        open={componentDialog}
+        onClose={() => setComponentDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Add Component</DialogTitle>
+        <DialogContent>
+          <List>
+            {availableComponents
+              .filter(
+                (component) =>
+                  !isViewerDashboard || component.id !== "eventblock"
+              )
+              .map((component) => {
+                const canAdd = canAddComponent(component.id);
+                return (
+                  <ListItem
+                    key={component.id}
+                    onClick={() => canAdd && handleAddComponent(component.id)}
+                    component="div"
+                    sx={{
+                      cursor: canAdd ? "pointer" : "not-allowed",
+                      opacity: canAdd ? 1 : 0.5,
+                      "&:hover": {
+                        backgroundColor: canAdd ? "action.hover" : undefined,
+                      },
+                      pointerEvents: canAdd ? "auto" : "none",
+                    }}
+                  >
+                    <ListItemIcon>{component.icon}</ListItemIcon>
+                    <ListItemText
+                      primary={component.name}
+                      secondary={!canAdd ? "Already added" : undefined}
+                    />
+                  </ListItem>
+                );
+              })}
+          </List>
+        </DialogContent>
+      </Dialog>
 
       {/* Snackbar for notifications */}
       <Snackbar
