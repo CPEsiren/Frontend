@@ -104,7 +104,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <NotificationImportantIcon />,
     component: EventBlock,
     defaultSize: { xs: 12, sm: 6, md: 6 },
-    height: "17rem", // Medium height for events
+    height: "20rem", // Medium height for events
     allowMultiple: false,
   },
   {
@@ -113,7 +113,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <FormatListBulletedIcon />,
     component: TodoList,
     defaultSize: { xs: 12, sm: 6, md: 6 },
-    height: "17rem", // Medium height for events
+    height: "20rem", // Medium height for events
     allowMultiple: false,
   },
 ];
@@ -370,7 +370,7 @@ const Dashboard = () => {
       // Filter out event components if switching to viewer dashboard
       const filteredComponents = selectedViewerDashboard
         ? selectedDashboard.components.filter(
-            (comp) => comp.id !== "eventblock"
+            (comp) => comp.id !== "eventblock" || "todolist"
           )
         : selectedDashboard.components;
 
@@ -693,7 +693,10 @@ const Dashboard = () => {
     if (!componentConfig) return false;
 
     // Restrict event component to non-viewer dashboards only
-    if (componentId === "eventblock" && isViewerDashboard) {
+    if (
+      (componentId === "eventblock" || componentId === "todolist") &&
+      isViewerDashboard
+    ) {
       return false;
     }
 
@@ -1044,7 +1047,12 @@ const Dashboard = () => {
             {availableComponents
               .filter(
                 (component) =>
-                  !isViewerDashboard || component.id !== "eventblock"
+                  // Filter out both eventblock and todolist for viewer dashboards
+                  !(
+                    isViewerDashboard &&
+                    (component.id === "eventblock" ||
+                      component.id === "todolist")
+                  )
               )
               .map((component) => {
                 const canAdd = canAddComponent(component.id);

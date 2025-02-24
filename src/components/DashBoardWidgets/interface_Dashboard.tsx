@@ -13,7 +13,7 @@ export interface APIComponent {
     hostId: string;
   };
   todoItems: {
-    id: number;
+    id: string;
     text: string;
     completed: boolean;
   };
@@ -67,7 +67,7 @@ export interface ActiveComponentWithGraph {
 }
 
 export interface TodoItem {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
