@@ -15,6 +15,11 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  Button,
+  DialogActions,
+  DialogContent,
 } from "@mui/material";
 import { IUser } from "../interface/InterfaceCollection";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
@@ -28,11 +33,13 @@ const UserManagement = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
   });
+  const [swapRoleDialogOpen, setSwapRoleDialogOpen] = useState(false);
 
   const roleColors = {
     admin: "red",
@@ -40,9 +47,13 @@ const UserManagement = () => {
     viewer: "blue",
   };
 
+  const getNewRole = (currentRole: string) => {
+    return currentRole === "admin" ? "viewer" : "admin";
+  };
+
   const fetchUsers = async () => {
     try {
-      const response = await fetch( `${import.meta.env.VITE_API_URL}/user`,{
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/user`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -68,14 +79,20 @@ const UserManagement = () => {
     }
   };
 
-  const handleSwapRole = async (user: IUser) => {
+  const handleSwapRoleClick = (user: IUser) => {
+    setSelectedUser(user);
+    setSwapRoleDialogOpen(true);
+  };
+
+  const handleSwapRoleConfirm = async () => {
+    if (!selectedUser) return;
+
     try {
       setLoading(true);
-      const newRole = user.role === "admin" ? "viewer" : "admin";
+      const newRole = getNewRole(selectedUser.role);
 
       const response = await fetch(
-        // `http://localhost:3000/user/editrole/${user._id}`,
-        `${import.meta.env.VITE_API_URL}/user/editrole/${user._id}`,
+        `${import.meta.env.VITE_API_URL}/user/editrole/${selectedUser._id}`,
         {
           method: "PUT",
           headers: {
@@ -92,12 +109,14 @@ const UserManagement = () => {
 
       // Update the local state
       setUsers((prevUsers) =>
-        prevUsers.map((u) => (u._id === user._id ? { ...u, role: newRole } : u))
+        prevUsers.map((u) =>
+          u._id === selectedUser._id ? { ...u, role: newRole } : u
+        )
       );
 
       setSnackbar({
         open: true,
-        message: `Successfully changed ${user.username}'s role to ${newRole}`,
+        message: `Successfully changed ${selectedUser.username}'s role to ${newRole}`,
         severity: "success",
       });
     } catch (error) {
@@ -113,6 +132,8 @@ const UserManagement = () => {
       });
     } finally {
       setLoading(false);
+      setSwapRoleDialogOpen(false);
+      setSelectedUser(null);
     }
   };
 
@@ -236,7 +257,7 @@ const UserManagement = () => {
                 </TableCell>
                 <TableCell sx={{ textAlign: "left" }}>
                   <IconButton
-                    onClick={() => handleSwapRole(user)}
+                    onClick={() => handleSwapRoleClick(user)}
                     disabled={loading || user.role === "superadmin"}
                   >
                     <SwapHorizIcon
@@ -251,6 +272,36 @@ const UserManagement = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Swap Role Dialog */}
+      <Dialog
+        open={swapRoleDialogOpen}
+        onClose={() => setSwapRoleDialogOpen(false)}
+        aria-labelledby="swap-role-dialog-title"
+      >
+        <DialogTitle id="swap-role-dialog-title">Confirm Swap Role</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to swap role of "{selectedUser?.username}" to{" "}
+            {selectedUser ? getNewRole(selectedUser.role) : ""}?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            sx={{ color: "black" }}
+            onClick={() => setSwapRoleDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSwapRoleConfirm}
+            color="primary"
+            variant="contained"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

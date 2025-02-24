@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Typography, Box, Stack } from "@mui/material";
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import HistoryIcon from "@mui/icons-material/History";
 import ErrorIcon from "@mui/icons-material/Error";
 import DnsIcon from "@mui/icons-material/Dns";
 import CottageIcon from "@mui/icons-material/Cottage";
@@ -34,6 +35,7 @@ interface SidebarItem {
   newIcon: string;
   subItems?: SubItem[];
   alternativePaths?: string[]; // Add this new property
+  requiredRole?: "admin" | "superadmin"; // Add role requirement
 }
 
 interface SidebarProps {
@@ -93,10 +95,11 @@ const AdminItems: SidebarItem[] = [
   },
   {
     id: 3,
-    icon: <CloudUploadIcon sx={{ fontSize: 20 }} />,
-    name: "Storage",
-    path: "/storage",
+    icon: <HistoryIcon sx={{ fontSize: 20 }} />,
+    name: "Activity",
+    path: "/activity",
     newIcon: "",
+    requiredRole: "superadmin", // Only superadmin can see this
   },
   {
     id: 4,
@@ -144,11 +147,22 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    if (userRole === "admin" || userRole === "superadmin") {
+
+    if (userRole === "superadmin") {
+      // Superadmin sees all items
       setSidebarItems(
         [...BaseItems, ...AdminItems].sort((a, b) => a.id - b.id)
       );
+    } else if (userRole === "admin") {
+      // Admin sees all items except those requiring superadmin
+      const adminAccessibleItems = AdminItems.filter(
+        (item) => !item.requiredRole || item.requiredRole === "admin"
+      );
+      setSidebarItems(
+        [...BaseItems, ...adminAccessibleItems].sort((a, b) => a.id - b.id)
+      );
     } else {
+      // Other users only see base items
       setSidebarItems(BaseItems);
     }
   }, []);

@@ -27,13 +27,7 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
-const StorageComponent = () => {
-  // const [showStorage, setShowStorage] = useState(false);
-
-  // const handleClick = () => {
-  //   setShowStorage(!showStorage);
-  // };
-
+const ActivityComponent = () => {
   return (
     <Container maxWidth={false}>
       <TableContainer
@@ -96,4 +90,4 @@ const StorageComponent = () => {
   );
 };
 
-export default StorageComponent;
+export default ActivityComponent;

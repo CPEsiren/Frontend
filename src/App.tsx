@@ -10,7 +10,7 @@ import { ThemeConfig } from "./config/ThemeConfig";
 import "./App.css";
 import Dashboard from "./pages/Dashboard";
 import Graphs from "./pages/Graphs";
-import Storage from "./pages/Storage";
+import Activity from "./pages/Activity";
 import Management from "./pages/Management";
 import ContactUs from "./pages/ContactUs";
 import Devices from "./pages/Devices";
@@ -127,10 +127,10 @@ const App = () => {
               }
             />
             <Route
-              path="/storage"
+              path="/activity"
               element={
                 <RoleBasedRoute
-                  element={<Storage />}
+                  element={<Activity />}
                   allowedRoles={["admin", "superadmin"]}
                 />
               }

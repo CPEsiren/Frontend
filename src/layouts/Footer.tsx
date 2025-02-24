@@ -58,28 +58,32 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     const loggedInUserId = localStorage.getItem("user_id");
     if (loggedInUserId) {
       try {
-        const response = await axios.get( `${import.meta.env.VITE_API_URL}/user`,{
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const userData = response.data.users.find((user: IUser) => user._id === loggedInUserId);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/user`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const userData = response.data.users.find(
+          (user: IUser) => user._id === loggedInUserId
+        );
         if (userData) {
-      
-          const firstNameOnly = userData.username.split(" ")[0]; 
+          const firstNameOnly = userData.username.split(" ")[0];
           setUser({ username: firstNameOnly, picture: userData.picture });
         } else {
           console.warn("User not found in the response.");
-          setUser({ username: "Guest", picture: undefined }); 
+          setUser({ username: "Guest", picture: undefined });
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
-    } 
+    }
   };
-  
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role === "admin" || role === "superadmin") {
@@ -98,11 +102,12 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         alignItems: "center",
         marginTop: "auto",
         px: 0,
-        pb: 2,
+        pb: 0,
         whiteSpace: "nowrap",
       }}
     >
       <Button
+        disabled={!isAdmin}
         onClick={handleclick}
         sx={{
           ml: isHideSidebar ? 0 : 1,
@@ -113,6 +118,10 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             outline: "none",
             border: "none",
           },
+          "&.Mui-disabled": {
+            // Corrected selector
+            color: "black",
+          },
         }}
       >
         <Avatar
@@ -122,7 +131,7 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             height: "30px",
             cursor: isAdmin ? "pointer" : "default",
           }}
-          src={user.picture || "default-profile-image-url"} 
+          src={user.picture || "default-profile-image-url"}
           alt="Profile Picture"
           onClick={isAdmin ? handleOpenSignout : undefined}
         />
@@ -133,12 +142,19 @@ export default function Footer({ isHideSidebar }: FooterProps) {
         )}
       </Button>
 
-      <Popper open={openSignout} anchorEl={anchorRef.current} placement="right" transition disablePortal>
+      <Popper
+        open={openSignout}
+        anchorEl={anchorRef.current}
+        placement="right"
+        transition
+        disablePortal
+      >
         {({ TransitionProps, placement }) => (
           <Grow
             {...TransitionProps}
             style={{
-              transformOrigin: placement === "bottom-start" ? "left top" : "left bottom",
+              transformOrigin:
+                placement === "bottom-start" ? "left top" : "left bottom",
             }}
           >
             <Paper>

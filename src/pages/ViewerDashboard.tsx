@@ -25,19 +25,15 @@ interface DashboardLayout {
 }
 
 interface GraphSelection {
-  graphName: string;
+  itemId: string;
+  hostId: string;
 }
 
-interface ActiveComponentWithGraph extends ActiveComponent {
-  graphSelection?: GraphSelection;
-}
-
-interface ActiveComponent {
+interface ActiveComponentWithGraph {
   id: string;
   position: number;
-  graphSelection?: {
-    graphName: string;
-  };
+  componentType?: string;
+  graphSelection?: GraphSelection;
 }
 
 interface APIDashboard {
@@ -56,7 +52,10 @@ interface APIComponent {
   id: string;
   position: number;
   componentType: string;
-  settings: Record<string, any>;
+  graphSelection?: {
+    itemId: string;
+    hostId: string;
+  };
   _id: string;
 }
 
@@ -70,10 +69,7 @@ interface ComponentProps {
   graphSelection?: GraphSelection;
 }
 
-const availableComponents: Record<
-  string,
-  React.ComponentType<ComponentProps>
-> = {
+const availableComponents: Record<string, React.ComponentType<ComponentProps>> = {
   digitalClock: DigitalClock,
   analogClock: AnalogClock,
   table: TableComponent,
@@ -82,13 +78,20 @@ const availableComponents: Record<
   eventblock: EventBlock,
 };
 
+const defaultGridSizes = {
+  digitalClock: { xs: 12, md: 4 },
+  analogClock: { xs: 12, md: 4 },
+  table: { xs: 12, md: 6 },
+  graph: { xs: 12, md: 6 },
+  calendar: { xs: 12, md: 4 },
+  eventblock: { xs: 12, md: 6 },
+};
+
 const ViewerDashboard = () => {
   const windowSize = useWindowSize();
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
-  const [activeComponents, setActiveComponents] = useState<
-    ActiveComponentWithGraph[]
-  >([]);
+  const [activeComponents, setActiveComponents] = useState<ActiveComponentWithGraph[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<SnackbarState>({
@@ -123,7 +126,8 @@ const ViewerDashboard = () => {
               components: dashboard.components.map((comp: APIComponent) => ({
                 id: comp.componentType,
                 position: comp.position,
-                ...(comp.settings || {}),
+                componentType: comp.componentType,
+                graphSelection: comp.componentType === "graph" ? comp.graphSelection : undefined,
               })),
             })
           );
@@ -136,6 +140,7 @@ const ViewerDashboard = () => {
           }
         }
       } catch (err) {
+        console.error("Error fetching dashboards:", err);
         setError(
           err instanceof Error ? err.message : "Failed to fetch dashboards"
         );
@@ -165,6 +170,10 @@ const ViewerDashboard = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+  const getGridSize = (componentId: string) => {
+    return defaultGridSizes[componentId as keyof typeof defaultGridSizes] || { xs: 12, md: 6 };
+  };
+
   const renderComponent = (component: ActiveComponentWithGraph) => {
     const Component = availableComponents[component.id];
 
@@ -181,9 +190,12 @@ const ViewerDashboard = () => {
           borderRadius: 2,
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           overflow: "hidden",
+          p: 2,
         }}
       >
-        <Component graphSelection={component.graphSelection} />
+        <Component 
+          graphSelection={component.graphSelection}
+        />
       </Box>
     );
   };
@@ -199,6 +211,21 @@ const ViewerDashboard = () => {
         }}
       >
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Typography color="error">{error}</Typography>
       </Box>
     );
   }
@@ -257,16 +284,18 @@ const ViewerDashboard = () => {
         }}
       >
         <Grid container spacing={2}>
-          {activeComponents.map((component, index) => (
-            <Grid
-              item
-              key={`${component.id}-${index}`}
-              xs={12}
-              md={component.id === "graph" ? 6 : 4}
-            >
-              {renderComponent(component)}
-            </Grid>
-          ))}
+          {activeComponents.map((component, index) => {
+            const gridSize = getGridSize(component.id);
+            return (
+              <Grid
+                item
+                key={`${component.id}-${index}`}
+                {...gridSize}
+              >
+                {renderComponent(component)}
+              </Grid>
+            );
+          })}
         </Grid>
       </Box>
 

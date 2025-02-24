@@ -1,9 +1,3 @@
-interface DashboardLayout {
-  id: string;
-  name: string;
-  components: ActiveComponentWithGraph[];
-}
-
 import React, { useState, useEffect } from "react";
 import {
   Typography,
@@ -44,6 +38,12 @@ import AccessTimeFilledIcon from "@mui/icons-material/AccessTimeFilled";
 import DraggableDashboard from "../components/DraggableDashboard";
 import { SelectChangeEvent } from "@mui/material";
 import GraphSelectionDialog from "../components/DashBoardWidgets/GraphSelectionDialog";
+
+interface DashboardLayout {
+  id: string;
+  name: string;
+  components: ActiveComponentWithGraph[];
+}
 
 // API response interfaces
 interface APIComponent {
@@ -180,12 +180,15 @@ const Dashboard = () => {
   const [isViewerDashboard, setIsViewerDashboard] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
 
-const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: boolean) => {
-  setCurrentDashboardId(dashboard.id);
-  setActiveComponents(dashboard.components);
-  setIsViewerDashboard(isViewer);
-  setSelectOpen(false);
-};
+  const handleDashboardMenuItemClick = (
+    dashboard: DashboardLayout,
+    isViewer: boolean
+  ) => {
+    setCurrentDashboardId(dashboard.id);
+    setActiveComponents(dashboard.components);
+    setIsViewerDashboard(isViewer);
+    setSelectOpen(false);
+  };
 
   useEffect(() => {
     const fetchDashboards = async () => {
@@ -379,27 +382,34 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
 
   const handleDashboardChange = (event: SelectChangeEvent<string>) => {
     const selectedId = event.target.value;
-  
+
     // If the target is the "New Dashboard" option, handle it separately
     if (selectedId === "new") {
       handleAddDashboard();
-      setSelectOpen(false); // Close the select menu
+      setSelectOpen(false);
       return;
     }
-  
+
     // Find the selected dashboard from either user or viewer dashboards
     const selectedViewerDashboard = viewerDashboards.find(
       (d) => d.id === selectedId
     );
     const selectedUserDashboard = dashboards.find((d) => d.id === selectedId);
     const selectedDashboard = selectedViewerDashboard || selectedUserDashboard;
-  
+
     if (selectedDashboard) {
       setCurrentDashboardId(selectedId);
-      setActiveComponents(selectedDashboard.components);
+      // Filter out event components if switching to viewer dashboard
+      const filteredComponents = selectedViewerDashboard
+        ? selectedDashboard.components.filter(
+            (comp) => comp.id !== "eventblock"
+          )
+        : selectedDashboard.components;
+
+      setActiveComponents(filteredComponents);
       setIsViewerDashboard(!!selectedViewerDashboard);
-      setIsEditing(false); // Exit edit mode when switching dashboards
-      setSelectOpen(false); // Close the select menu
+      setIsEditing(false);
+      setSelectOpen(false);
     }
   };
 
@@ -711,6 +721,11 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
     );
     if (!componentConfig) return false;
 
+    // Restrict event component to non-viewer dashboards only
+    if (componentId === "eventblock" && isViewerDashboard) {
+      return false;
+    }
+
     if (componentConfig.allowMultiple) return true;
 
     return !activeComponents.some((comp) => comp.id === componentId);
@@ -743,7 +758,7 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
 
     return (
       <Box sx={{ position: "relative", height: "100%" }}>
-        {isEditing && (
+        {isEditing && !isViewerDashboard && (
           <IconButton
             size="small"
             onClick={() => handleRemoveComponent(activeComp.position)}
@@ -758,9 +773,7 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
             <RemoveIcon />
           </IconButton>
         )}
-        <Component
-          graphSelection={activeComp.graphSelection} // This will pass both itemId and hostId
-        />
+        <Component graphSelection={activeComp.graphSelection} />
       </Box>
     );
   };
@@ -803,30 +816,28 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
                   </IconButton>
                 </Tooltip>
               )}
-
-              {isEditing &&
-                (!isViewerDashboard || (isViewerDashboard && isSuperAdmin)) && (
-                  <Tooltip title="Delete Dashboard">
-                    <IconButton
-                      onClick={handleDeleteDashboard}
-                      sx={{
-                        color: "red",
-                        "&:focus": {
-                          outline: "none",
-                          border: "none",
-                        },
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
+              {isEditing && !isViewerDashboard && (
+                <Tooltip title="Delete Dashboard">
+                  <IconButton
+                    onClick={handleDeleteDashboard}
+                    sx={{
+                      color: "red",
+                      "&:focus": {
+                        outline: "none",
+                        border: "none",
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
 
               {!isEditing && (
                 <>
                   {(dashboards.length > 0 ||
                     (isSuperAdmin && viewerDashboards.length > 0)) && (
-                      <Select
+                    <Select
                       value={currentDashboardId}
                       onChange={handleDashboardChange}
                       open={selectOpen}
@@ -870,7 +881,7 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
                           ))}
                         </>
                       )}
-                    
+
                       {isSuperAdmin && viewerDashboards.length > 0 && (
                         <>
                           {dashboards.length > 0 && <MenuItem divider />}
@@ -889,7 +900,7 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
                           ))}
                         </>
                       )}
-                    
+
                       {!isViewerDashboard && dashboards.length < 3 && (
                         <>
                           <MenuItem divider />
@@ -987,42 +998,44 @@ const handleDashboardMenuItemClick = (dashboard: DashboardLayout, isViewer: bool
       </Box>
 
       {/* Add Component Dialog */}
-      <Dialog
-        open={componentDialog}
-        onClose={() => setComponentDialog(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>Add Component</DialogTitle>
-        <DialogContent>
-          <List>
-            {availableComponents.map((component) => {
-              const canAdd = canAddComponent(component.id);
-              return (
-                <ListItem
-                  key={component.id}
-                  onClick={() => canAdd && handleAddComponent(component.id)}
-                  component="div"
-                  sx={{
-                    cursor: canAdd ? "pointer" : "not-allowed",
-                    opacity: canAdd ? 1 : 0.5,
-                    "&:hover": {
-                      backgroundColor: canAdd ? "action.hover" : undefined,
-                    },
-                    pointerEvents: canAdd ? "auto" : "none",
-                  }}
-                >
-                  <ListItemIcon>{component.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={component.name}
-                    secondary={!canAdd ? "Already added" : undefined}
-                  />
-                </ListItem>
-              );
-            })}
-          </List>
-        </DialogContent>
-      </Dialog>
+<Dialog
+  open={componentDialog}
+  onClose={() => setComponentDialog(false)}
+  maxWidth="xs"
+  fullWidth
+>
+  <DialogTitle>Add Component</DialogTitle>
+  <DialogContent>
+    <List>
+      {availableComponents
+        .filter(component => !isViewerDashboard || component.id !== "eventblock")
+        .map((component) => {
+          const canAdd = canAddComponent(component.id);
+          return (
+            <ListItem
+              key={component.id}
+              onClick={() => canAdd && handleAddComponent(component.id)}
+              component="div"
+              sx={{
+                cursor: canAdd ? "pointer" : "not-allowed",
+                opacity: canAdd ? 1 : 0.5,
+                "&:hover": {
+                  backgroundColor: canAdd ? "action.hover" : undefined,
+                },
+                pointerEvents: canAdd ? "auto" : "none",
+              }}
+            >
+              <ListItemIcon>{component.icon}</ListItemIcon>
+              <ListItemText
+                primary={component.name}
+                secondary={!canAdd ? "Already added" : undefined}
+              />
+            </ListItem>
+          );
+        })}
+    </List>
+  </DialogContent>
+</Dialog>
 
       {/* Snackbar for notifications */}
       <Snackbar

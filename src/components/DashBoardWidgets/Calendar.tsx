@@ -1,33 +1,34 @@
 import React, { useState } from "react";
-import { Box, Typography, IconButton, Button } from "@mui/material";
+import { Box, Typography, IconButton } from "@mui/material";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
 } from "@mui/icons-material";
 
-// Types for our custom components
+// Types for our components
 interface DayCellProps {
   date: Date;
   isToday: boolean;
-  isSelected: boolean;
   isCurrentMonth: boolean;
-  onClick: () => void;
 }
 
-// Styled components moved to component-specific sx props
-const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+interface CalendarDay {
+  date: Date;
+  isCurrentMonth: boolean;
+}
 
-  const daysInMonth = (date: Date) => {
+const Calendar = () => {
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+
+  const daysInMonth = (date: Date): number => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
-  const firstDayOfMonth = (date: Date) => {
+  const firstDayOfMonth = (date: Date): number => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
 
-  const isToday = (date: Date) => {
+  const isToday = (date: Date): boolean => {
     const today = new Date();
     return (
       date.getDate() === today.getDate() &&
@@ -48,19 +49,9 @@ const Calendar = () => {
     );
   };
 
-  const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-  };
-
-  const handleNowClick = () => {
-    const now = new Date();
-    setCurrentDate(now);
-    setSelectedDate(now);
-  };
-
   // Generate calendar days
-  const generateCalendarDays = () => {
-    const days = [];
+  const generateCalendarDays = (): CalendarDay[] => {
+    const days: CalendarDay[] = [];
     const totalDays = daysInMonth(currentDate);
     const firstDay = firstDayOfMonth(currentDate);
 
@@ -103,36 +94,29 @@ const Calendar = () => {
 
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // Separate DayCell component
+  // DayCell component
   const DayCell: React.FC<DayCellProps> = ({
     date,
     isToday,
-    isSelected,
     isCurrentMonth,
-    onClick,
   }) => {
     return (
       <Box
-        onClick={onClick}
         sx={{
           p: 0,
           borderRadius: "50%",
-          cursor: "pointer",
-          backgroundColor: isSelected && !isToday
-            ? "primary.main"
-            : isToday
-            ? "blue"
+          backgroundColor: isToday
+            ? isCurrentMonth
+              ? "blue"
+              : "rgba(0, 64, 255, 0.37)"
             : "transparent",
-          color: isSelected && !isToday
-            ? "primary.contrastText"
+          color: !isCurrentMonth
+            ? isToday
+              ? "white"
+              : "text.disabled"
             : isToday
             ? "white"
-            : !isCurrentMonth
-            ? "text.disabled"
             : "text.primary",
-          "&:hover": {
-            backgroundColor: !isToday ? "#E2E3E6" : "blue",
-          },
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -140,7 +124,7 @@ const Calendar = () => {
           width: "20px",
           margin: "auto",
           fontSize: "0.65rem",
-          fontWeight: isToday ? "bold" : "normal",
+          fontWeight: isToday ? (isCurrentMonth ? "bold" : "normal") : "normal",
         }}
       >
         {date.getDate()}
@@ -148,8 +132,18 @@ const Calendar = () => {
     );
   };
 
+  // Split the date into month and year for different styling
+  const month = currentDate.toLocaleDateString("en-US", { month: "short" });
+  const year = currentDate.getFullYear();
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box
+      sx={{
+        p: 3,
+        borderRadius: 1.8,
+        minHeight: "80%",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -159,55 +153,64 @@ const Calendar = () => {
           mb: 0.5,
         }}
       >
-        <IconButton size="small" onClick={handlePrevMonth} sx={{ p: 0.25 }}>
-          <ChevronLeftIcon sx={{ fontSize: "1rem" }} />
-        </IconButton>
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 0.5,
             fontSize: "0.75rem",
+            width: 1,
           }}
         >
-          <Typography
-            sx={{ fontSize: "0.85rem", fontWeight: "bold", color: "#535353" }}
-          >
-            {currentDate.toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </Typography>
-          <Button
-            variant="outlined"
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
+            <Typography
+              sx={{ fontSize: "0.9rem", fontWeight: 700, color: "#535353" }}
+            >
+              {month}
+            </Typography>
+            <Typography
+              sx={{ fontSize: "0.9rem", fontWeight: 400, color: "#535353" }}
+            >
+              {year}
+            </Typography>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex" }}>
+          <IconButton
             size="small"
-            onClick={handleNowClick}
+            onClick={handlePrevMonth}
             sx={{
-              ml: 0.25,
-              color: "blue",
-              padding: "0px 4px",
-              minWidth: "30px",
-              height: "20px",
-              fontSize: "0.65rem",
-              lineHeight: 1,
-              "& .MuiButton-startIcon": {
-                margin: 0,
+              p: 0.25,
+              bgcolor: "rgba(0, 4, 255, 0.12)",
+              mr: 1,
+              "&:hover": {
+                bgcolor: "rgba(0, 4, 255, 0.12)",
               },
             }}
           >
-            Now
-          </Button>
+            <ChevronLeftIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={handleNextMonth}
+            sx={{
+              p: 0.25,
+              bgcolor: "rgba(0, 4, 255, 0.12)",
+              "&:hover": {
+                bgcolor: "rgba(0, 4, 255, 0.12)",
+              },
+            }}
+          >
+            <ChevronRightIcon sx={{ fontSize: "1rem" }} />
+          </IconButton>
         </Box>
-        <IconButton size="small" onClick={handleNextMonth} sx={{ p: 0.25 }}>
-          <ChevronRightIcon sx={{ fontSize: "1rem" }} />
-        </IconButton>
       </Box>
 
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(7, 1fr)",
-          gap: 0.25,
+          gap: 0.3,
           textAlign: "center",
         }}
       >
@@ -215,12 +218,13 @@ const Calendar = () => {
           <Typography
             key={day}
             sx={{
-              fontWeight: "bold",
+              fontWeight: 600,
               color: "text.secondary",
-              fontSize: "0.65rem",
+              fontSize: "0.8rem",
+              my:1
             }}
           >
-            {day.slice(0, 1)}
+            {day}
           </Typography>
         ))}
         {generateCalendarDays().map(({ date, isCurrentMonth }, index) => (
@@ -228,9 +232,7 @@ const Calendar = () => {
             key={index}
             date={date}
             isToday={isToday(date)}
-            isSelected={date.getTime() === selectedDate.getTime()}
             isCurrentMonth={isCurrentMonth}
-            onClick={() => handleDateClick(date)}
           />
         ))}
       </Box>
