@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Typography, TextField, Paper } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  Paper,
+  MenuItem,
+} from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
 import Table from "@mui/material/Table";
@@ -288,14 +295,18 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
                               }
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ width: "15%" }}>
                             <TextField
                               {...textFieldProps}
+                              select
                               value={row.type}
                               onChange={(e) =>
                                 handleItemChange(row.id, "type", e.target.value)
                               }
-                            />
+                            >
+                              <MenuItem value={"integer"}>Integer</MenuItem>
+                              <MenuItem value={"counter"}>Counter</MenuItem>
+                            </TextField>
                           </TableCell>
                           <TableCell>
                             <TextField
@@ -343,7 +354,7 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
               justifyContent: "flex-end",
               gap: 2,
               mt: 2,
-              mb:1
+              mb: 1,
             }}
           >
             <Button

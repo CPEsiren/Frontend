@@ -1,7 +1,32 @@
-import { Grid, Typography, Box } from "@mui/material";
-import AddBoxIcon from "@mui/icons-material/AddBox";
-import StorageIcon from "@mui/icons-material/Storage";
-
+import {
+  Grid,
+  Typography,
+  Box,
+  Alert,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormHelperText,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+} from "@mui/material";
 const StorageComponent = () => {
   // const [showStorage, setShowStorage] = useState(false);
 
@@ -10,38 +35,64 @@ const StorageComponent = () => {
   // };
 
   return (
-    <>
-      <Grid
-        item
+    <Container maxWidth={false}>
+      <TableContainer
+        component={Paper}
+        elevation={0}
         sx={{
-          display: "flex",
-          justifyItems: "flex-start",
-          alignItems: "start",
-          width: "100%",
-          mt: 2,
-          //cursor: "pointer", // Add cursor pointer for click interaction
+          backgroundColor: "transparent",
+          // mt: 2,
         }}
-        //onClick={handleClick} // Toggle visibility on click
       >
-        <AddBoxIcon sx={{ backgroundColor: "black", color: "white", ml: 2 }} />
-        <Typography sx={{ ml: 2, mb: 1, fontSize: "18px" }}>
-          Aiven cloud
-        </Typography>
-      </Grid>
-      
-        <Box
+        <Table
           sx={{
-            display: "flex",
-            mt: 2,
-            mb: 1,
+            // minWidth: 650,
+            width: 1,
+            "& .MuiTableCell-root": {
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              padding: "16px",
+            },
+            "& .MuiTableRow-root:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+            },
           }}
         >
-          <StorageIcon sx={{ ml: 6 }} />
-          <Typography sx={{ ml: 2, alignItems: "start" }}>
-            cpesiren-cmu-dsng.h.aivencloud.com
-          </Typography>
-        </Box>
-    </>
+          {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
+            <TableRow>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Timestamp
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  User's role
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Activity
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow hover>
+              <TableCell>
+                <Typography variant="body2">12:00</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2">admin</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2">activity</Typography>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
 
