@@ -92,9 +92,9 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
                 timestamp: entry.timestamp,
                 value: Number(entry.value),
               })),
-              avg_value: Number(selectedItemData.avg_value) || 0,
-              max_value: Number(selectedItemData.max_value) || 0,
-              min_value: Number(selectedItemData.min_value) || 0,
+              avg_value: selectedItemData.avg_value,
+              max_value: selectedItemData.max_value,
+              min_value: selectedItemData.min_value,
             };
 
             setGraphData(transformedData);
