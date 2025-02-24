@@ -74,29 +74,40 @@ const PublicRoute = ({ children }: any) => {
 };
 
 const App = () => {
-  
   useEffect(() => {
     const checkTokenExpiry = () => {
       const token = localStorage.getItem("token");
       const tokenTimestamp = localStorage.getItem("tokenTimestamp");
-  
+
       if (token && tokenTimestamp) {
         const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
-  
-        if (elapsedTime >= 20 * 60 * 1000) { 
+
+        // Check if token has expired ( minutes)
+        if (elapsedTime >= 60 * 60 * 1000) {
           console.log("Token expired. Redirecting to login...");
           localStorage.clear();
-          window.location.href = "/"; 
+          window.location.href = "/";
         }
+      } else if (token && !tokenTimestamp) {
+        // If there's a token but no timestamp, set one now
+        localStorage.setItem("tokenTimestamp", Date.now().toString());
+      } else if (!token && localStorage.getItem("isAuthenticated") === "true") {
+        // If authenticated but no token, log out
+        console.log("No token found but authenticated. Logging out...");
+        localStorage.clear();
+        window.location.href = "/";
       }
     };
-  
+
+    // Run the check immediately when component mounts
     checkTokenExpiry();
-    const interval = setInterval(checkTokenExpiry, 10 * 1000); 
-  
+
+    // Set up interval to check regularly
+    const interval = setInterval(checkTokenExpiry, 30 * 1000); // Check every 30 seconds
+
+    // Clean up interval on component unmount
     return () => clearInterval(interval);
   }, []);
-  
 
   return (
     <ThemeProvider theme={ThemeConfig}>
