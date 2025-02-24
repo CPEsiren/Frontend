@@ -8,6 +8,7 @@ export interface IDevice {
   hostgroup: string;
   details: { [key: string]: string };
   items: Item[];
+  interfaces: IInterface[];
   status: number;
 }
 
@@ -17,15 +18,16 @@ export interface Item {
   oid: string;
   type: string;
   unit: string;
+  interval: number;
 }
 
 export interface IInterface {
-  ImacAddress: string;
-  Intname: string | null;
-  ipAddress: string | null;
-  speed: number;
-  status: boolean;
-  DMACaddress: string;
+  _id: string;
+  interface_name: string;
+  interface_type: string;
+  interface_speed: string;
+  interface_Adminstatus: string;
+  interface_Operstatus: string;
 }
 
 export interface IAlert {
@@ -40,13 +42,16 @@ export interface IAlert {
 }
 
 export interface IUser {
-  id: number;
+  _id: number;
   firstName: string;
   lastName: string;
   email: string;
   isAdmin: boolean;
-  password: string;
-  role: string;
+  username: string;
+  role: "superadmin" | "admin" | "viewer";
+  phone: string;
+  isActive: boolean;
+  picture?: string;
 }
 
 export interface IGraph {
@@ -54,15 +59,6 @@ export interface IGraph {
   DMACaddress: string;
   name: string | null;
   detail: string | null;
-}
-
-export interface ITrigger {
-  trigger_name: string;
-  enabled: boolean;
-  severity: string;
-  valuetrigger: number;
-  comparisonOperator: string;
-  createAt: string;
 }
 
 export interface DataEntry {
@@ -75,9 +71,50 @@ export interface ITrigger {
   _id: string;
   trigger_name: string;
   host_id: string;
-  hostname?: string;
   severity: string;
-  valuetrigger: number;
-  ComparisonOperator: string;
-  createdAt: string;
+  expression: string;
+  logicExpression: string[];
+  isExpressionValid: boolean;
+  items: [string, string][];
+  ok_event_generation: string;
+  recovery_expression: string;
+  logicRecoveryExpression: string[];
+  isRecoveryExpressionValid: boolean;
   enabled: boolean;
+  createdAt: string;
+  expressionPart: {
+    item: string;
+    operation: string;
+    value: string;
+    operator: string;
+    functionofItem: string;
+    duration: number;
+  }[];
+  expressionRecoveryPart: {
+    item: string;
+    operation: string;
+    value: string;
+    operator: string;
+    functionofItem: string;
+    duration: number;
+  }[];
+}
+
+export interface IEvent {
+  _id: string;
+  severity: string;
+  hostname: string;
+  status: string;
+  message: string;
+  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface ITemplate {
+  _id: string;
+  template_name: string;
+  description: string;
+  items: Item[];
+}

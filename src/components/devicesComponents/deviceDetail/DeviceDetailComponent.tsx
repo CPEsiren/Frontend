@@ -11,7 +11,7 @@ const DeviceDetailComponent = ({ deviceData }: { deviceData: IDevice }) => {
         <Typography variant="h6" fontWeight={600} gutterBottom>
           Basic Information
         </Typography>
-        <Typography>Hostname: {deviceData.hostname}</Typography>
+        <Typography>Device's name: {deviceData.hostname}</Typography>
         <Typography>IP Address: {deviceData.ip_address}</Typography>
         <Typography>Host Group: {deviceData.hostgroup}</Typography>
         <Typography>SNMP Version: {deviceData.snmp_version}</Typography>

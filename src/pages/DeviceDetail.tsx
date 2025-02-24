@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
-import { Box, Typography, Divider, Button } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Divider,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
 import { getDeviceData } from "../api/DeviceDetailApi";
 import DeviceDetailComponent from "../components/devicesComponents/deviceDetail/DeviceDetailComponent"; // Updated import
-import DeviceInterfaceComponent from "../components/devicesComponents/deviceDetail/DeviceInterfaceComponent";
+import DeviceItemComponent from "../components/devicesComponents/deviceDetail/DeviceItemComponent";
 import useWindowSize from "../hooks/useWindowSize";
+import DeviceInterfaceComponent from "../components/devicesComponents/deviceDetail/DeviceInterfaceComponent";
+import AddItemOnly from "../components/Modals/AddItemOnly";
 
 const DeviceDetailPage = () => {
   const windowSize = useWindowSize();
@@ -15,6 +25,44 @@ const DeviceDetailPage = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const toggleModal = () => {
+    setModalOpen(!isModalOpen);
+  };
+
+  const refreshDeviceData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/host/${deviceData?._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch device data");
+      }
+      const result = await response.json();
+      if (result.status === "success") {
+        setDeviceData(result.data);
+      }
+    } catch (error) {
+      console.error("Error refreshing device data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    refreshDeviceData(); // Refresh data after modal closes
+  };
 
   useEffect(() => {
     if (!deviceData) {
@@ -103,9 +151,7 @@ const DeviceDetailPage = () => {
         >
           <DeviceDetailComponent deviceData={deviceData} />
         </Box>
-
-        <Divider sx={{ marginTop: 3, marginBottom: 3 }} />
-
+        <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
         <Box
           sx={{
             width: 1,
@@ -121,10 +167,11 @@ const DeviceDetailPage = () => {
             fontWeight={600}
             color={"#242D5D"}
           >
-            INTERFACE
+            INTERFACES
           </Typography>
-          <Button
+          {/* <Button
             type="submit"
+            onClick={handleClick}
             sx={{
               color: "#FFFFFB",
               backgroundColor: "#F25A28",
@@ -143,6 +190,68 @@ const DeviceDetailPage = () => {
             }}
           >
             Graph
+          </Button> */}
+        </Box>
+
+        <Box
+          sx={{
+            backgroundColor: "#FFFFFB",
+            flex: 1,
+            display: "flex",
+            borderRadius: 8,
+            flexDirection: "column",
+            justifyContent: windowSize.width >= 1100 ? "center" : "start",
+            alignItems: "center",
+            minHeight: "fit-content",
+            marginBottom: 5,
+            padding: 3,
+            py: 3,
+          }}
+        >
+          {deviceData && (
+            <DeviceInterfaceComponent interfaces={deviceData.interfaces} />
+          )}
+        </Box>
+        <Divider sx={{ marginTop: 0, marginBottom: 3 }} />
+
+        <Box
+          sx={{
+            width: 1,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 3,
+          }}
+        >
+          <Typography
+            variant="h4"
+            component="h1"
+            fontWeight={600}
+            color={"#242D5D"}
+          >
+            ITEMS
+          </Typography>
+          <Button
+            type="submit"
+            onClick={toggleModal}
+            sx={{
+              color: "#FFFFFB",
+              backgroundColor: "blue",
+              fontSize: "1rem",
+              fontWeight: 600,
+              borderRadius: "70px",
+              width: "6rem",
+              height: "2.5rem",
+              "&:focus": {
+                outline: "none",
+                color: "#FFFFFB",
+              },
+              "&:hover": {
+                backgroundColor: "#F37E58",
+              },
+            }}
+          >
+            Add Item
           </Button>
         </Box>
 
@@ -161,9 +270,32 @@ const DeviceDetailPage = () => {
             py: 3,
           }}
         >
-          {deviceData && <DeviceInterfaceComponent items={deviceData.items} />}
+          {deviceData && <DeviceItemComponent deviceData={deviceData} />}
         </Box>
       </Box>
+
+      <Dialog
+        open={isModalOpen}
+        onClose={handleModalClose}
+        fullWidth
+        maxWidth="lg"
+      >
+        <DialogTitle
+          sx={{
+            borderBottom: 0,
+            borderColor: "#a9a9a9",
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
+            New Item
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <AddItemOnly onClose={handleModalClose} deviceId={deviceData._id} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

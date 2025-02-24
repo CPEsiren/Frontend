@@ -1,6 +1,6 @@
 import useWindowSize from "../hooks/useWindowSize";
 import { Box, Typography } from "@mui/material";
-import StorageComponent from "../components/StorageComponent";
+import ActivityComponent from "../components/ActivityComponent";
 
 const Storage = () => {
   const windowSize = useWindowSize();
@@ -44,11 +44,7 @@ const Storage = () => {
             justifyContent: "flex-start",
             alignItems: "flex-start",
             minHeight: "fit-content",
-            // marginBottom: 5,
-            // height: 1,
             py: 3,
-            // pt: windowSize.width >= 1100 ? "15vh" : "0vh",
-            // pb: "15vh",
             px: 3,
           }}
         >
@@ -64,7 +60,7 @@ const Storage = () => {
               }}
             ></Typography>
           )}
-          <StorageComponent />
+          <ActivityComponent />
         </Box>
       </Box>
     </>

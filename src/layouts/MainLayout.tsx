@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Stack, Box, Typography } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import Header from "./Header";
 import Footer from "./Footer";
 import Sidebar from "./Sidebar";
-import MobileLayout from "./mobilelayout/MobileLayout";
+// import MobileLayout from "./mobilelayout/MobileLayout";
 
 export const getPageName = (pathname: string): string => {
   const pageName = [
     "Dashboard",
+    "Account",
     "Devices",
     "Graphs",
     "Storages",
@@ -23,11 +24,13 @@ export const getPageName = (pathname: string): string => {
     : pageName.find((i) => pathname.includes(i.toLowerCase())) ?? "Dashboard";
 };
 
-export default function MainLayout() {
+interface MainLayoutProps {
+  children: ReactNode;  // Explicitly type children as ReactNode
+}
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const windowSize = useWindowSize();
   const [isHideSidebar, setIsHideSidebar] = useState(false);
 
-  // Function to toggle sidebar visibility
   const handleHideSidebar = (width: number) => {
     if (width >= 1100) setIsHideSidebar((state) => !state);
   };
@@ -59,16 +62,17 @@ export default function MainLayout() {
             isHideSidebar={isHideSidebar}
             handleHideSidebar={handleHideSidebar}
           />
-          {/* Pass both isHideSidebar and handleHideSidebar to Sidebar */}
           <Sidebar
             isHideSidebar={isHideSidebar}
             toggleSidebar={() => setIsHideSidebar(!isHideSidebar)}
           />
           <Footer isHideSidebar={isHideSidebar} />
         </Stack>
-      ) : (
-        <MobileLayout />
-      )}
+      ) 
+      : (
+         <></>
+      )
+    }
       <Box
         sx={{
           flex: 1,
@@ -92,9 +96,10 @@ export default function MainLayout() {
             mx: "auto",
           }}
         >
-          <Outlet />
+          <Outlet /> 
         </Box>
       </Box>
     </Stack>
   );
 }
+export default MainLayout;

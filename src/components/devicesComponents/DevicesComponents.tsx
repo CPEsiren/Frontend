@@ -9,19 +9,19 @@ interface DevicesComponentsProps {
 
 const DevicesComponents: React.FC<DevicesComponentsProps> = ({ devices }) => {
   const groupedDevices = devices.reduce((acc, device) => {
-    const location = device.details?.location || "Unknown Location";
-    if (!acc[location]) {
-      acc[location] = [];
+    const hostgroup = device.hostgroup || "Unknown Host group";
+    if (!acc[hostgroup]) {
+      acc[hostgroup] = [];
     }
-    acc[location].push(device);
+    acc[hostgroup].push(device);
     return acc;
   }, {} as Record<string, IDevice[]>);
 
   return (
     <>
-      {Object.entries(groupedDevices).map(([location, devices]) => (
+      {Object.entries(groupedDevices).map(([hostgroup, devices]) => (
         <Card
-          key={location}
+          key={hostgroup}
           sx={{
             bgcolor: "#FFFFFB",
             borderRadius: 3,
@@ -38,7 +38,7 @@ const DevicesComponents: React.FC<DevicesComponentsProps> = ({ devices }) => {
             color={"#21248B"}
             sx={{ alignSelf: "flex-start", paddingBottom: 2 }}
           >
-            {location || "Default Location"}
+            {hostgroup || "Default Host group"}
           </Typography>
           <Box
             sx={{

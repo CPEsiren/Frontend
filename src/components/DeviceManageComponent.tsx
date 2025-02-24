@@ -55,6 +55,7 @@ interface EditFormData {
   snmp_version: string;
   snmp_community: string;
   hostgroup: string;
+  details: { [key: string]: string };
   status: number;
 }
 
@@ -67,6 +68,7 @@ const ManageComponent = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<IDevice | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -134,20 +136,29 @@ const ManageComponent = () => {
     snmp_version: "",
     snmp_community: "",
     hostgroup: "",
+    details: {}, // Initialize with empty object
     status: 1,
   });
 
   const fetchDevices = async () => {
     try {
-      const response = await fetch("http://localhost:3000/host");
+      const response = await fetch( `${import.meta.env.VITE_API_URL}/host`,{
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.log("No devices found");
+        return;
       }
 
       const result: ApiResponse = await response.json();
 
-      if (result.status !== "success") {
-        throw new Error(result.message || "Failed to fetch devices");
+      if (result.status !== "success" || !result.data.length) {
+        console.log("No devices found");
+        return;
       }
 
       setDevices(result.data);
@@ -175,6 +186,7 @@ const ManageComponent = () => {
       snmp_version: device.snmp_version,
       snmp_community: device.snmp_community,
       hostgroup: device.hostgroup,
+      details: device.details || {}, // Include details, fallback to empty object if null
       status: device.status,
     });
     resetFormState(); // Clear any previous errors
@@ -204,11 +216,13 @@ const ManageComponent = () => {
     setFormLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/host/edit/${editingDevice._id}`,
+        // `http://localhost:3000/host/edit/${editingDevice._id}`,
+        `${import.meta.env.VITE_API_URL}/host/edit/${editingDevice._id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(editForm),
         }
@@ -248,9 +262,14 @@ const ManageComponent = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/host/${deviceToDelete._id}`,
+        // `http://localhost:3000/host/${deviceToDelete._id}`,
+        `${import.meta.env.VITE_API_URL}/host/${deviceToDelete._id}`,
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -391,13 +410,14 @@ const ManageComponent = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",
-          mt: 2,
+          backgroundColor: "transparent",      
+          // mt: 2,
         }}
       >
         <Table
           sx={{
-            minWidth: 650,
+            // minWidth: 650,
+            width: 1,
             "& .MuiTableCell-root": {
               borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
               padding: "16px",
@@ -407,39 +427,35 @@ const ManageComponent = () => {
             },
           }}
         >
-          <TableHead>
+          {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
             <TableRow>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
-                  Hostname
+                  Device's name
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   IP Address
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   SNMP Version
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Group
                 </Typography>
               </TableCell>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Location
-                </Typography>
-              </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Status
                 </Typography>
               </TableCell>
-              <TableCell width={120} align="center">
+              <TableCell width={120} align="center" sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Actions
                 </Typography>
@@ -456,20 +472,18 @@ const ManageComponent = () => {
                   <Typography variant="body2">{device.ip_address}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">
-                    {device.snmp_version.toUpperCase()}
-                  </Typography>
+                  <Typography variant="body2">{device.snmp_version}</Typography>
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">{device.hostgroup}</Typography>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <Typography variant="body2">
-                    {device.details?.location ||
-                      device.details?.location ||
+                    {device.details?.Location ||
+                      device.details?.Location ||
                       "N/A"}
                   </Typography>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <Chip
                     label={getStatusLabel(device.status)}
@@ -560,9 +574,9 @@ const ManageComponent = () => {
                 value={editForm.snmp_version}
                 onChange={handleSelectChange}
               >
-                <MenuItem value="v1">SNMPv1</MenuItem>
-                <MenuItem value="v2c">SNMPv2</MenuItem>
-                <MenuItem value="v3">SNMPv3</MenuItem>
+                <MenuItem value="SNMPv1">SNMPv1</MenuItem>
+                <MenuItem value="SNMPv2">SNMPv2</MenuItem>
+                <MenuItem value="SNMPv3">SNMPv3</MenuItem>
               </Select>
               {formErrors.snmp_version && (
                 <FormHelperText>{formErrors.snmp_version}</FormHelperText>
@@ -589,6 +603,21 @@ const ManageComponent = () => {
               required
               error={!!formErrors.hostgroup}
               helperText={formErrors.hostgroup}
+            />
+            <TextField
+              label="Description"
+              name="details.description" // Changed from "detail"
+              value={editForm.details?.description || ""} // Changed from editForm.hostgroup
+              onChange={(e) => {
+                setEditForm((prev) => ({
+                  ...prev,
+                  details: {
+                    ...prev.details,
+                    description: e.target.value,
+                  },
+                }));
+              }}
+              fullWidth
             />
           </Box>
         </DialogContent>

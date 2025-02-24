@@ -1,93 +1,17 @@
-// import {
-//   BrowserRouter as Router,
-//   Routes,
-//   Route,
-//   Navigate,
-//   useLocation,
-// } from "react-router-dom";
-// import ThemeProvider from "@mui/material/styles/ThemeProvider";
-// import { ThemeConfig } from "./config/ThemeConfig";
-// import "./App.css";
-// import MainLayout from "./layouts/MainLayout";
-// import Dashboard from "./pages/Dashboard";
-// import Graphs from "./pages/Graphs";
-// import Storage from "./pages/Storage";
-// import Management from "./pages/Management";
-// import Alerts from "./pages/Alerts";
-// import ContactUs from "./pages/ContactUs";
-// import Devices from "./pages/Devices";
-// import DeviceDetail from "./pages/DeviceDetail";
-// import Templates from "./pages/Template";
-// import Login from "./pages/Login";
-
-// // Protected Route wrapper component
-// const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-//   // Replace this with your actual authentication check
-//   const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-//   const location = useLocation();
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/login" state={{ from: location }} replace />;
-//   }
-
-//   return <>{children}</>;
-// };
-
-// const App = () => {
-//   return (
-//     <ThemeProvider theme={ThemeConfig}>
-//       <Router>
-//         <Routes>
-//           {/* Public route - Login page */}
-//           <Route path="/login" element={<Login />} />
-
-//           {/* Protected routes with MainLayout */}
-//           <Route
-//             path="/"
-//             element={
-//               <ProtectedRoute>
-//                 <MainLayout />
-//               </ProtectedRoute>
-//             }
-//           >
-//             <Route index element={<Navigate replace to="/dashboard" />} />
-//             <Route path="/dashboard" element={<Dashboard />} />
-//             <Route path="/graphs" element={<Graphs />} />
-//             <Route path="/storage" element={<Storage />} />
-//             <Route path="/management" element={<Management />} />
-//             <Route path="/alerts" element={<Alerts />} />
-//             <Route path="/contactus" element={<ContactUs />} />
-//             <Route path="/devices" element={<Devices />} />
-//             <Route path="/devicedetail/:serialNo" element={<DeviceDetail />} />
-//             <Route path="/templates" element={<Templates />} />
-//           </Route>
-
-//           {/* Catch all other routes and redirect to login */}
-//           <Route path="*" element={<Navigate to="/login" replace />} />
-//         </Routes>
-//       </Router>
-//     </ThemeProvider>
-//   );
-// };
-
-// export default App;
-
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
 import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import { ThemeConfig } from "./config/ThemeConfig";
 import "./App.css";
-import MainLayout from "./layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Graphs from "./pages/Graphs";
-import Storage from "./pages/Storage";
+import Activity from "./pages/Activity";
 import Management from "./pages/Management";
-import Alerts from "./pages/Alerts";
 import ContactUs from "./pages/ContactUs";
 import Devices from "./pages/Devices";
 import DeviceDetail from "./pages/DeviceDetail";
@@ -95,51 +19,220 @@ import Templates from "./pages/Template";
 import Login from "./pages/Login";
 import Event from "./pages/Event";
 import Trigger from "./pages/Trigger";
+import Account from "./pages/Account";
+import PrivateRoute from "./authenticated/PrivateRoute";
+import Action from "./pages/Action";
+import ViewerDashboard from "./pages/ViewerDashboard";
 
-// Protected Route wrapper component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // Replace this with your actual authentication check
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-  const location = useLocation();
+// Create a RoleBasedRoute component to handle role-based access
+const RoleBasedRoute = ({
+  element,
+  allowedRoles,
+}: {
+  element: JSX.Element;
+  allowedRoles: string[];
+}) => {
+  const userRole = localStorage.getItem("userRole");
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (!userRole || !allowedRoles.includes(userRole)) {
+    // Redirect based on role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
+    }
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>;
+  return element;
+};
+
+// Create a ViewerRoute component to handle viewer-only routes
+const ViewerRoute = ({ element }: { element: JSX.Element }) => {
+  const userRole = localStorage.getItem("userRole");
+
+  if (userRole !== "viewer") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return element;
+};
+
+const PublicRoute = ({ children }: any) => {
+  const isAuthenticated = localStorage.getItem("isAuthenticated");
+  const userRole = localStorage.getItem("userRole");
+
+  if (isAuthenticated === "true") {
+    // Redirect based on user role
+    if (userRole === "viewer") {
+      return <Navigate to="/viewerdashboard" replace />;
+    } else {
+      // For admin and superadmin
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
+  return children;
 };
 
 const App = () => {
+  useEffect(() => {
+    const checkTokenExpiry = () => {
+      const token = localStorage.getItem("token");
+      const tokenTimestamp = localStorage.getItem("tokenTimestamp");
+
+      if (token && tokenTimestamp) {
+        const elapsedTime = Date.now() - parseInt(tokenTimestamp, 10);
+
+        // Check if token has expired ( minutes)
+        if (elapsedTime >= 60 * 60 * 1000) {
+          console.log("Token expired. Redirecting to login...");
+          localStorage.clear();
+          window.location.href = "/";
+        }
+      } else if (token && !tokenTimestamp) {
+        // If there's a token but no timestamp, set one now
+        localStorage.setItem("tokenTimestamp", Date.now().toString());
+      } else if (!token && localStorage.getItem("isAuthenticated") === "true") {
+        // If authenticated but no token, log out
+        console.log("No token found but authenticated. Logging out...");
+        localStorage.clear();
+        window.location.href = "/";
+      }
+    };
+
+    // Run the check immediately when component mounts
+    checkTokenExpiry();
+
+    // Set up interval to check regularly
+    const interval = setInterval(checkTokenExpiry, 30 * 1000); // Check every 30 seconds
+
+    // Clean up interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <ThemeProvider theme={ThemeConfig}>
       <Router>
         <Routes>
-          {/* Public route - Login page as main route */}
-          <Route path="/" element={<Login />} />
-
-          {/* Protected routes with MainLayout */}
           <Route
+            path="/"
             element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
             }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
+          />
+          <Route element={<PrivateRoute />}>
+            <Route
+              path="/viewerdashboard"
+              element={<ViewerRoute element={<ViewerDashboard />} />}
+            />
             <Route path="/graphs" element={<Graphs />} />
-            <Route path="/storage" element={<Storage />} />
-            <Route path="/management" element={<Management />} />
-            {/* <Route path="/alerts" element={<Alerts />} /> */}
             <Route path="/contactus" element={<ContactUs />} />
-            <Route path="/devices" element={<Devices />} />
-            <Route path="/devicedetail/:_id" element={<DeviceDetail />} />
-            <Route path="/templates" element={<Templates />} />
-            <Route path="/trigger" element={<Trigger />} />
-            <Route path="/event" element={<Event />} />
+            <Route
+              path="/dashboard"
+              element={
+                <RoleBasedRoute
+                  element={<Dashboard />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/activity"
+              element={
+                <RoleBasedRoute
+                  element={<Activity />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/management"
+              element={
+                <RoleBasedRoute
+                  element={<Management />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devices"
+              element={
+                <RoleBasedRoute
+                  element={<Devices />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/devicedetail/:_id"
+              element={
+                <RoleBasedRoute
+                  element={<DeviceDetail />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <RoleBasedRoute
+                  element={<Templates />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/trigger"
+              element={
+                <RoleBasedRoute
+                  element={<Trigger />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/event"
+              element={
+                <RoleBasedRoute
+                  element={<Event />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <RoleBasedRoute
+                  element={<Account />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
+            <Route
+              path="/action"
+              element={
+                <RoleBasedRoute
+                  element={<Action />}
+                  allowedRoles={["admin", "superadmin"]}
+                />
+              }
+            />
           </Route>
 
-          {/* Catch all other routes and redirect to main login page */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={
+                  localStorage.getItem("userRole") === "viewer"
+                    ? "/viewerdashboard"
+                    : "/dashboard"
+                }
+                replace
+              />
+            }
+          />
         </Routes>
       </Router>
     </ThemeProvider>

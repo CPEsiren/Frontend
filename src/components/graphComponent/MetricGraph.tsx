@@ -1,325 +1,240 @@
 import React, { useState, useEffect } from "react";
-import { Box, FormControl, Select, MenuItem } from "@mui/material";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  TimeScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartData,
-  ChartOptions,
-} from "chart.js";
-import "chartjs-adapter-date-fns";
-import { enUS } from "date-fns/locale";
+import { Box } from "@mui/material";
 import { DataEntry } from "../../interface/InterfaceCollection";
 import { Item } from "../../interface/InterfaceCollection";
-
-ChartJS.register(
-  TimeScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-// export interface DataEntry {
-//   timestamp: string;
-//   value: string;
-//   Change_per_second: string;
-// }
-
-// export interface ItemId {
-//   _id: string;
-//   item_name: string;
-//   oid: string;
-//   type: string;
-//   unit: string;
-// }
+import { LineChart } from "@mui/x-charts/LineChart";
 
 export interface Items {
   item_id: Item;
+  avg_value: number;
+  max_value: number;
+  min_value: number;
   data: DataEntry[];
 }
 
 interface MetricGraphProps {
   item: Items;
+  selectedLastTime: string;
+  startTimeForScale: Date;
+  endTimeForScale: Date;
+  hideLegendLabel?: boolean;
+  isSmall?: boolean; // Add new prop for size
 }
 
-const MetricGraph: React.FC<MetricGraphProps> = ({ item }) => {
-  const [timeRange, setTimeRange] = useState<string>("10min");
-  const [chartData, setChartData] = useState<ChartData<"line">>({
-    labels: [],
-    datasets: [
-      {
-        label: "",
-        data: [],
-        borderColor: "rgb(75, 192, 192)",
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
-        tension: 0.1,
-        borderWidth: 2,
-        pointRadius: 1,
-        pointHoverRadius: 4,
-        fill: false,
-        showLine: true,
-      },
-    ],
-  });
-
-  const getAxisInterval = (range: number): number => {
-    // Get the order of magnitude of the range
-    const magnitude = Math.floor(Math.log10(range));
-    const baseInterval = Math.pow(10, magnitude);
-
-    // Choose appropriate interval based on range within the order of magnitude
-    if (range / baseInterval <= 2) return baseInterval / 5;
-    if (range / baseInterval <= 5) return baseInterval / 2;
-    return baseInterval;
-  };
-
-  const roundToInterval = (
-    value: number,
-    interval: number,
-    roundUp: boolean
-  ): number => {
-    if (roundUp) {
-      return Math.ceil(value / interval) * interval;
-    }
-    return Math.floor(value / interval) * interval;
-  };
-
-  const getYAxisMinMax = (data: DataEntry[]) => {
-    const Change_per_seconds = data.map((entry) =>
-      Number(entry.Change_per_second)
-    );
-    let min = Math.min(...Change_per_seconds);
-    let max = Math.max(...Change_per_seconds);
-
-    // Add padding (10%)
-    const range = max - min;
-    const padding = range * 0.1;
-    min = Math.max(0, min - padding);
-    max = max + padding;
-
-    // Calculate appropriate interval based on the range
-    const interval = getAxisInterval(max - min);
-
-    return {
-      min: roundToInterval(min, interval, false), // Round down
-      max: roundToInterval(max, interval, true), // Round up
-    };
-  };
-
-  const getTimeRangeSettings = (range: string) => {
-    const now = new Date();
-    const endTime = now.getTime();
-    let startTime: number;
-    let unit: "minute" | "hour" | "day";
-
-    switch (range) {
-      case "10min":
-        startTime = endTime - 10 * 60 * 1000;
-        unit = "minute";
-        break;
-      case "30min":
-        startTime = endTime - 30 * 60 * 1000;
-        unit = "minute";
-        break;
-      case "1hr":
-        startTime = endTime - 60 * 60 * 1000;
-        unit = "minute";
-        break;
-      case "6hr":
-        startTime = endTime - 6 * 60 * 60 * 1000;
-        unit = "hour";
-        break;
-      case "12hr":
-        startTime = endTime - 12 * 60 * 60 * 1000;
-        unit = "hour";
-        break;
-      case "24hr":
-        startTime = endTime - 24 * 60 * 60 * 1000;
-        unit = "hour";
-        break;
-      case "2hr":
-      default:
-        startTime = endTime - 2 * 60 * 60 * 1000;
-        unit = "hour";
-        break;
-    }
-
-    return { startTime, endTime, unit };
-  };
-
-  // Get Y-axis limits once when component mounts
-  const yAxisLimits = React.useMemo(() => getYAxisMinMax(item.data), []);
-
-  const options: ChartOptions<"line"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: {
-      duration: 0,
-    },
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
-    plugins: {
-      legend: {
-        position: "top" as const,
-      },
-      title: {
-        display: true,
-        text: `${item.item_id.item_name} (${item.item_id.unit}/s)`, // Updated title to include /s
-        padding: {
-          top: 20, // This is equivalent to mt-5 in most cases
-        },
-        font: {
-          size: 16,
-          weight: "bold",
-        },
-      },
-      tooltip: {
-        enabled: true,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleFont: {
-          size: 12,
-        },
-        bodyFont: {
-          size: 12,
-        },
-        padding: 10,
-        displayColors: true,
-        callbacks: {
-          label: function (context: any) {
-            return `${item.item_id.item_name}: ${context.parsed.y} ${item.item_id.unit}/s`; // Updated tooltip to include /s
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        min: yAxisLimits.min,
-        max: yAxisLimits.max,
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: `${item.item_id.unit}/s`, // Updated Y-axis label to include /s
-        },
-      },
-      x: {
-        type: "time",
-        adapters: {
-          date: {
-            locale: enUS,
-          },
-        },
-        time: {
-          unit: getTimeRangeSettings(timeRange).unit,
-          displayFormats: {
-            minute: "HH:mm",
-            hour: "HH:mm",
-          },
-          tooltipFormat: "HH:mm:ss",
-        },
-        title: {
-          display: true,
-          text: "Time",
-        },
-        min: getTimeRangeSettings(timeRange).startTime,
-        max: getTimeRangeSettings(timeRange).endTime,
-      },
-    },
-  };
+const MetricGraph: React.FC<MetricGraphProps> = ({
+  item,
+  selectedLastTime,
+  startTimeForScale,
+  endTimeForScale,
+  hideLegendLabel = false,
+  isSmall = false, // Default to normal size
+}) => {
+  const [xAxis, setXAxis] = useState<Date[]>([]);
+  const [yAxis, setYAxis] = useState<number[]>([]);
 
   useEffect(() => {
-    const timeSettings = getTimeRangeSettings(timeRange);
-    const filteredData = item.data.filter((entry) => {
-      const timestamp = new Date(entry.timestamp).getTime();
-      return (
-        timestamp >= timeSettings.startTime && timestamp <= timeSettings.endTime
+    const sortedData = item.data
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
+
+    const DateXAxis = item.data.map((entry) => {
+      const date = new Date(entry.timestamp);
+      return date;
     });
+    setXAxis(DateXAxis);
+    const value = sortedData.map((entry) => Number(entry.value));
+    setYAxis(value);
+  }, [item]);
 
-    const sortedData = filteredData.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-    );
+  const createConstantArray = (value: number, length: number) => {
+    return Array(length).fill(value);
+  };
 
-    const labels = sortedData.map((entry) =>
-      new Date(entry.timestamp).getTime()
-    );
-    const Change_per_seconds = sortedData.map((entry) =>
-      Number(entry.Change_per_second)
-    );
+  const formatYAxisLabel = (value: number | null) => {
+    if (value === null) return "";
+    if (value >= 1e9) return `${(value / 1e9).toFixed(1)}B`;
+    if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+    if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+    return value.toString();
+  };
 
-    setChartData({
-      labels,
-      datasets: [
-        {
-          label: item.item_id.item_name,
-          data: Change_per_seconds,
-          borderColor: "rgb(75, 192, 192)",
-          backgroundColor: "rgba(75, 192, 192, 0.5)",
-          tension: 0.1,
-          borderWidth: 2,
-          pointRadius: 1,
-          pointHoverRadius: 4,
-          fill: false,
-          showLine: true,
-        },
-      ],
+  const formatDateTime = (date: Date) => {
+    const dateStr = date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
-  }, [item, timeRange]);
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    return `${dateStr}\n${timeStr}`;
+  };
 
   return (
-    <Box sx={{ position: "relative" }}>
+    <Box
+      sx={{
+        position: "relative",
+        width: "100%",
+        height: isSmall ? "245px" : "455px",
+        mt: isSmall ? -1 : 0,
+        pb: isSmall ? 5 : 0,
+        pt: isSmall ? 1 : 2,
+        px: isSmall ? 0 : 0,
+        bgcolor: "#f5f5f5",
+        borderRadius: 2,
+      }}
+    >
       <Box
         sx={{
-          position: "absolute",
-          right: 0,
-          top: 0,
-          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          "& canvas": {
+            height: isSmall ? "250px !important" : "400px !important",
+          },
           p: 2,
         }}
       >
-        <FormControl size="small">
-          <Select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            sx={{
-              minWidth: 120,
-              backgroundColor: "white",
-              "& .MuiSelect-select": {
-                fontSize: 14,
+        <LineChart
+          height={isSmall ? 260 : 420}
+          margin={{
+            left: isSmall ? 50 : 55, // Increased left margin for y-axis label
+            bottom: isSmall ? 55 : 60, // Increased bottom margin for x-axis label
+          }}
+          series={[
+            {
+              data: yAxis,
+              label: hideLegendLabel ? "" : item.item_id.item_name,
+              curve: "linear",
+              color: "#2196f3",
+              area: true,
+              showMark: false,
+              valueFormatter: formatYAxisLabel,
+              connectNulls: false,
+            },
+            {
+              data: createConstantArray(item.max_value, yAxis.length),
+              label: `Maximum(${selectedLastTime})`,
+              curve: "linear",
+              color: "#ff9800",
+              showMark: false,
+              valueFormatter: formatYAxisLabel,
+              id: "max",
+            },
+            {
+              data: createConstantArray(item.avg_value, yAxis.length),
+              label: `Average(${selectedLastTime})`,
+              curve: "linear",
+              color: "#4caf50",
+              showMark: false,
+              valueFormatter: formatYAxisLabel,
+              id: "avg",
+            },
+            {
+              data: createConstantArray(item.min_value, yAxis.length),
+              label: `Minimum(${selectedLastTime})`,
+              curve: "linear",
+              color: "#f44336",
+              showMark: false,
+              valueFormatter: formatYAxisLabel,
+              id: "min",
+            },
+          ]}
+          xAxis={[
+            {
+              scaleType: "time",
+              data: xAxis,
+              label: "Date\nTime",
+              min: startTimeForScale.getTime(),
+              max: endTimeForScale.getTime(),
+              labelStyle: {
+                fontSize: isSmall ? 10 : 12,
+                lineHeight: isSmall ? 1 : 1.2,
+                fill: "#666",
+                transform: `translateY(${isSmall ? 3 : 7}px)`, // Move label down
               },
-            }}
-          >
-            <MenuItem value="10min">10 minutes</MenuItem>
-            <MenuItem value="30min">30 minutes</MenuItem>
-            <MenuItem value="1hr">1 hour</MenuItem>
-            <MenuItem value="2hr">2 hours</MenuItem>
-            <MenuItem value="6hr">6 hours</MenuItem>
-            <MenuItem value="12hr">12 hours</MenuItem>
-            <MenuItem value="24hr">1 day</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-      <Box
-        sx={{
-          height: "400px",
-          pt: 6,
-          "& canvas": {
-            height: "400px !important", // Force consistent height
-          },
-        }}
-      >
-        <Line options={options} data={chartData} />
+              tickLabelStyle: {
+                fontSize: isSmall ? 8 : 10,
+                fill: "#666",
+                transform: `translateY(${isSmall ? 1 : 2}px)`, // Move label down
+              },
+              valueFormatter: (value) => formatDateTime(new Date(value)),
+              tickNumber: isSmall ? 5 : 7,
+            },
+          ]}
+          yAxis={[
+            {
+              label: `${item.item_id.unit}/s`,
+              labelStyle: {
+                fontSize: isSmall ? 10 : 12,
+                fill: "#666",
+                transform: `translateX(-${isSmall ? 11 : 14}px)`, // Move label left
+              },
+              tickLabelStyle: {
+                fontSize: isSmall ? 8 : 10,
+                fill: "#666",
+              },
+              valueFormatter: formatYAxisLabel,
+              tickNumber: isSmall ? 5 : 7,
+            },
+          ]}
+          sx={{
+            "& .MuiLineElement-root": {
+              strokeWidth: isSmall ? 1.5 : 2,
+            },
+            "& .MuiMarkElement-root": {
+              stroke: "#fff",
+              scale: isSmall ? "0.5" : "0.6",
+              fill: "#2196f3",
+            },
+            " .MuiLineElement-series-max": {
+              strokeDasharray: "5 5",
+              strokeWidth: isSmall ? 0.5 : 1,
+            },
+            " .MuiLineElement-series-avg": {
+              strokeWidth: isSmall ? 0.5 : 1,
+              strokeDasharray: "5 5",
+            },
+            " .MuiLineElement-series-min": {
+              strokeWidth: isSmall ? 0.5 : 1,
+              strokeDasharray: "5 5",
+            },
+            // Add styles for axis areas
+            "& .MuiChartsAxis-root": {
+              "& .MuiChartsAxis-line": {
+                stroke: "#666",
+                strokeWidth: 1,
+              },
+              "& .MuiChartsAxis-label": {
+                fill: "#666",
+                fontWeight: "medium",
+              },
+              "& .MuiChartsAxis-tick": {
+                stroke: "#666",
+              },
+              "& .MuiChartsAxis-tickLabel": {
+                fill: "#666",
+              },
+            },
+          }}
+          slotProps={{
+            legend: {
+              hidden: hideLegendLabel,
+              itemMarkWidth: isSmall ? 8 : 10,
+              itemMarkHeight: isSmall ? 8 : 10,
+              markGap: isSmall ? 3 : 5,
+              itemGap: isSmall ? 8 : 10,
+              labelStyle: {
+                fontSize: isSmall ? 8 : 15,
+              },
+            },
+          }}
+          grid={{ vertical: true, horizontal: true }}
+        />
       </Box>
     </Box>
   );
