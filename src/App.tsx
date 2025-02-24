@@ -21,7 +21,7 @@ import Event from "./pages/Event";
 import Trigger from "./pages/Trigger";
 import Account from "./pages/Account";
 import PrivateRoute from "./authenticated/PrivateRoute";
-import Action from "./pages/Action";
+// import Action from "./pages/Action";
 import ViewerDashboard from "./pages/ViewerDashboard";
 
 // Create a RoleBasedRoute component to handle role-based access
@@ -209,7 +209,7 @@ const App = () => {
                 />
               }
             />
-            <Route
+            {/* <Route
               path="/action"
               element={
                 <RoleBasedRoute
@@ -217,7 +217,7 @@ const App = () => {
                   allowedRoles={["admin", "superadmin"]}
                 />
               }
-            />
+            /> */}
           </Route>
 
           <Route

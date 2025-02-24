@@ -61,7 +61,8 @@ const BaseItems: SidebarItem[] = [
     newIcon: "",
   },
   {
-    id: 7,
+    // id: 7,
+    id: 6,
     icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
     name: "Contact Us",
     path: "/contactus",
@@ -130,13 +131,13 @@ const AdminItems: SidebarItem[] = [
       },
     ],
   },
-  {
-    id: 6,
-    icon: <BuildIcon sx={{ fontSize: 20 }} />,
-    name: "Actions",
-    path: "/action",
-    newIcon: "",
-  },
+  // {
+  //   id: 6,
+  //   icon: <BuildIcon sx={{ fontSize: 20 }} />,
+  //   name: "Actions",
+  //   path: "/action",
+  //   newIcon: "",
+  // },
 ];
 
 export default function Sidebar({ isHideSidebar }: SidebarProps) {
