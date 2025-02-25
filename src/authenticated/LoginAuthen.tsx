@@ -1,6 +1,15 @@
 import { useEffect } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+declare global {
+  interface Window {
+    gapi: any;
+  }
+}
 import axios from "axios";
+import { GoogleOAuthProvider} from "@react-oauth/google";
+import { gapi } from "gapi-script";
+import { Box } from "@mui/material";
+import GoogleLogo from "../assets/GoogleIcon.png";
+
 
 interface LoginAuthenProps {
   onSuccess: () => void;
@@ -9,14 +18,9 @@ interface LoginAuthenProps {
 
 const authenticateWithServer = async (token: string) => {
   try {
-    // const response = await axios.post("http://localhost:3000/authen/signup", {
-    //   token,
-    // });
     const response = await axios.post(
       `${import.meta.env.VITE_API_URL}/authen/signup`,
-      {
-        token,
-      }
+      { token }
     );
 
     if (!response || !response.data) {
@@ -49,11 +53,27 @@ const authenticateWithServer = async (token: string) => {
 const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-  const handleSuccess = async (credentialResponse: any) => {
+  useEffect(() => {
+    const initGapi = () => {
+      gapi.load("auth2", () => {
+        gapi.auth2.init({
+          client_id: clientId,
+          scope: "openid profile email", 
+        });
+      });
+    };
+
+    if (window.gapi) {
+      initGapi();
+    } else {
+      onError("Google API (gapi) not loaded");
+    }
+  }, [clientId, onError]);
+
+  const handleGoogleLogin = async (googleUser: any) => {
     try {
       console.log("Google authentication successful");
-
-      const token = credentialResponse.credential;
+      const token = googleUser.getAuthResponse().id_token;
       localStorage.setItem("token", token);
 
       const serverResponse = await authenticateWithServer(token);
@@ -79,40 +99,69 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
     }
   };
 
-  const handleError = () => {
-    const errorMessage = "Failed to authenticate with Google";
+  const handleError = (error: any) => {
+    const errorMessage = error?.error || "Failed to authenticate with Google";
     console.error(errorMessage);
     onError(errorMessage);
   };
 
   const customStyle = {
     backgroundColor: "transparent",
-    fontSize: "16px",
     fontWeight: "bold",
-    padding: "15px 20px",
-    borderRadius: "50px",
-    maxWidth: "350px",
+    padding: "10px 10px",
+    borderRadius: "100px",
+    maxWidth: "350px", 
     width: "100%",
     outline: "none",
-    border: "4px solid #3e51c7",
-    cursor: "pointer",
+    border: "3px solid #3e51c7",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   };
-
+  
+  const handleLoginClick = () => {
+    const auth2 = gapi.auth2.getAuthInstance();
+    auth2.signIn().then(
+      (googleUser: any) => handleGoogleLogin(googleUser),
+      (error: any) => handleError(error)
+    );
+  };
+  
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <GoogleLogin
-        onSuccess={handleSuccess}
-        onError={handleError}
-        useOneTap
-        text="continue_with"
-        width="350px"
-        shape="pill"
-        containerProps={{
-          style: customStyle,
-        }}
-      />
-    </GoogleOAuthProvider>
+    <>
+      <Box sx={customStyle} marginRight={12}>
+        <GoogleOAuthProvider clientId={clientId}>
+          <Box sx={{ width: "100%" }}>
+            <button
+              onClick={handleLoginClick}
+              onError={() => handleError(new Error("Google login failed"))}
+              style={{
+                backgroundColor: "#FFFFFF",
+                padding: "10px",
+                paddingInline: "20px",
+                borderRadius: "50px",
+                width: "100%",
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                border: "none",
+              }}
+            >
+              <img
+                src={GoogleLogo}
+                alt="Google Logo"
+                style={{
+                  width: "40px",
+                  marginRight: "10px",
+                }}
+              />
+              Sign in with Google
+            </button>
+          </Box>
+        </GoogleOAuthProvider>
+      </Box>
+    </>
   );
-};
-
+}  
 export default LoginAuthen;
