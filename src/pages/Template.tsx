@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import { ITemplate } from "../interface/InterfaceCollection";
 import { Item } from "../interface/InterfaceCollection";
+import TemplateIcon from "../assets/template.svg";
 
 interface EditFormData {
   template_name: string;
@@ -290,9 +291,18 @@ const Templates: React.FC = () => {
                     backgroundColor: "#f9f9f9",
                     transition: "opacity 0.3s ease-in-out",
                     opacity: 1,
+                    position: "relative", // Add position relative to serve as positioning context
                   }}
                 >
-                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  {/* Position the edit/delete buttons in the top right corner */}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      display: "flex",
+                    }}
+                  >
                     <IconButton
                       size="small"
                       sx={{
@@ -303,7 +313,7 @@ const Templates: React.FC = () => {
                       }}
                       onClick={() => handleEditClick(template)}
                     >
-                      <EditIcon sx={{ color: "warning.main" }} />
+                      <EditIcon sx={{ color: "warning.main", fontSize: 20 }} />
                     </IconButton>
                     <IconButton
                       size="small"
@@ -314,26 +324,50 @@ const Templates: React.FC = () => {
                       }}
                       onClick={() => handleDeleteClick(template)}
                     >
-                      <DeleteIcon sx={{ color: "error.main" }} />
+                      <DeleteIcon sx={{ color: "error.main", fontSize: 20 }} />
                     </IconButton>
                   </Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
+
+                  {/* Main template content */}
+                  <Box
                     sx={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      lineHeight: 1.2,
-                      maxHeight: "3.6em",
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      width: "100%",
+                      pt:2.5
                     }}
                   >
-                    {template.template_name}
-                  </Typography>
-                  <Typography>Description: {template.description}</Typography>
-                  <Typography>Items: {template.items.length}</Typography>
+                    <img
+                      src={TemplateIcon}
+                      alt="Template Icon"
+                      style={{
+                        width: "30%",
+                        marginRight: 2,
+                      }}
+                    />
+                    <Box sx={{ width: "70%" }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={600}
+                        sx={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          lineHeight: 1.2,
+                          maxHeight: "3.6em",
+                        }}
+                      >
+                        {template.template_name}
+                      </Typography>
+                      <Typography>
+                        Description: {template.description}
+                      </Typography>
+                      <Typography>Items: {template.items.length}</Typography>
+                    </Box>
+                  </Box>
                 </Box>
               </Grid>
             ))}
@@ -358,12 +392,14 @@ const Templates: React.FC = () => {
 
       {/* Add Template Modal */}
       <Dialog open={isModalOpen} onClose={handleClose} fullWidth maxWidth="lg">
-        <DialogTitle sx={{
+        <DialogTitle
+          sx={{
             borderBottom: 0,
             borderColor: "#a9a9a9",
             borderTopLeftRadius: 10,
             borderTopRightRadius: 10,
-          }}>
+          }}
+        >
           <Typography variant="h5" sx={{ fontWeight: "medium", pt: 2, pl: 1 }}>
             New Template
           </Typography>
