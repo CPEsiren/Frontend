@@ -889,7 +889,7 @@ const Graphs: React.FC = () => {
                   >
                     {item.item_id.item_name}
                   </Typography>
-                  <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
+                  <Box sx={{ flexGrow: 1, overflow: "hidden",width:1,p:0 }}>
                     <MetricGraph
                       item={item}
                       selectedLastTime={rangeTime}

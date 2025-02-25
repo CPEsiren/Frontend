@@ -34,7 +34,7 @@ const DigitalClock = () => {
           time.getSeconds()
         )}`}
       </Typography>
-      <Typography variant="h6" sx={{ mt: 1, color: 'text.secondary' }}>
+      <Typography variant="h6" sx={{ mt: 1, color: 'text.secondary',textAlign:"center" }}>
         {time.toLocaleDateString('en-US', {
           weekday: 'long',
           year: 'numeric',

@@ -22,7 +22,7 @@ const Storage = () => {
             fontWeight={600}
             color={"#242D5D"}
           >
-            STORAGE
+            ACTIVITY
           </Typography>
         </Box>
       )}

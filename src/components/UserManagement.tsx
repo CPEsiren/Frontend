@@ -279,10 +279,10 @@ const UserManagement = () => {
         onClose={() => setSwapRoleDialogOpen(false)}
         aria-labelledby="swap-role-dialog-title"
       >
-        <DialogTitle id="swap-role-dialog-title">Confirm Swap Role</DialogTitle>
+        <DialogTitle id="swap-role-dialog-title">Confirm Switch Role</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to swap role of "{selectedUser?.username}" to{" "}
+            Are you sure you want to switch role of "{selectedUser?.username}" to{" "}
             {selectedUser ? getNewRole(selectedUser.role) : ""}?
           </Typography>
         </DialogContent>
