@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -21,12 +21,11 @@ import {
   Alert,
   Snackbar,
   TextField,
-  MenuItem,
   FormControl,
-  InputLabel,
-  Select,
   SelectChangeEvent,
-  FormHelperText,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -51,13 +50,37 @@ interface ApiResponse {
 interface EditFormData {
   hostname: string;
   ip_address: string;
+  template: string;
   snmp_port: string;
   snmp_version: string;
   snmp_community: string;
   hostgroup: string;
   details: { [key: string]: string };
   status: number;
+  authenV3: {
+    username: string;
+    securityLevel: string;
+    authenProtocol: string;
+    authenPass: string;
+    privacyProtocol: string;
+    privacyPass: string;
+  };
 }
+
+const textFieldProps = {
+  size: "small" as const,
+  fullWidth: true,
+  sx: {
+    backgroundColor: "white",
+    "& .MuiInputBase-input": {
+      fontSize: 14,
+    },
+  },
+};
+
+const typographyProps = {
+  fontSize: 14,
+};
 
 const ManageComponent = () => {
   const [devices, setDevices] = useState<IDevice[]>([]);
@@ -74,15 +97,6 @@ const ManageComponent = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
-
-  // Add these to your component's state
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const resetFormState = () => {
-    setFormErrors({});
-    setIsSubmitting(false);
-  };
 
   // Add this validation function
   const validateForm = () => {
@@ -125,24 +139,32 @@ const ManageComponent = () => {
       isValid = false;
     }
 
-    setFormErrors(errors);
     return isValid;
   };
 
   const [editForm, setEditForm] = useState<EditFormData>({
     hostname: "",
     ip_address: "",
+    template: "",
     snmp_port: "",
     snmp_version: "",
     snmp_community: "",
     hostgroup: "",
     details: {}, // Initialize with empty object
     status: 1,
+    authenV3: {
+      username: "",
+      securityLevel: "",
+      authenProtocol: "",
+      authenPass: "",
+      privacyProtocol: "",
+      privacyPass: "",
+    },
   });
 
   const fetchDevices = async () => {
     try {
-      const response = await fetch( `${import.meta.env.VITE_API_URL}/host`,{
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -182,14 +204,22 @@ const ManageComponent = () => {
     setEditForm({
       hostname: device.hostname,
       ip_address: device.ip_address,
+      template: device.template,
       snmp_port: device.snmp_port,
       snmp_version: device.snmp_version,
       snmp_community: device.snmp_community,
       hostgroup: device.hostgroup,
       details: device.details || {}, // Include details, fallback to empty object if null
       status: device.status,
+      authenV3: device.authenV3 || {
+        username: "",
+        securityLevel: "",
+        authenProtocol: "",
+        authenPass: "",
+        privacyProtocol: "",
+        privacyPass: "",
+      }, // Include authenV3, fallback to empty object if null
     });
-    resetFormState(); // Clear any previous errors
     setEditDialogOpen(true);
   };
 
@@ -201,10 +231,7 @@ const ManageComponent = () => {
   const handleEditSubmit = async () => {
     if (!editingDevice) return;
 
-    setIsSubmitting(true);
-
     if (!validateForm()) {
-      setIsSubmitting(false);
       setSnackbar({
         open: true,
         message: "Please fill in all required fields",
@@ -219,10 +246,12 @@ const ManageComponent = () => {
         ...editForm,
         // Add user role and username for tracking who made the edit
         userRole: localStorage.getItem("userRole"),
-        userName: localStorage.getItem("username")
+        userName: localStorage.getItem("username"),
+        // Add oldHostname to track the original hostname
+        oldHostname: editingDevice.hostname,
       };
+
       const response = await fetch(
-        // `http://localhost:3000/host/edit/${editingDevice._id}`,
         `${import.meta.env.VITE_API_URL}/host/edit/${editingDevice._id}`,
         {
           method: "PUT",
@@ -230,7 +259,6 @@ const ManageComponent = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          // body: JSON.stringify(editForm),
           body: JSON.stringify(requestBody),
         }
       );
@@ -260,7 +288,6 @@ const ManageComponent = () => {
       });
     } finally {
       setFormLoading(false);
-      setIsSubmitting(false);
     }
   };
 
@@ -279,7 +306,8 @@ const ManageComponent = () => {
           },
           body: JSON.stringify({
             userRole: localStorage.getItem("userRole"),
-            userName: localStorage.getItem("username")
+            userName: localStorage.getItem("username"),
+            hostname: deviceToDelete.hostname,
           }),
         }
       );
@@ -309,37 +337,9 @@ const ManageComponent = () => {
     }
   };
 
-  // Also modify handleTextFieldChange and handleSelectChange to clear errors
-  const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Clear error for the field being changed
-    setFormErrors((prev) => ({
-      ...prev,
-      [name]: undefined,
-    }));
-  };
-
-  const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
-    const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: name === "status" ? Number(value) : value,
-    }));
-    // Clear error for the field being changed
-    setFormErrors((prev) => ({
-      ...prev,
-      [name]: undefined,
-    }));
-  };
-
   // Modify the dialog close handler
   const handleCloseDialog = () => {
     setEditDialogOpen(false);
-    resetFormState(); // Clear errors when closing
   };
 
   const handleCloseSnackbar = () => {
@@ -366,6 +366,13 @@ const ManageComponent = () => {
       default:
         return "Unknown";
     }
+  };
+
+  const handleVersionChange = (event: SelectChangeEvent) => {
+    setEditForm((prev) => ({
+      ...prev,
+      snmp_version: event.target.value,
+    }));
   };
 
   if (loading) {
@@ -421,7 +428,7 @@ const ManageComponent = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",      
+          backgroundColor: "transparent",
           // mt: 2,
         }}
       >
@@ -438,7 +445,7 @@ const ManageComponent = () => {
             },
             "& .MuiTableCell-head": {
               borderBottom: "1px solid #dbdbdb",
-            }
+            },
           }}
         >
           {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
@@ -541,99 +548,609 @@ const ManageComponent = () => {
       <Dialog
         open={editDialogOpen}
         onClose={handleCloseDialog} // Use the new handler here
-        maxWidth="sm"
+        maxWidth="lg"
         fullWidth
       >
         <DialogTitle>Edit Device</DialogTitle>
         <DialogContent>
-          <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              label="Hostname"
-              name="hostname"
-              value={editForm.hostname}
-              onChange={handleTextFieldChange}
-              fullWidth
-              required
-              error={!!formErrors.hostname}
-              helperText={formErrors.hostname}
-            />
-
-            <TextField
-              label="IP Address"
-              name="ip_address"
-              value={editForm.ip_address}
-              onChange={handleTextFieldChange}
-              fullWidth
-              required
-              error={!!formErrors.ip_address}
-              helperText={formErrors.ip_address}
-            />
-
-            <TextField
-              label="SNMP Port"
-              name="snmp_port"
-              value={editForm.snmp_port}
-              onChange={handleTextFieldChange}
-              fullWidth
-              required
-              error={!!formErrors.snmp_port}
-              helperText={formErrors.snmp_port}
-            />
-
-            <FormControl fullWidth required error={!!formErrors.snmp_version}>
-              <InputLabel>SNMP Version</InputLabel>
-              <Select
-                label="SNMP Version"
-                name="snmp_version"
-                value={editForm.snmp_version}
-                onChange={handleSelectChange}
-              >
-                <MenuItem value="SNMPv1">SNMPv1</MenuItem>
-                <MenuItem value="SNMPv2">SNMPv2</MenuItem>
-                <MenuItem value="SNMPv3">SNMPv3</MenuItem>
-              </Select>
-              {formErrors.snmp_version && (
-                <FormHelperText>{formErrors.snmp_version}</FormHelperText>
-              )}
-            </FormControl>
-
-            <TextField
-              label="SNMP Community"
-              name="snmp_community"
-              value={editForm.snmp_community}
-              onChange={handleTextFieldChange}
-              fullWidth
-              required
-              error={!!formErrors.snmp_community}
-              helperText={formErrors.snmp_community}
-            />
-
-            <TextField
-              label="Host Group"
-              name="hostgroup"
-              value={editForm.hostgroup}
-              onChange={handleTextFieldChange}
-              fullWidth
-              required
-              error={!!formErrors.hostgroup}
-              helperText={formErrors.hostgroup}
-            />
-            <TextField
-              label="Description"
-              name="details.description" // Changed from "detail"
-              value={editForm.details?.description || ""} // Changed from editForm.hostgroup
-              onChange={(e) => {
-                setEditForm((prev) => ({
-                  ...prev,
-                  details: {
-                    ...prev.details,
-                    description: e.target.value,
-                  },
-                }));
+          <Paper elevation={0} sx={{ p: 0, backgroundColor: "#FFFFFB" }}>
+            <Box
+              component="form"
+              sx={{
+                display: "flex",
+                bgcolor: "white",
+                flexDirection: "column",
+                gap: 0,
+                p: 3,
+                border: "2px solid rgb(232, 232, 232)",
+                borderRadius: 3,
+                mb: 3,
               }}
-              fullWidth
-            />
-          </Box>
+            >
+              <Typography
+                sx={{
+                  mb: 2,
+                  fontSize: "1.2rem",
+                  color: "black",
+                  fontWeight: "medium",
+                }}
+                {...typographyProps}
+              >
+                DEVICE
+              </Typography>
+
+              {/* Host Section */}
+              <Box sx={{ display: "flex", flexDirection: "row", gap: 2 }}>
+                <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
+                  <Box sx={{ display: "flex", justifyContent: "right" }}>
+                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                      *
+                    </Typography>
+                    <Typography sx={{ fontSize: 14 }}>Device's name</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: 14, mt: 4 }}>
+                    Templates
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "right",
+                      mt: 4,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                      *
+                    </Typography>
+                    <Typography sx={{ fontSize: 14 }}>Host groups</Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: 14, mt: 4.5 }}>
+                    Description
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "left", width: "50%" }}>
+                  <TextField
+                    {...textFieldProps}
+                    value={editForm.hostname}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, hostname: e.target.value })
+                    }
+                    sx={{
+                      mb: 2,
+                      width: 1,
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+                  <TextField
+                    {...textFieldProps}
+                    value={editForm.template}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, template: e.target.value })
+                    }
+                    sx={{
+                      mb: 2,
+                      width: 1,
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+
+                  <TextField
+                    {...textFieldProps}
+                    value={editForm.hostgroup}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, hostgroup: e.target.value })
+                    }
+                    sx={{
+                      mb: 2,
+                      width: 1,
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+                  <TextField
+                    multiline
+                    rows={3}
+                    {...textFieldProps}
+                    value={editForm.details?.description || ""}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        details: {
+                          ...prev.details,
+                          description: e.target.value,
+                        },
+                      }))
+                    }
+                    sx={{
+                      width: 1,
+                      "& .MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box
+                  sx={{
+                    textAlign: "left",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2.5,
+                  }}
+                ></Box>
+              </Box>
+            </Box>
+            {/* Interface Section */}
+            <Box
+              sx={{
+                p: 3,
+                border: "2px solid rgb(232, 232, 232)",
+                borderRadius: 3,
+                mb: 2,
+                mt: 2,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "1.2rem",
+                  color: "black",
+                  fontWeight: "medium",
+                  mb: 2,
+                }}
+                {...typographyProps}
+              >
+                SNMP INTERFACE
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: 2,
+                  }}
+                >
+                  <Box sx={{ textAlign: "right", mt: 1, width: "20%" }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "right",
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>IP address</Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>
+                        SNMP version
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.snmp_version === "SNMPv1" ||
+                          editForm.snmp_version === "SNMPv2"
+                            ? "flex"
+                            : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>
+                        SNMP community
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.snmp_version === "SNMPv3" ? "flex" : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>Username</Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.snmp_version === "SNMPv3" ? "flex" : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, mt: 0.3 }}>
+                        Security Level
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.authenV3.securityLevel === "authNoPriv" ||
+                          editForm.authenV3.securityLevel === "authPriv"
+                            ? "flex"
+                            : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, mt: 0.1 }}>
+                        Authen Protocol
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.authenV3.securityLevel === "authNoPriv" ||
+                          editForm.authenV3.securityLevel === "authPriv"
+                            ? "flex"
+                            : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14 }}>
+                        Authen Passphrase
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.authenV3.securityLevel === "authPriv"
+                            ? "flex"
+                            : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, mt: 0.2 }}>
+                        Privacy Protocol
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display:
+                          editForm.authenV3.privacyProtocol === "DES" ||
+                          editForm.authenV3.privacyProtocol === "AES"
+                            ? "flex"
+                            : "none",
+                        justifyContent: "right",
+                        mt: 4,
+                      }}
+                    >
+                      <Typography sx={{ fontSize: 14, color: "red", mr: 1 }}>
+                        *
+                      </Typography>
+                      <Typography sx={{ fontSize: 14, mt: 0.3 }}>
+                        Privacy Passphrase
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ textAlign: "left", width: "40%" }}>
+                    <TextField
+                      {...textFieldProps}
+                      value={editForm.ip_address}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, ip_address: e.target.value })
+                      }
+                      sx={{
+                        mb: 2,
+                        width: 1,
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        textAlign: "left",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      {/* SNMP Version */}
+                      <FormControl
+                        component="fieldset"
+                        sx={{ minWidth: 200, mb: 2 }}
+                      >
+                        {/* <FormLabel component="legend" sx={{ fontSize: 14 }}>SNMP Version</FormLabel> */}
+                        <RadioGroup
+                          value={editForm.snmp_version}
+                          onChange={handleVersionChange}
+                          row
+                        >
+                          <FormControlLabel
+                            value="SNMPv1"
+                            control={<Radio size="small" />}
+                            label="SNMPv1"
+                          />
+                          <FormControlLabel
+                            value="SNMPv2"
+                            control={<Radio size="small" />}
+                            label="SNMPv2"
+                          />
+                          <FormControlLabel
+                            value="SNMPv3"
+                            control={<Radio size="small" />}
+                            label="SNMPv3"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+
+                      <TextField
+                        {...textFieldProps}
+                        value={editForm.snmp_community}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            snmp_community: e.target.value,
+                          })
+                        }
+                        sx={{
+                          display:
+                            editForm.snmp_version === "SNMPv1" ||
+                            editForm.snmp_version === "SNMPv2"
+                              ? ""
+                              : "none",
+                          width: 1,
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+
+                      <TextField
+                        {...textFieldProps}
+                        value={editForm.authenV3.username}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            authenV3: {
+                              ...editForm.authenV3,
+                              username: e.target.value,
+                            },
+                          })
+                        }
+                        sx={{
+                          display:
+                            editForm.snmp_version === "SNMPv3" ? "" : "none",
+                          width: 1,
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                          mb: 2.5,
+                        }}
+                      />
+
+                      <FormControl sx={{ minWidth: 200 }} size="small">
+                        <RadioGroup
+                          value={editForm.authenV3.securityLevel}
+                          onChange={(e) => {
+                            setEditForm({
+                              ...editForm,
+                              authenV3: {
+                                ...editForm.authenV3,
+                                securityLevel: e.target.value,
+                              },
+                            });
+                          }}
+                          row
+                          sx={{
+                            display:
+                              editForm.snmp_version === "SNMPv3" ? "" : "none",
+                            mb: 2,
+                            mt: -0.5,
+                            fontSize: 14,
+                          }}
+                        >
+                          <FormControlLabel
+                            value="noAuthNoPriv"
+                            control={<Radio size="small" />}
+                            label="noAuthNoPriv"
+                          />
+                          <FormControlLabel
+                            value="authNoPriv"
+                            control={<Radio size="small" />}
+                            label="authNoPriv"
+                          />
+                          <FormControlLabel
+                            value="authPriv"
+                            control={<Radio size="small" />}
+                            label="authPriv"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+
+                      <FormControl sx={{ minWidth: 200 }} size="small">
+                        <RadioGroup
+                          value={editForm.authenV3.authenProtocol}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              authenV3: {
+                                ...editForm.authenV3,
+                                authenProtocol: e.target.value,
+                              },
+                            })
+                          }
+                          row // This makes the radio buttons appear horizontally
+                          sx={{
+                            display:
+                              editForm.authenV3.securityLevel ===
+                                "authNoPriv" ||
+                              editForm.authenV3.securityLevel === "authPriv"
+                                ? ""
+                                : "none",
+                            mb: 2,
+                            fontSize: 14,
+                          }}
+                        >
+                          <FormControlLabel
+                            value="MD5"
+                            control={<Radio size="small" />}
+                            label="MD5"
+                          />
+                          <FormControlLabel
+                            value="SHA"
+                            control={<Radio size="small" />}
+                            label="SHA"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+
+                      <TextField
+                        {...textFieldProps}
+                        value={editForm.authenV3.authenPass}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            authenV3: {
+                              ...editForm.authenV3,
+                              authenPass: e.target.value,
+                            },
+                          })
+                        }
+                        sx={{
+                          display:
+                            editForm.authenV3.securityLevel === "authNoPriv" ||
+                            editForm.authenV3.securityLevel === "authPriv"
+                              ? ""
+                              : "none",
+                          width: 1,
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                          mb: 2,
+                        }}
+                      />
+
+                      <FormControl sx={{ minWidth: 200 }} size="small">
+                        <RadioGroup
+                          value={editForm.authenV3.privacyProtocol}
+                          onChange={(e) => {
+                            setEditForm({
+                              ...editForm,
+                              authenV3: {
+                                ...editForm.authenV3,
+                                privacyProtocol: e.target.value,
+                              },
+                            });
+                          }}
+                          row // This makes the radio buttons appear horizontally
+                          sx={{
+                            display:
+                              editForm.authenV3.securityLevel === "authPriv"
+                                ? ""
+                                : "none",
+                            mb: 2,
+                            fontSize: 14,
+                          }}
+                        >
+                          <FormControlLabel
+                            value="NONE"
+                            control={<Radio size="small" />}
+                            label="NONE"
+                          />
+                          <FormControlLabel
+                            value="DES"
+                            control={<Radio size="small" />}
+                            label="DES"
+                          />
+                          <FormControlLabel
+                            value="AES"
+                            control={<Radio size="small" />}
+                            label="AES"
+                          />
+                        </RadioGroup>
+                      </FormControl>
+
+                      <TextField
+                        {...textFieldProps}
+                        value={editForm.authenV3.privacyPass}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            authenV3: {
+                              ...editForm.authenV3,
+                              privacyPass: e.target.value,
+                            },
+                          })
+                        }
+                        sx={{
+                          display:
+                            editForm.authenV3.privacyProtocol === "DES" ||
+                            editForm.authenV3.privacyProtocol === "AES"
+                              ? ""
+                              : "none",
+                          width: 1,
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                          mb: 2,
+                          mt: 0.3,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box>
+                    <Typography sx={{ fontSize: 14, mt: 1 }}>Port</Typography>
+                  </Box>
+                  <Box>
+                    <TextField
+                      {...textFieldProps}
+                      value={editForm.snmp_port}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, snmp_port: e.target.value })
+                      }
+                      sx={{
+                        width: "90%",
+                        "& .MuiInputBase-input": {
+                          fontSize: 14,
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
         </DialogContent>
         <DialogActions>
           <Button
