@@ -152,7 +152,7 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
                 src={GoogleLogo}
                 alt="Google Logo"
                 style={{
-                  width: "40px",
+                  width: "38px",
                   marginRight: "10px",
                 }}
               />
