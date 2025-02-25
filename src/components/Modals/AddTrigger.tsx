@@ -583,11 +583,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                 }}
               >
                 {[
-                  { level: "Not classified", color: "#808080" },
-                  { level: "Information", color: "#0000FF" },
                   { level: "Warning", color: "#FFA500" },
-                  { level: "Average", color: "#FF4500" },
-                  { level: "High", color: "#FF0000" },
+                  { level: "Critical", color: "#FF0000" },
                   { level: "Disaster", color: "#8B0000" },
                 ].map(({ level, color }) => (
                   <Button
