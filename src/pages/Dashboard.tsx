@@ -1020,7 +1020,7 @@ const Dashboard = () => {
           // backgroundColor: "#FFFFFB",
           backgroundColor: "#ebf1ff",
           borderRadius: 3,
-          p: 2,
+          p: 1,
         }}
       >
         <DraggableDashboard

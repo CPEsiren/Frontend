@@ -4,6 +4,7 @@ import Checkbox from "@mui/material/Checkbox";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
+import DeleteIcon from "@mui/icons-material/Delete"; // Import DeleteIcon
 
 interface TodoItem {
   id: string;
@@ -73,6 +74,17 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
     }
   };
 
+  // Add new function to handle deleting a todo
+  const handleDeleteTodo = (id: string) => {
+    const newTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(newTodos);
+
+    // Call onUpdate to save to database
+    if (onUpdate) {
+      onUpdate(newTodos);
+    }
+  };
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
       handleAddTodo();
@@ -101,7 +113,7 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
           </Typography>
         </Box>
         <Box
-          sx={{ display: "flex", gap: 1, mb: 2, alignItems: "center", p: 1 }}
+          sx={{ display: "flex", gap: 1, mb: 2, alignItems: "center", px: 2,pt:1 }}
         >
           <TextField
             size="small"
@@ -114,9 +126,8 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
           <IconButton
             onClick={handleAddTodo}
             sx={{
-              // backgroundColor: "primary.main",
               color: "primary.main",
-              "&:hover": { backgroundColor: "primary.main", color: "white" },
+              "&:hover": { backgroundColor: "#ffc966", color: "white" },
             }}
           >
             <AddIcon fontSize={"medium"} />
@@ -130,7 +141,7 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
             display: "flex",
             flexDirection: "column",
             gap: 1,
-            px: 1,
+            px: 2,
           }}
         >
           {todos.map((todo) => (
@@ -148,6 +159,12 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
               <Checkbox
                 checked={todo.completed}
                 onChange={() => handleToggleTodo(todo.id)}
+                sx={{
+                  color: 'grey.500',
+                  '&.Mui-checked': {
+                    color: "blue", // Apply blue color when checked
+                  },
+                }}
               />
 
               {editingId === todo.id ? (
@@ -179,9 +196,19 @@ const TodoList: React.FC<TodoListProps> = ({ todoItems = [], onUpdate }) => {
                   <CheckIcon />
                 </IconButton>
               ) : (
-                <IconButton onClick={() => handleEditTodo(todo.id, todo.text)}>
-                  <EditIcon />
-                </IconButton>
+                <>
+                  <IconButton
+                    onClick={() => handleEditTodo(todo.id, todo.text)}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleDeleteTodo(todo.id)}
+                    sx={{ }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </>
               )}
             </Box>
           ))}

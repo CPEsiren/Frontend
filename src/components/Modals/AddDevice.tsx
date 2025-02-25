@@ -310,6 +310,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           privacyProtocol: privacyProtocol,
           privacyPass: privacyPass,
         },
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username")
       };
 
       // Only add items to request if they have data

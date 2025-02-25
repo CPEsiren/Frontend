@@ -233,41 +233,38 @@ const TableComponent = () => {
 
   return (
     <Box
-          sx={{
-            height: "100%",
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden"
-          }}
-        >
+      sx={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       <TableContainer
         component={Paper}
+        elevation={0}
         sx={{
-          maxHeight: 300,
-          "& .MuiTableCell-root": {
-            padding: "10px 8px",
-            fontSize: "0.8rem",
-            lineHeight: 1.73,
-          },
-          "& .MuiTableCell-head": {
-            fontWeight: "bold",
-            backgroundColor: "white",
-            fontSize: "0.8rem",
-            borderBottom: "1px solid #dbdbdb",
-          },
-          width: 1,
+          backgroundColor: "transparent",
         }}
       >
         <Table
           stickyHeader
           size="small"
           sx={{
-            "& .MuiTableRow-root": {
-              // "&:nth-of-type(odd)": {
-              //   backgroundColor: "white",
-              // },
+            maxHeight: 300,
+            "& .MuiTableCell-root": {
+              padding: "10px 8px",
+              fontSize: "0.8rem",
+              lineHeight: 1.73,
             },
+            "& .MuiTableCell-head": {
+              fontWeight: "bold",
+              backgroundColor: "white",
+              fontSize: "0.8rem",
+              borderBottom: "1px solid #dbdbdb",
+            },
+            width: 1,
             px: 1,
           }}
         >

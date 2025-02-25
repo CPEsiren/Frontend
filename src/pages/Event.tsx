@@ -14,6 +14,7 @@ const Event = () => {
             display: "flex",
             justifyContent: "flex-start",
             marginTop: 5,
+            
           }}
         >
           <Typography
@@ -32,6 +33,7 @@ const Event = () => {
           marginTop: 2,
           height: "auto",
           // display: "flex",
+       
         }}
       >
         <Box
@@ -44,7 +46,7 @@ const Event = () => {
             alignItems: "center",
             minHeight: "fit-content",
             marginBottom: 5,
-            // py: 2,
+             pb: 4,
             // px: 1,
           }}
         >
