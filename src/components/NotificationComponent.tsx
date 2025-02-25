@@ -310,9 +310,28 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
 
   return (
     <>
-      <TableContainer component={Paper}>
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          backgroundColor: "transparent",
+        }}
+      >
         {notifications.length > 0 ? (
-          <Table>
+          <Table
+            sx={{
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                padding: "16px",
+              },
+              "& .MuiTableRow-root:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+              "& .MuiTableCell-head": {
+                borderBottom: "1px solid #dbdbdb",
+              },
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell align="center">Type</TableCell>

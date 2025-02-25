@@ -93,7 +93,7 @@ const DraggableItem = styled(Paper, {
 
 const DragHandle = styled(Box)(({ theme }) => ({
   position: "absolute",
-  left: theme.spacing(0.5), // Position from the left edge 
+  left: theme.spacing(0), // Position from the left edge 
   top: "50%",
   transform: "translateY(-50%)",
   opacity: 1,
@@ -214,7 +214,7 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
   };
 
   return (
-    <Grid container spacing={2} sx={{ height: "100%" }}>
+    <Grid container spacing={1.5} sx={{ height: "100%" }}>
       {activeComponents.map((activeComp, index) => {
         const componentConfig = components.find((c) => c.id === activeComp.id);
         if (!componentConfig) return null;
@@ -268,6 +268,8 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
                   flexDirection: "column",
                   position: "relative",
                   paddingLeft: isEditing ? 4 : 0,
+                  paddingY: isEditing ? 1 : 0,
+                  paddingRight: isEditing ? 1 : 0,
                   boxSizing: "border-box",
                   overflow: "hidden",
                 }}
