@@ -88,33 +88,37 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
   return (
     <Box
+    sx={{
+      width: "100%",
+      height: isSmall ? "80%" : "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      bgcolor: "#f5f5f5",
+      borderRadius: 2,
+      boxSizing: "border-box",
+    }}
+  >
+    <Box
       sx={{
-        position: "relative",
         width: "100%",
-        height: isSmall ? "245px" : "455px",
-        mt: isSmall ? -1 : 0,
-        pb: isSmall ? 5 : 0,
-        pt: isSmall ? 1 : 2,
-        px: isSmall ? 0 : 0,
-        bgcolor: "#f5f5f5",
-        borderRadius: 2,
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        py: isSmall ? 0 : 2,
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          "& canvas": {
-            height: isSmall ? "250px !important" : "400px !important",
-          },
-          p: 2,
-        }}
-      >
         <LineChart
-          height={isSmall ? 260 : 420}
+          height={isSmall ? 240 : 420}
+          width={isSmall ? 380 : 1000}
           margin={{
-            left: isSmall ? 50 : 55, // Increased left margin for y-axis label
-            bottom: isSmall ? 55 : 60, // Increased bottom margin for x-axis label
+            left: isSmall ? 2 : 55,
+            right: isSmall ? 2 : 40, // Increased right margin for balance
+            top: isSmall ? 40 : 50, // Added top margin for legend spacing
+            bottom: isSmall ? 50 : 60,
           }}
           series={[
             ...(yAxis.length === 0
@@ -215,7 +219,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
-                transform: `translateX(-${isSmall ? 11 : 14}px)`, // Move label left
+                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
@@ -270,10 +274,15 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               itemMarkWidth: isSmall ? 8 : 10,
               itemMarkHeight: isSmall ? 8 : 10,
               markGap: isSmall ? 3 : 5,
-              itemGap: isSmall ? 8 : 10,
+              itemGap: isSmall ? 10 : 16,
               labelStyle: {
-                fontSize: isSmall ? 8 : 15,
+                fontSize: isSmall ? 8 : 12,
               },
+              position: {
+                vertical: "top",
+                horizontal: "middle",
+              },
+              padding: isSmall ? 0 : 0,
             },
           }}
           grid={{ vertical: true, horizontal: true }}

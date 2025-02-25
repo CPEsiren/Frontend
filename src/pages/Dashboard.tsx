@@ -77,7 +77,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <TableChartIcon />,
     component: TableComponent,
     defaultSize: { xs: 12, md: 6 },
-    height: "17rem", // Taller for table content
+    height: "19rem", // Taller for table content
     allowMultiple: false,
   },
   {
@@ -86,7 +86,7 @@ const availableComponents: ComponentConfig[] = [
     icon: <ShowChartIcon />,
     component: Graph,
     defaultSize: { xs: 12, md: 6 },
-    height: "23rem", // Taller for graphs
+    height: "25rem", // Taller for graphs
     allowMultiple: true,
   },
   {
@@ -729,7 +729,7 @@ const Dashboard = () => {
     componentConfig: ComponentConfig
   ) => {
     const Component = componentConfig.component;
-
+  
     const handleTodoUpdate = async (newTodos: TodoItem[]) => {
       try {
         // First update local state
@@ -739,7 +739,7 @@ const Dashboard = () => {
             : comp
         );
         setActiveComponents(updatedComponents);
-
+  
         // Then update in database
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
@@ -760,11 +760,11 @@ const Dashboard = () => {
             }),
           }
         );
-
+  
         if (!response.ok) {
           throw new Error("Failed to update dashboard");
         }
-
+  
         setSnackbar({
           open: true,
           message: "Todo list updated successfully",
@@ -779,14 +779,16 @@ const Dashboard = () => {
         });
       }
     };
-
+  
     return (
       <Box
         sx={{
-          position: "relative",
-          height: componentConfig.height,
+          height: "100%",
+          width: "100%",
           display: "flex",
           flexDirection: "column",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
         {isEditing && !isViewerDashboard && (
@@ -804,7 +806,12 @@ const Dashboard = () => {
             <RemoveIcon />
           </IconButton>
         )}
-        <Box sx={{ flexGrow: 1, height: "100%" }}>
+        <Box sx={{ 
+          flexGrow: 1,
+          height: "100%", 
+          width: "100%",
+          overflow: "hidden",
+        }}>
           <Component
             graphSelection={activeComp.graphSelection}
             todoItems={activeComp.todoItems}
@@ -1010,9 +1017,10 @@ const Dashboard = () => {
           width: 1,
           marginTop: 2,
           minHeight: "calc(100vh - 200px)",
-          backgroundColor: "#FFFFFB",
+          // backgroundColor: "#FFFFFB",
+          backgroundColor: "#ebf1ff",
           borderRadius: 3,
-          p: 3,
+          p: 2,
         }}
       >
         <DraggableDashboard
