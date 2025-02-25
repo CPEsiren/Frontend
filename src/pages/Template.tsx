@@ -196,9 +196,16 @@ const Templates: React.FC = () => {
 
     setFormLoading(true);
     try {
+      const requestData = {
+        ...editingTemplate,
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username"),
+        oldtemplate_name: editingTemplate.template_name, // Assuming you want to store the original name
+      };
+
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/template/edit/${editingTemplate._id}`,
-        editingTemplate,
+        requestData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -244,12 +251,19 @@ const Templates: React.FC = () => {
     if (!templateToDelete) return;
 
     try {
-      const response = await axios.delete(
+      const response = await fetch(
         `${import.meta.env.VITE_API_URL}/template/${templateToDelete._id}`,
         {
+          method: "DELETE",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          body: JSON.stringify({
+            userRole: localStorage.getItem("userRole"),
+            userName: localStorage.getItem("username"),
+            template_name: templateToDelete.template_name,
+          }),
         }
       );
 

@@ -113,13 +113,18 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
         (item) => item.item_name.trim() || item.oid.trim()
       );
 
-      // Construct the template data, explicitly casting items
-      const templateData: Omit<ITemplate, "_id"> = {
-        template_name,
-        description,
-        items: filledItems as Item[], // Type assertion to ignore _id
-        triggers: triggers as ITriggerTemplate[], // Type assertion to ignore _id
-      };
+      // Construct the template data with additional user info
+    const templateData: Omit<ITemplate, "_id"> & {
+      userRole: string | null;
+      userName: string | null;
+    } = {
+      template_name,
+      description,
+      items: filledItems as Item[], // Type assertion to ignore *id
+      triggers: triggers as ITriggerTemplate[], // Type assertion to ignore *id
+      userRole: localStorage.getItem("userRole"),
+      userName: localStorage.getItem("username"),
+    };
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/template`,
