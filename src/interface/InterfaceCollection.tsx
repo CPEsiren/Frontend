@@ -2,6 +2,7 @@ export interface IDevice {
   _id: string;
   hostname: string;
   ip_address: string;
+  template: string;
   snmp_port: string;
   snmp_version: string;
   snmp_community: string;
@@ -10,6 +11,14 @@ export interface IDevice {
   items: Item[];
   interfaces: IInterface[];
   status: number;
+  authenV3: {
+    username: string;
+    securityLevel: string;
+    authenProtocol: string;
+    authenPass: string;
+    privacyProtocol: string;
+    privacyPass: string;
+  };
 }
 
 export interface Item {
@@ -154,12 +163,4 @@ export interface RecoveryPart {
   operator?: string; // 'and' or 'or'
   functionofItem: string;
   duration: string;
-}
-
-export interface ILogUser {
-  _id: string;
-  username: string;
-  role: string;
-  activity: string;
-  createdAt: Date;
 }
