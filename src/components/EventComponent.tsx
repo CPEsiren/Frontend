@@ -146,8 +146,8 @@ const EventComponent = () => {
         sx={{
           backgroundColor: "white",
           borderRadius: 3,
-          // mt: 2,    
            mx: -3,
+           mb: 5,
         }}
       >
         <Table
