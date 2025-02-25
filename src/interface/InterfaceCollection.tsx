@@ -155,3 +155,11 @@ export interface RecoveryPart {
   functionofItem: string;
   duration: string;
 }
+
+export interface ILogUser {
+  _id: string;
+  username: string;
+  role: string;
+  activity: string;
+  createdAt: Date;
+}

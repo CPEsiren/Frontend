@@ -215,6 +215,12 @@ const ManageComponent = () => {
 
     setFormLoading(true);
     try {
+      const requestBody = {
+        ...editForm,
+        // Add user role and username for tracking who made the edit
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username")
+      };
       const response = await fetch(
         // `http://localhost:3000/host/edit/${editingDevice._id}`,
         `${import.meta.env.VITE_API_URL}/host/edit/${editingDevice._id}`,
@@ -224,7 +230,8 @@ const ManageComponent = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(editForm),
+          // body: JSON.stringify(editForm),
+          body: JSON.stringify(requestBody),
         }
       );
 
@@ -270,6 +277,10 @@ const ManageComponent = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          body: JSON.stringify({
+            userRole: localStorage.getItem("userRole"),
+            userName: localStorage.getItem("username")
+          }),
         }
       );
 
