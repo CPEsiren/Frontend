@@ -90,6 +90,7 @@ const UserManagement = () => {
     try {
       setLoading(true);
       const newRole = getNewRole(selectedUser.role);
+      const nameofuserchanged = selectedUser.username;
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/user/editrole/${selectedUser._id}`,
@@ -99,7 +100,12 @@ const UserManagement = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ role: newRole }),
+          body: JSON.stringify({
+            role: newRole,
+            userRole: localStorage.getItem("userRole"),
+            userName: localStorage.getItem("username"),
+            NOC: nameofuserchanged,
+          }),
         }
       );
 
@@ -209,7 +215,7 @@ const UserManagement = () => {
             },
             "& .MuiTableCell-head": {
               borderBottom: "1px solid #dbdbdb",
-            }
+            },
           }}
         >
           <TableHead>
@@ -282,11 +288,13 @@ const UserManagement = () => {
         onClose={() => setSwapRoleDialogOpen(false)}
         aria-labelledby="swap-role-dialog-title"
       >
-        <DialogTitle id="swap-role-dialog-title">Confirm Switch Role</DialogTitle>
+        <DialogTitle id="swap-role-dialog-title">
+          Confirm Switch Role
+        </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to switch role of "{selectedUser?.username}" to{" "}
-            {selectedUser ? getNewRole(selectedUser.role) : ""}?
+            Are you sure you want to switch role of "{selectedUser?.username}"
+            to {selectedUser ? getNewRole(selectedUser.role) : ""}?
           </Typography>
         </DialogContent>
         <DialogActions>

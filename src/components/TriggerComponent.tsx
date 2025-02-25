@@ -282,7 +282,7 @@ const TriggerComponent = () => {
 
     try {
       // await axios.delete(`http://127.0.0.1:3000/trigger/${removeIdTrigger}`);
-      await axios.delete(
+      await fetch(
         `${import.meta.env.VITE_API_URL}/trigger/${removeIdTrigger}`,
         {
           method: "DELETE",
@@ -290,6 +290,11 @@ const TriggerComponent = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          body: JSON.stringify({
+            userRole: localStorage.getItem("userRole"),
+            userName: localStorage.getItem("username"),
+            trigger_name: removeTriggerName,
+          }),
         }
       );
 
@@ -409,6 +414,8 @@ const TriggerComponent = () => {
           enabled: editEnabled,
           expressionPart: formattedExpressionParts,
           expressionRecoveryPart: formattedRecoveryParts,
+          userRole: localStorage.getItem("userRole"),
+          userName: localStorage.getItem("username"),
         },
         {
           method: "PUT",

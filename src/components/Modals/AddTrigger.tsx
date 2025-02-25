@@ -311,6 +311,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
           functionofItem: part.functionofItem,
           duration: part.duration,
         })),
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username"),
       };
 
       await axios.post(`${import.meta.env.VITE_API_URL}/trigger`, requestBody, {
