@@ -272,39 +272,48 @@ const Graphs: React.FC = () => {
           break;
         case "Last 1 Hour":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 1);
-          forStartTime.setHours(dateTimeEnd.getHours() - 1.1);
+          forStartTime.setHours(dateTimeEnd.getHours() - 1);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 3 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 3);
-          forStartTime.setHours(dateTimeEnd.getHours() - 3.1);
+          forStartTime.setHours(dateTimeEnd.getHours() - 3);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 6 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 6);
-          forStartTime.setHours(dateTimeEnd.getHours() - 6.1);
+          forStartTime.setHours(dateTimeEnd.getHours() - 6);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 12 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 12);
-          forStartTime.setHours(dateTimeEnd.getHours() - 12.1);
+          forStartTime.setHours(dateTimeEnd.getHours() - 12);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 1 Day":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 1);
-          forStartTime.setDate(dateTimeEnd.getDate() - 1.01);
+          forStartTime.setDate(dateTimeEnd.getDate() - 1);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 3 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 3);
-          forStartTime.setDate(dateTimeEnd.getDate() - 3.01);
+          forStartTime.setDate(dateTimeEnd.getDate() - 3);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 7 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 7);
-          forStartTime.setDate(dateTimeEnd.getDate() - 7.01);
+          forStartTime.setDate(dateTimeEnd.getDate() - 7);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 1 Month":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 1);
           forStartTime.setMonth(dateTimeEnd.getMonth() - 1);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 6 Months":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 6);
           forStartTime.setMonth(dateTimeEnd.getMonth() - 6);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         default:
           // If no match, don't change the date
@@ -889,7 +898,7 @@ const Graphs: React.FC = () => {
                   >
                     {item.item_id.item_name}
                   </Typography>
-                  <Box sx={{ flexGrow: 1, overflow: "hidden",width:1,p:0 }}>
+                  <Box sx={{ flexGrow: 1, overflow: "hidden", width: 1, p: 0 }}>
                     <MetricGraph
                       item={item}
                       selectedLastTime={rangeTime}
