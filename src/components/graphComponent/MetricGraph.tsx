@@ -6,9 +6,9 @@ import { LineChart } from "@mui/x-charts/LineChart";
 
 export interface Items {
   item_id: Item;
-  avg_value: number;
-  max_value: number;
-  min_value: number;
+  avg_value: number[];
+  max_value: number[];
+  min_value: number[];
   data: DataEntry[];
 }
 
@@ -31,6 +31,9 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 }) => {
   const [xAxis, setXAxis] = useState<Date[]>([]);
   const [yAxis, setYAxis] = useState<number[]>([]);
+  const [maxValue, setMaxValue] = useState<number[]>([]);
+  const [minValue, setMinValue] = useState<number[]>([]);
+  const [avgValue, setAvgValue] = useState<number[]>([]);
 
   useEffect(() => {
     const sortedData = item.data
@@ -45,8 +48,16 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
       return date;
     });
     setXAxis(DateXAxis);
-    const value = sortedData.map((entry) => Number(entry.value));
+    const value = sortedData
+      .map((entry) => {
+        const numValue = Number(entry.value);
+        return isNaN(numValue) ? null : numValue;
+      })
+      .filter((numValue) => numValue !== null) as number[];
     setYAxis(value);
+    setMaxValue(item.max_value);
+    setMinValue(item.min_value);
+    setAvgValue(item.avg_value);
   }, [item]);
 
   const createConstantArray = (value: number, length: number) => {
@@ -77,72 +88,108 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
   return (
     <Box
+    sx={{
+      width: "100%",
+      height: isSmall ? "80%" : "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      bgcolor: "#f5f5f5",
+      borderRadius: 2,
+      boxSizing: "border-box",
+    }}
+  >
+    <Box
       sx={{
-        position: "relative",
         width: "100%",
-        height: isSmall ? "245px" : "455px",
-        mt: isSmall ? -1 : 0,
-        pb: isSmall ? 5 : 0,
-        pt: isSmall ? 1 : 2,
-        px: isSmall ? 0 : 0,
-        bgcolor: "#f5f5f5",
-        borderRadius: 2,
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        py: isSmall ? 0 : 2,
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          "& canvas": {
-            height: isSmall ? "250px !important" : "400px !important",
-          },
-          p: 2,
-        }}
-      >
         <LineChart
-          height={isSmall ? 260 : 420}
+          height={isSmall ? 240 : 420}
+          width={isSmall ? 380 : 1000}
           margin={{
-            left: isSmall ? 50 : 55, // Increased left margin for y-axis label
-            bottom: isSmall ? 55 : 60, // Increased bottom margin for x-axis label
+            left: isSmall ? 2 : 55,
+            right: isSmall ? 2 : 40, // Increased right margin for balance
+            top: isSmall ? 40 : 50, // Added top margin for legend spacing
+            bottom: isSmall ? 50 : 60,
           }}
           series={[
-            {
-              data: yAxis,
-              label: hideLegendLabel ? "" : item.item_id.item_name,
-              curve: "linear",
-              color: "#2196f3",
-              area: true,
-              showMark: false,
-              valueFormatter: formatYAxisLabel,
-              connectNulls: false,
-            },
-            {
-              data: createConstantArray(item.max_value, yAxis.length),
-              label: `Maximum(${selectedLastTime})`,
-              curve: "linear",
-              color: "#ff9800",
-              showMark: false,
-              valueFormatter: formatYAxisLabel,
-              id: "max",
-            },
-            {
-              data: createConstantArray(item.avg_value, yAxis.length),
-              label: `Average(${selectedLastTime})`,
-              curve: "linear",
-              color: "#4caf50",
-              showMark: false,
-              valueFormatter: formatYAxisLabel,
-              id: "avg",
-            },
-            {
-              data: createConstantArray(item.min_value, yAxis.length),
-              label: `Minimum(${selectedLastTime})`,
-              curve: "linear",
-              color: "#f44336",
-              showMark: false,
-              valueFormatter: formatYAxisLabel,
-              id: "min",
-            },
+            ...(yAxis.length === 0
+              ? [
+                  {
+                    data: maxValue,
+                    label: `Maximum(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#ff9800",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "max",
+                  },
+                  {
+                    data: avgValue,
+                    label: `Average(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#4caf50",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "avg",
+                  },
+                  {
+                    data: minValue,
+                    label: `Minimum(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#f44336",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "min",
+                  },
+                ]
+              : [
+                  {
+                    data: yAxis,
+                    label: hideLegendLabel ? "" : item.item_id.item_name,
+                    curve: "linear" as const,
+                    color: "#2196f3",
+                    area: true,
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    connectNulls: false,
+                  },
+                  {
+                    data: createConstantArray(maxValue[0], xAxis.length),
+                    label: `Maximum(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#ff9800",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "max",
+                  },
+                  {
+                    data: createConstantArray(avgValue[0], xAxis.length),
+                    label: `Average(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#4caf50",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "avg",
+                  },
+                  {
+                    data: createConstantArray(minValue[0], xAxis.length),
+                    label: `Minimum(${selectedLastTime})`,
+                    curve: "linear" as const,
+                    color: "#f44336",
+                    showMark: false,
+                    valueFormatter: formatYAxisLabel,
+                    id: "min",
+                  },
+                ]),
           ]}
           xAxis={[
             {
@@ -172,7 +219,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
-                transform: `translateX(-${isSmall ? 11 : 14}px)`, // Move label left
+                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
@@ -192,16 +239,16 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               fill: "#2196f3",
             },
             " .MuiLineElement-series-max": {
-              strokeDasharray: "5 5",
+              strokeDasharray: yAxis.length === 0 ? "none" : "5 5",
               strokeWidth: isSmall ? 0.5 : 1,
             },
             " .MuiLineElement-series-avg": {
               strokeWidth: isSmall ? 0.5 : 1,
-              strokeDasharray: "5 5",
+              strokeDasharray: yAxis.length === 0 ? "none" : "5 5",
             },
             " .MuiLineElement-series-min": {
               strokeWidth: isSmall ? 0.5 : 1,
-              strokeDasharray: "5 5",
+              strokeDasharray: yAxis.length === 0 ? "none" : "5 5",
             },
             // Add styles for axis areas
             "& .MuiChartsAxis-root": {
@@ -227,10 +274,15 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               itemMarkWidth: isSmall ? 8 : 10,
               itemMarkHeight: isSmall ? 8 : 10,
               markGap: isSmall ? 3 : 5,
-              itemGap: isSmall ? 8 : 10,
+              itemGap: isSmall ? 10 : 16,
               labelStyle: {
-                fontSize: isSmall ? 8 : 15,
+                fontSize: isSmall ? 8 : 12,
               },
+              position: {
+                vertical: "top",
+                horizontal: "middle",
+              },
+              padding: isSmall ? 0 : 0,
             },
           }}
           grid={{ vertical: true, horizontal: true }}

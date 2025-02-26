@@ -40,10 +40,9 @@ const DraggableItem = styled(Paper, {
     !["isDragging", "isDragOver", "dragPosition"].includes(prop as string),
 })<DraggableItemProps>(({ theme, isDragging, isDragOver, dragPosition }) => ({
   position: "relative",
-  
   backgroundColor: "white",
   borderRadius: theme.shape.borderRadius * 2,
-  padding: theme.spacing(1), // Add consistent padding
+  padding: 0, // Remove padding
   border: "1px solid #eee",
   cursor: "pointer",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -52,8 +51,12 @@ const DraggableItem = styled(Paper, {
   boxShadow: isDragging
     ? "0 8px 16px rgba(0,0,0,0.1)"
     : "0 1px 3px rgba(0,0,0,0.05)",
-  display: "flex", // Add flex display
-  flexDirection: "column", // Stack children vertically
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+  width: "100%",
+  boxSizing: "border-box",
+  overflow: "hidden", // Prevent content overflow
   "&:hover": {
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
     transform: "translateY(-2px)",
@@ -68,7 +71,6 @@ const DraggableItem = styled(Paper, {
           width: 4,
           height: "100%",
           backgroundColor: "orange",
-          // backgroundColor: theme.palette.primary.main,
           borderRadius: 2,
           zIndex: 2,
         }
@@ -83,7 +85,6 @@ const DraggableItem = styled(Paper, {
           width: 4,
           height: "100%",
           backgroundColor: "orange",
-          // backgroundColor: theme.palette.primary.main,
           borderRadius: 2,
           zIndex: 2,
         }
@@ -92,7 +93,7 @@ const DraggableItem = styled(Paper, {
 
 const DragHandle = styled(Box)(({ theme }) => ({
   position: "absolute",
-  left: theme.spacing(0),
+  left: theme.spacing(0), // Position from the left edge 
   top: "50%",
   transform: "translateY(-50%)",
   opacity: 1,
@@ -213,15 +214,23 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
   };
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={1.5} sx={{ height: "100%" }}>
       {activeComponents.map((activeComp, index) => {
         const componentConfig = components.find((c) => c.id === activeComp.id);
         if (!componentConfig) return null;
-
+  
         const { defaultSize } = componentConfig;
-
+  
         return (
-          <Grid item key={activeComp.position} {...defaultSize} sx={{mb:0}}>
+          <Grid 
+            item 
+            key={activeComp.position} 
+            {...defaultSize} 
+            sx={{ 
+              height: componentConfig.height || "auto",
+              padding: "8px", 
+            }}
+          >
             <DraggableItem
               draggable={isEditing}
               onDragStart={(e) => handleDragStart(e, index)}
@@ -232,6 +241,15 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
               isDragOver={dragOverItem === index}
               dragPosition={dragOverItem === index ? dragPosition : null}
               elevation={0}
+              sx={{
+                height: "100%",
+                width: "100%",
+                boxSizing: "border-box",
+                margin: 0,
+                padding: 0,
+                overflow: "hidden",
+                position: "relative",
+              }}
             >
               {isEditing && (
                 <DragHandle className="dragHandle">
@@ -244,11 +262,16 @@ const DraggableDashboard: React.FC<DraggableDashboardProps> = ({
               )}
               <Box
                 sx={{
-                  flexGrow: 1, // Take remaining space
                   height: "100%",
-                  pl: isEditing ? 4 : 0,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                   position: "relative",
-                  overflow: "hidden", // Prevent content overflow
+                  paddingLeft: isEditing ? 4 : 0,
+                  paddingY: isEditing ? 1 : 0,
+                  paddingRight: isEditing ? 1 : 0,
+                  boxSizing: "border-box",
+                  overflow: "hidden",
                 }}
               >
                 {renderComponent(activeComp, componentConfig, index)}

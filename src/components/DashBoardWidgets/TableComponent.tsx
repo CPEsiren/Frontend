@@ -232,39 +232,47 @@ const TableComponent = () => {
   }
 
   return (
-    <Box sx={{ width: "100%", overflow: "hidden", height: "100%" }}>
+    <Box
+      sx={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       <TableContainer
         component={Paper}
+        elevation={0}
         sx={{
-          maxHeight: 300,
-          "& .MuiTableCell-root": {
-            padding: "10px 8px",
-            fontSize: "0.8rem",
-            lineHeight: 1.53,
-          },
-          "& .MuiTableCell-head": {
-            fontWeight: "bold",
-            backgroundColor: "#f5f5f5",
-            fontSize: "0.8rem",
-          },
+          backgroundColor: "transparent",
         }}
       >
         <Table
           stickyHeader
           size="small"
           sx={{
-            "& .MuiTableRow-root": {
-              "&:nth-of-type(odd)": {
-                backgroundColor: "#fafafa",
-              },
+            maxHeight: 300,
+            "& .MuiTableCell-root": {
+              padding: "10px 8px",
+              fontSize: "0.8rem",
+              lineHeight: 1.73,
             },
+            "& .MuiTableCell-head": {
+              fontWeight: "bold",
+              backgroundColor: "white",
+              fontSize: "0.8rem",
+              borderBottom: "1px solid #dbdbdb",
+            },
+            width: 1,
+            px: 1,
           }}
         >
           <TableHead>
             <TableRow>
-              <TableCell>Parameter</TableCell>
-              <TableCell>Value</TableCell>
-              <TableCell>Details</TableCell>
+              <TableCell sx={{ width: "60%" }}>Parameter</TableCell>
+              <TableCell sx={{ width: "20%" }}>Value</TableCell>
+              <TableCell sx={{ width: "20%" }}>Details</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -276,20 +284,21 @@ const TableComponent = () => {
                   "&:hover": {
                     backgroundColor: "#f5f5f5",
                   },
+                  Width: 1,
                 }}
               >
                 <TableCell
                   component="th"
                   scope="row"
                   sx={{
-                    maxWidth: "200px",
                     whiteSpace: "normal",
                     wordBreak: "break-word",
+                    width: "60%",
                   }}
                 >
                   {highlightText(row.name)}
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ textAlign: "left" }}>
                   <Box
                     component="span"
                     sx={{
@@ -297,15 +306,15 @@ const TableComponent = () => {
                       padding: "2px 6px",
                       display: "inline-block",
                       minWidth: "30px",
-                      textAlign: "center",
+                      width: "20%",
                     }}
                   >
                     {row.value}
                   </Box>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ textAlign: "left" }}>
                   {row.name.includes("event") ? (
-                    <>
+                    <Box sx={{ width: "20%", alignSelf: "center" }}>
                       <Typography
                         component="span"
                         sx={{ color: "green", fontSize: "0.8rem" }}
@@ -319,7 +328,7 @@ const TableComponent = () => {
                       >
                         {row.problem}
                       </Typography>
-                    </>
+                    </Box>
                   ) : (
                     <>
                       <Typography

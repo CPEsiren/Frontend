@@ -92,9 +92,9 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
                 timestamp: entry.timestamp,
                 value: Number(entry.value),
               })),
-              avg_value: Number(selectedItemData.avg_value) || 0,
-              max_value: Number(selectedItemData.max_value) || 0,
-              min_value: Number(selectedItemData.min_value) || 0,
+              avg_value: selectedItemData.avg_value,
+              max_value: selectedItemData.max_value,
+              min_value: selectedItemData.min_value,
             };
 
             setGraphData(transformedData);
@@ -138,11 +138,11 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
     <Box sx={{ p: 2, height: "100%" }}>
       <Typography
         variant="subtitle2"
-        sx={{ mb: 0.5, fontWeight: "bold", color: "#db5100" }}
+        sx={{ mb: 0, fontWeight: "bold", color: "#db5100" }}
       >
         {graphData.item_id.item_name}&nbsp;
       </Typography>
-      <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
+      <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: "bold" }}>
         on {hostname}
       </Typography>
       <Box sx={{ height: "calc(100% - 52px)" }}>

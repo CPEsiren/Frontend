@@ -20,24 +20,10 @@ import axios from "axios";
 import { SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-interface ExpressionPart {
-  item: string;
-  operation: string;
-  value: string;
-  operator?: string; // 'and' or 'or'
-  functionofItem: string;
-  duration: string;
-}
-
-interface RecoveryPart {
-  item: string;
-  operation: string;
-  value: string;
-  operator?: string; // 'and' or 'or'
-  functionofItem: string;
-  duration: string;
-}
+import {
+  ExpressionPart,
+  RecoveryPart,
+} from "../../interface/InterfaceCollection";
 
 const functionofItem = [
   { value: "avg", label: "avg()" },
@@ -325,6 +311,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
           functionofItem: part.functionofItem,
           duration: part.duration,
         })),
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username"),
       };
 
       await axios.post(`${import.meta.env.VITE_API_URL}/trigger`, requestBody, {
@@ -447,11 +435,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   // New state for dialog
   const [openDialogExpression, setOpenDialogExpression] = useState(false);
   const [searchTermExpression, setSearchTermExpression] = useState("");
-  // Function to handle dialog open
-  const handleOpenDialogExpression = () => {
-    setOpenDialogExpression(true);
-    setSearchTermExpression("");
-  };
+
   // Function to handle dialog close
   const handleCloseDialogExpression = () => {
     setOpenDialogExpression(false);
@@ -473,11 +457,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     useState(false);
   const [searchTermRecoveryExpression, setSearchTermRecoveryExpression] =
     useState("");
-  // Function to handle dialog open
-  const handleOpenDialogRecoveryExpression = () => {
-    setOpenDialogRecoveryExpression(true);
-    setSearchTermRecoveryExpression("");
-  };
+
   // Function to handle dialog close
   const handleCloseDialogRecoveryExpression = () => {
     setOpenDialogRecoveryExpression(false);
@@ -513,7 +493,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               border: "2px solid rgb(232, 232, 232)",
               borderRadius: 3,
               p: 3,
-              mb:2
+              mb: 2,
             }}
           >
             <Typography
@@ -603,11 +583,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                 }}
               >
                 {[
-                  { level: "Not classified", color: "#808080" },
-                  { level: "Information", color: "#0000FF" },
                   { level: "Warning", color: "#FFA500" },
-                  { level: "Average", color: "#FF4500" },
-                  { level: "High", color: "#FF0000" },
+                  { level: "Critical", color: "#FF0000" },
                   { level: "Disaster", color: "#8B0000" },
                 ].map(({ level, color }) => (
                   <Button
@@ -1208,7 +1185,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               justifyContent: "flex-end",
               gap: 2,
               mt: 2,
-              mb:1
+              mb: 1,
             }}
           >
             <Button

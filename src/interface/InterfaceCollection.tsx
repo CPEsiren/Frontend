@@ -2,6 +2,7 @@ export interface IDevice {
   _id: string;
   hostname: string;
   ip_address: string;
+  template: string;
   snmp_port: string;
   snmp_version: string;
   snmp_community: string;
@@ -10,6 +11,14 @@ export interface IDevice {
   items: Item[];
   interfaces: IInterface[];
   status: number;
+  authenV3: {
+    username: string;
+    securityLevel: string;
+    authenProtocol: string;
+    authenPass: string;
+    privacyProtocol: string;
+    privacyPass: string;
+  };
 }
 
 export interface Item {
@@ -116,5 +125,42 @@ export interface ITemplate {
   _id: string;
   template_name: string;
   description: string;
-  items: Item[];
+  items: ItemTemplate[];
+  triggers: ITriggerTemplate[];
+}
+
+export interface ITriggerTemplate {
+  trigger_name: string;
+  severity: string;
+  expression: string;
+  ok_event_generation: string;
+  recovery_expression: string;
+  expressionPart: ExpressionPart[];
+  expressionRecoveryPart: RecoveryPart[];
+}
+
+export interface ItemTemplate {
+  item_name: string;
+  oid: string;
+  type: string;
+  unit: string;
+  interval: number;
+}
+
+export interface ExpressionPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+  duration: string;
+}
+
+export interface RecoveryPart {
+  item: string;
+  operation: string;
+  value: string;
+  operator?: string; // 'and' or 'or'
+  functionofItem: string;
+  duration: string;
 }
