@@ -141,6 +141,8 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
           type: item.type,
           unit: item.unit,
           interval: item.interval.toString(), // Convert to string as per API format
+          userName: localStorage.getItem("username"),
+          userRole: localStorage.getItem("userRole"),
         };
 
         return axios.post(`${import.meta.env.VITE_API_URL}/item`, itemData, {

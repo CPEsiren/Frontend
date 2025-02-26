@@ -168,7 +168,6 @@ const Templates: React.FC = () => {
         throw new Error("Failed to fetch templates");
       }
       const result = await response.json();
-      console.log(result.data);
       setTemplates(result.data);
     } catch (error) {
       console.error("Error fetching templates:", error);

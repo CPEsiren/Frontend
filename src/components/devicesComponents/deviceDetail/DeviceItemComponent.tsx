@@ -134,36 +134,40 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     setEditDialogOpen(true);
   };
 
-  const fetchUpdatedDeviceData = async () => {
-    try {
-      setLoading(true);
-      // const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/host/${deviceData._id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch updated device data");
-      }
-      const result = await response.json();
-      if (result.status === "success") {
-        setItems(result.data.items || []);
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch items";
-      setError(errorMessage);
-      console.error("Error fetching items:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchUpdatedDeviceData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     // const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_API_URL}/host/${deviceData._id}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //         body: JSON.stringify({
+  //           userRole: localStorage.getItem("userRole"),
+  //           userName: localStorage.getItem("username"),
+  //         }),
+  //       }
+  //     );
+  //     if (!response.ok) {
+  //       throw new Error("Failed to fetch updated device data");
+  //     }
+  //     const result = await response.json();
+  //     if (result.status === "success") {
+  //       setItems(result.data.items || []);
+  //     }
+  //   } catch (err) {
+  //     const errorMessage =
+  //       err instanceof Error ? err.message : "Failed to fetch items";
+  //     setError(errorMessage);
+  //     console.error("Error fetching items:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Add this effect to listen for updates
   useEffect(() => {
@@ -188,6 +192,13 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     }
 
     setFormLoading(true);
+
+    const requestBody = {
+      ...editForm,
+      // Add user role and username for tracking who made the edit
+      userRole: localStorage.getItem("userRole"),
+      userName: localStorage.getItem("username"),
+    };
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/item/edit/${editingItem._id}`,
@@ -197,7 +208,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify(editForm),
+          body: JSON.stringify(requestBody),
         }
       );
 
@@ -248,6 +259,11 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          body: JSON.stringify({
+            userRole: localStorage.getItem("userRole"),
+            userName: localStorage.getItem("username"),
+            itemToDelete_name: itemToDelete.item_name,
+          }),
         }
       );
 
