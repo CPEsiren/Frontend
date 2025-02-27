@@ -68,15 +68,14 @@ export interface Item {
 
 interface AddTriggerProps {
   onClose: () => void;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void;
 }
 
-const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
+const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
   //Global state
   const typographyProps = {
     fontSize: 14,
   };
-
-  // Add new state for expression parts
   // Expression parts state
   const [expressionParts, setExpressionParts] = useState<ExpressionPart[]>([
     {
@@ -100,6 +99,15 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       duration: "",
     },
   ]);
+
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+  const [refreshCallback, setRefreshCallback] = useState<(() => void) | null>(
+    null
+  );
 
   // Update expression when parts change
   const handleExpressionPartChange = (
@@ -222,57 +230,72 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   };
 
   const [loading, setLoading] = useState(false);
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
 
-    if (!validateForm()) {
-      alert("Please fill in all required fields");
-      return;
-    }
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    const success = await StoreNewtrigger(
-      trigger_name,
-      host_id,
-      severity,
-      expression,
-      ok_eventGen,
-      recoveryExpression,
-      enabled,
-      expressionParts,
-      recoveryParts
-    );
+  if (!validateForm()) {
+    alert("Please fill in all required fields");
+    return;
+  }
 
-    if (success) {
-      setTrigger_name("");
-      setEnabled(true);
-      setSeverity("");
-      setHost_id("");
-      setExpressionParts([
-        {
-          item: "",
-          operation: "",
-          value: "",
-          operator: "",
-          functionofItem: "",
-          duration: "",
-        },
-      ]);
-      setRecoveryParts([
-        {
-          item: "",
-          operation: "",
-          value: "",
-          operator: "",
-          functionofItem: "",
-          duration: "",
-        },
-      ]);
-      alert("Trigger added successfully!");
-      onClose();
+  const success = await StoreNewtrigger(
+    trigger_name,
+    host_id,
+    severity,
+    expression,
+    ok_eventGen,
+    recoveryExpression,
+    enabled,
+    expressionParts,
+    recoveryParts
+  );
+
+  if (success) {
+    setTrigger_name("");
+    setEnabled(true);
+    setSeverity("");
+    setHost_id("");
+    setExpressionParts([
+      {
+        item: "",
+        operation: "",
+        value: "",
+        operator: "",
+        functionofItem: "",
+        duration: "",
+      },
+    ]);
+    setRecoveryParts([
+      {
+        item: "",
+        operation: "",
+        value: "",
+        operator: "",
+        functionofItem: "",
+        duration: "",
+      },
+    ]);
+    const successMessage = `Trigger: ${trigger_name} successfully added`;
+
+    // Call onSuccess with a simple success message (not using REFRESH keyword)
+    if (onSuccess) {
+      onSuccess(successMessage);
     } else {
-      alert("Failed to add trigger. Please try again.");
+      // Show success message in the snackbar
+      setSnackbarMessage(successMessage);
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     }
-  };
+    
+    // Close the modal after calling onSuccess
+    onClose();
+  } else {
+    setSnackbarMessage("Failed to add triggers. Please try again.");
+    setSnackbarSeverity("error");
+    setSnackbarOpen(true);
+  }
+};
   const StoreNewtrigger = async (
     trigger_name: string,
     host_id: string,

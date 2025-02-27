@@ -15,6 +15,7 @@ import {
   Snackbar,
   Alert,
   Select,
+  CircularProgress,
   MenuItem,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
@@ -136,7 +137,6 @@ const Dashboard = () => {
   >([]);
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [viewerDashboards, setViewerDashboards] = useState<DashboardLayout[]>(
@@ -144,6 +144,8 @@ const Dashboard = () => {
   );
   const [isViewerDashboard, setIsViewerDashboard] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
 
   const handleDashboardMenuItemClick = (
     dashboard: DashboardLayout,
@@ -212,7 +214,7 @@ const Dashboard = () => {
           error instanceof Error ? error.message : "Failed to fetch dashboards"
         );
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -230,7 +232,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAllDashboards = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         const userId = localStorage.getItem("user_id");
         if (!userId) {
           throw new Error("No user ID found");
@@ -340,7 +342,7 @@ const Dashboard = () => {
           severity: "error",
         });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -822,6 +824,19 @@ const Dashboard = () => {
       </Box>
     );
   };
+
+  if (loading) {
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="400px"
+        >
+          <CircularProgress />
+        </Box>
+      );
+    }
 
   return (
     <>

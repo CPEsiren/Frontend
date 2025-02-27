@@ -23,8 +23,9 @@ const Devices: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [devices, setDevices] = useState<IDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hostGroups, setHostGroups] = useState<string[]>([]);
 
-  // Enhanced snackbar state to handle refresh callback, matching the Templates component
+  // Enhanced snackbar state to handle refresh callback
   const [snackbarState, setSnackbarState] = useState({
     open: false,
     message: "",
@@ -59,9 +60,19 @@ const Devices: React.FC = () => {
       }
       const result = await response.json();
       setDevices(result.data);
+
+      // Extract unique host groups for the Autocomplete
+      const uniqueHostGroups = Array.from(
+        new Set(
+          result.data
+            .map((device: IDevice) => device.hostgroup.toLocaleUpperCase())
+            .filter((group: string) => group && group.trim() !== "")
+        )
+      ) as string[];
+
+      setHostGroups(uniqueHostGroups);
     } catch (error) {
       console.error("Error fetching devices:", error);
-      // Show error in snackbar
       setSnackbarState({
         open: true,
         message: "Failed to fetch devices",
@@ -73,18 +84,15 @@ const Devices: React.FC = () => {
     }
   };
 
-  // Updated success handler with support for refresh callback - matches template implementation
   const handleAddDeviceSuccess = (
     message: string,
     refreshCallback?: () => void
   ) => {
-    // Check if message contains "REFRESH" keyword
     const hasRefreshKeyword = message.includes("REFRESH");
     const baseMessage = hasRefreshKeyword
       ? message.split(" REFRESH")[0]
       : message;
 
-    // Use custom refresh callback or create one that calls fetchDevices
     const finalRefreshCallback =
       refreshCallback || (() => window.location.reload());
 
@@ -95,10 +103,7 @@ const Devices: React.FC = () => {
       refreshCallback: hasRefreshKeyword ? finalRefreshCallback : null,
     });
 
-    // Close the modal
     setModalOpen(false);
-
-    // Still refresh devices list automatically
     fetchDevices();
   };
 
@@ -110,8 +115,28 @@ const Devices: React.FC = () => {
     setModalOpen(!isModalOpen);
   };
 
-  // Custom message with clickable refresh link if refresh callback exists
-  const snackbarContent = <span>{snackbarState.message} </span>;
+  const snackbarContent = (
+    <>
+      <span>{snackbarState.message} </span>
+      {snackbarState.refreshCallback && (
+        <Link
+          component="button"
+          onClick={() => {
+            if (snackbarState.refreshCallback) {
+              snackbarState.refreshCallback();
+            }
+          }}
+          sx={{
+            color: "white",
+            textDecoration: "underline",
+            fontWeight: "bold",
+          }}
+        >
+          Refresh
+        </Link>
+      )}
+    </>
+  );
 
   return (
     <>
@@ -190,13 +215,14 @@ const Devices: React.FC = () => {
           <AddDevice
             onClose={() => setModalOpen(false)}
             onSuccess={handleAddDeviceSuccess}
+            hostGroups={hostGroups} // Pass host groups to AddDevice
           />
         </DialogContent>
       </Dialog>
 
       <Snackbar
         open={snackbarState.open}
-        autoHideDuration={3000} // Changed to 3000 to match Templates component
+        autoHideDuration={3000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >

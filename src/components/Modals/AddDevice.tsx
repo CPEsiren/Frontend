@@ -16,6 +16,7 @@ import {
   Radio,
   Snackbar,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -37,11 +38,12 @@ import { TransitionGroup } from "react-transition-group";
 import { Router, Package } from "lucide-react";
 import SearchIcon from "@mui/icons-material/Search";
 
+// First, update the AddDeviceProps interface to accept hostGroups
 interface AddDeviceProps {
   onClose: () => void;
   onSuccess?: (message: string, refreshCallback?: () => void) => void;
+  hostGroups?: string[]; // Add this new prop
 }
-
 interface DeviceDetails {
   location: string;
   description: string;
@@ -71,7 +73,8 @@ interface Template {
   items: TemplateItem[];
   description: string;
 }
-const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
+const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = [] }) => {
+// const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
   const windowSize = useWindowSize();
   const [hostname, sethostname] = useState<string>("");
   const [ip_address, setip_address] = useState<string>("");
@@ -657,7 +660,38 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
                                 </MenuItem>
                               ))}
                             </TextField>
-                            <TextField
+                            <Autocomplete
+                              freeSolo
+                              id="hostgroup-autocomplete"
+                              disableClearable
+                              options={hostGroups}
+                              value={hostgroup}
+                              onInputChange={(event, newValue) => {
+                                sethostgroup(newValue);
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size="small"
+                                  sx={{
+                                    mb: 2,
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                    backgroundColor: "white",
+                                  }}
+                                  placeholder={hostGroups.length > 0 ? "Select or enter host group" : "Enter host group"}
+                                  slotProps={{
+                                    input: {
+                                      ...params.InputProps,
+                                      type: "search",
+                                    },
+                                  }}
+                                />
+                              )}
+                            />
+                            {/* <TextField
                               {...textFieldProps}
                               value={hostgroup}
                               onChange={(e) => sethostgroup(e.target.value)}
@@ -668,7 +702,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
                                   fontSize: 14,
                                 },
                               }}
-                            />
+                            /> */}
                             <TextField
                               multiline
                               rows={3}
