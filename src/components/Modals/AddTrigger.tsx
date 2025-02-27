@@ -231,71 +231,74 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
 
   const [loading, setLoading] = useState(false);
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  if (!validateForm()) {
-    alert("Please fill in all required fields");
-    return;
-  }
+    if (!validateForm()) {
+      setSnackbarMessage("Please fill in all required fields");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      // alert("Please fill in all required fields");
+      return;
+    }
 
-  const success = await StoreNewtrigger(
-    trigger_name,
-    host_id,
-    severity,
-    expression,
-    ok_eventGen,
-    recoveryExpression,
-    enabled,
-    expressionParts,
-    recoveryParts
-  );
+    const success = await StoreNewtrigger(
+      trigger_name,
+      host_id,
+      severity,
+      expression,
+      ok_eventGen,
+      recoveryExpression,
+      enabled,
+      expressionParts,
+      recoveryParts
+    );
 
-  if (success) {
-    setTrigger_name("");
-    setEnabled(true);
-    setSeverity("");
-    setHost_id("");
-    setExpressionParts([
-      {
-        item: "",
-        operation: "",
-        value: "",
-        operator: "",
-        functionofItem: "",
-        duration: "",
-      },
-    ]);
-    setRecoveryParts([
-      {
-        item: "",
-        operation: "",
-        value: "",
-        operator: "",
-        functionofItem: "",
-        duration: "",
-      },
-    ]);
-    const successMessage = `Trigger: ${trigger_name} successfully added`;
+    if (success) {
+      setTrigger_name("");
+      setEnabled(true);
+      setSeverity("");
+      setHost_id("");
+      setExpressionParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          operator: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
+      setRecoveryParts([
+        {
+          item: "",
+          operation: "",
+          value: "",
+          operator: "",
+          functionofItem: "",
+          duration: "",
+        },
+      ]);
+      const successMessage = `Trigger: ${trigger_name} successfully added`;
 
-    // Call onSuccess with a simple success message (not using REFRESH keyword)
-    if (onSuccess) {
-      onSuccess(successMessage);
+      // Call onSuccess with a simple success message (not using REFRESH keyword)
+      if (onSuccess) {
+        onSuccess(successMessage);
+      } else {
+        // Show success message in the snackbar
+        setSnackbarMessage(successMessage);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      }
+
+      // Close the modal after calling onSuccess
+      onClose();
     } else {
-      // Show success message in the snackbar
-      setSnackbarMessage(successMessage);
-      setSnackbarSeverity("success");
+      setSnackbarMessage("Failed to add triggers. Please try again.");
+      setSnackbarSeverity("error");
       setSnackbarOpen(true);
     }
-    
-    // Close the modal after calling onSuccess
-    onClose();
-  } else {
-    setSnackbarMessage("Failed to add triggers. Please try again.");
-    setSnackbarSeverity("error");
-    setSnackbarOpen(true);
-  }
-};
+  };
   const StoreNewtrigger = async (
     trigger_name: string,
     host_id: string,

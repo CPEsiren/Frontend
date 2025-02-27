@@ -73,8 +73,12 @@ interface Template {
   items: TemplateItem[];
   description: string;
 }
-const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = [] }) => {
-// const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
+const AddDevice: React.FC<AddDeviceProps> = ({
+  onClose,
+  onSuccess,
+  hostGroups = [],
+}) => {
+  // const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
   const windowSize = useWindowSize();
   const [hostname, sethostname] = useState<string>("");
   const [ip_address, setip_address] = useState<string>("");
@@ -349,10 +353,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = 
           interval: 0,
         },
       ]);
-
-      // Close the modal - we'll let the parent component handle this
-      // onClose();
-
       // Trigger the success callback in the parent component
       if (onSuccess) {
         onSuccess(`Device "${hostname}" successfully added. REFRESH`, () => {
@@ -361,7 +361,9 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = 
       }
     } else {
       // Show error alert
-      alert("Failed to add device. Please try again.");
+      setSnackbarMessage("Please fill in all required fields.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -383,7 +385,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = 
   // Add new function to handle interface scanning
   const handleScanInterface = async () => {
     if (!ip_address || !snmp_port || !snmp_version || !snmp_community) {
-      alert("Please fill in all SNMP interface details before scanning");
+      // alert("Please fill in all SNMP interface details before scanning");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setSnackbarMessage(
+        "Please fill in all SNMP interface details before scanning"
+      );
       setTabvalue("host"); // Switch back to host tab if details are missing
       return;
     }
@@ -681,7 +688,11 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess, hostGroups = 
                                     },
                                     backgroundColor: "white",
                                   }}
-                                  placeholder={hostGroups.length > 0 ? "Select or enter host group" : "Enter host group"}
+                                  placeholder={
+                                    hostGroups.length > 0
+                                      ? "Select or enter host group"
+                                      : "Enter host group"
+                                  }
                                   slotProps={{
                                     input: {
                                       ...params.InputProps,
