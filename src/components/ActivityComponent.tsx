@@ -55,6 +55,7 @@ const ActivityComponent: React.FC = () => {
       });
       if (!response.ok) {
         // throw new Error(`Error: ${response.status} ${response.statusText}`);
+
       }
 
       const result: ApiResponse = await response.json();
