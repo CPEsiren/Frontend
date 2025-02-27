@@ -3,4 +3,4 @@ services:
   cpe-siren:
     build: .
     ports:
-      - 8888:5173
+      - 3001:5173
