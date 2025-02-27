@@ -9,7 +9,7 @@ interface DevicesComponentsProps {
 
 const DevicesComponents: React.FC<DevicesComponentsProps> = ({ devices }) => {
   const groupedDevices = devices.reduce((acc, device) => {
-    const hostgroup = device.hostgroup || "Unknown Host group";
+    const hostgroup = device.hostgroup.toLowerCase() || "Unknown Host group";
     if (!acc[hostgroup]) {
       acc[hostgroup] = [];
     }
@@ -38,7 +38,7 @@ const DevicesComponents: React.FC<DevicesComponentsProps> = ({ devices }) => {
             color={"#21248B"}
             sx={{ alignSelf: "flex-start", paddingBottom: 2 }}
           >
-            {hostgroup || "Default Host group"}
+            {hostgroup.toUpperCase() || "Default Host group"}
           </Typography>
           <Box
             sx={{
