@@ -660,14 +660,14 @@ const Templates: React.FC = () => {
               fontSize: "1rem",
               fontWeight: 600,
               borderRadius: "70px",
-              width: "9rem",
+              width: "8rem",
               height: "2.5rem",
               "&:hover": {
                 backgroundColor: "#F37E58",
               },
             }}
           >
-            Add Template
+            + Template
           </Button>
         </Box>
       )}
@@ -679,7 +679,13 @@ const Templates: React.FC = () => {
       )}
 
       {!loading && (
+        
         <Box sx={{ mt: 2 }}>
+          {templates.length === 0 ? (
+          <Paper sx={{ p: 3, textAlign: "center" }}>
+            <Typography variant="body1">No template found</Typography>
+          </Paper>
+        ) : (
           <Grid container spacing={2}>
             {templates
               .slice((page - 1) * itemsPerPage, page * itemsPerPage)
@@ -791,6 +797,7 @@ const Templates: React.FC = () => {
                 </Grid>
               ))}
           </Grid>
+        )}
           {pageCount > 1 && (
             <Box
               sx={{

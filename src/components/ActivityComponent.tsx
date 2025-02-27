@@ -54,7 +54,7 @@ const ActivityComponent: React.FC = () => {
         },
       });
       if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+        // throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
 
       const result: ApiResponse = await response.json();
@@ -65,16 +65,19 @@ const ActivityComponent: React.FC = () => {
       }
 
       // Process logs to handle the "createAt" field (instead of "createdAt")
-      const processedLogs = result.logs.map(log => {
+      const processedLogs = result.logs.map((log) => {
         // Clean up the ISODate string if needed
         let dateStr = log.createAt || log.createdAt;
-        if (typeof dateStr === 'string' && dateStr.startsWith('ISODate(')) {
-          dateStr = dateStr.replace('ISODate(', '').replace(')', '').replace(/"/g, '');
+        if (typeof dateStr === "string" && dateStr.startsWith("ISODate(")) {
+          dateStr = dateStr
+            .replace("ISODate(", "")
+            .replace(")", "")
+            .replace(/"/g, "");
         }
-        
+
         return {
           ...log,
-          createdAt: dateStr // Ensure we have a createdAt field for consistency
+          createdAt: dateStr, // Ensure we have a createdAt field for consistency
         };
       });
 
@@ -111,14 +114,18 @@ const ActivityComponent: React.FC = () => {
   // Function to format date - updated to handle both formats
   const formatDate = (dateInput: string | Date | undefined): string => {
     if (!dateInput) return "N/A";
-    
+
     try {
       // If it's a string in the ISODate format, clean it up
-      if (typeof dateInput === 'string' && dateInput.startsWith('ISODate(')) {
-        dateInput = dateInput.replace('ISODate(', '').replace(')', '').replace(/"/g, '');
+      if (typeof dateInput === "string" && dateInput.startsWith("ISODate(")) {
+        dateInput = dateInput
+          .replace("ISODate(", "")
+          .replace(")", "")
+          .replace(/"/g, "");
       }
-      
-      const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+
+      const date =
+        typeof dateInput === "string" ? new Date(dateInput) : dateInput;
       return format(date, "MMM d, yyyy HH:mm:ss");
     } catch (err) {
       console.error("Date formatting error:", err);
