@@ -196,93 +196,98 @@ const UserManagement = () => {
 
   return (
     <Box>
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          backgroundColor: "transparent",
-        }}
-      >
-        <Table
+      {users.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1">No users found</Typography>
+        </Paper>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
           sx={{
-            minWidth: 650,
-            "& .MuiTableCell-root": {
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-              padding: "16px",
-            },
-            "& .MuiTableRow-root:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-            "& .MuiTableCell-head": {
-              borderBottom: "1px solid #dbdbdb",
-            },
+            backgroundColor: "transparent",
           }}
         >
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Username
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Email
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Role
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Action
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user._id} hover>
+          <Table
+            sx={{
+              minWidth: 650,
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                padding: "16px",
+              },
+              "& .MuiTableRow-root:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+              "& .MuiTableCell-head": {
+                borderBottom: "1px solid #dbdbdb",
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow>
                 <TableCell>
-                  <Typography variant="body2">{user.username}</Typography>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Username
+                  </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2">{user.email}</Typography>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Email
+                  </Typography>
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    label={user.role}
-                    size="small"
-                    sx={{
-                      p: 2,
-                      m: 0,
-                      color: "white",
-                      backgroundColor:
-                        roleColors[user.role] || roleColors.viewer,
-                    }}
-                  />
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Role
+                  </Typography>
                 </TableCell>
-                <TableCell sx={{ textAlign: "left" }}>
-                  <IconButton
-                    onClick={() => handleSwapRoleClick(user)}
-                    disabled={loading || user.role === "superadmin"}
-                  >
-                    <SwapHorizIcon
-                      sx={{
-                        color: user.role === "superadmin" ? "gray" : "black",
-                      }}
-                    />
-                  </IconButton>
+                <TableCell>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Action
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user._id} hover>
+                  <TableCell>
+                    <Typography variant="body2">{user.username}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{user.email}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={user.role}
+                      size="small"
+                      sx={{
+                        p: 2,
+                        m: 0,
+                        color: "white",
+                        backgroundColor:
+                          roleColors[user.role] || roleColors.viewer,
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ textAlign: "left" }}>
+                    <IconButton
+                      onClick={() => handleSwapRoleClick(user)}
+                      disabled={loading || user.role === "superadmin"}
+                    >
+                      <SwapHorizIcon
+                        sx={{
+                          color: user.role === "superadmin" ? "gray" : "black",
+                        }}
+                      />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      {/* Swap Role Dialog */}
       <Dialog
         open={swapRoleDialogOpen}
         onClose={() => setSwapRoleDialogOpen(false)}

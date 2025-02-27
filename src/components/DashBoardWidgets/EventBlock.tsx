@@ -74,21 +74,6 @@ const EventBlock = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100%"
-        width="100%"
-      >
-        <Typography color="error" variant="h6">
-          {`Error: ${error}`}
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box

@@ -310,101 +310,107 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
 
   return (
     <>
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          backgroundColor: "transparent",
-        }}
-      >
-        {notifications.length > 0 ? (
-          <Table
-            sx={{
-              "& .MuiTableCell-root": {
-                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-                padding: "16px",
-              },
-              "& .MuiTableRow-root:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-              "& .MuiTableCell-head": {
-                borderBottom: "1px solid #dbdbdb",
-              },
-            }}
-          >
-            <TableHead>
-              <TableRow>
-                <TableCell align="center">Type</TableCell>
-                <TableCell align="center">Recipient</TableCell>
-                <TableCell align="center">Status</TableCell>
-                <TableCell align="center">⚙️</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {notifications.map((notification: INotifacationDetails) => (
-                <TableRow key={notification._id}>
-                  <TableCell align="center">
-                    <Chip
-                      icon={
-                        notification.type === "email" ? (
-                          <EmailIcon />
-                        ) : (
-                          <ChatIcon />
-                        )
-                      }
-                      label={notification.type.toUpperCase()}
-                      color={
-                        notification.type === "email" ? "primary" : "success"
-                      }
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    {notification.recipient.name}
-                  </TableCell>
-                  <TableCell align="center">
-                    {notification.enabled ? "Enable" : "Disable"}
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      aria-label="edit"
-                      onClick={() => handleEditClick(notification)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      aria-label="delete"
-                      onClick={() => handleDeleteClick(notification._id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+      {notifications.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1">No notifications found</Typography>
+        </Paper>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{
+            backgroundColor: "transparent",
+          }}
+        >
+          {notifications.length > 0 ? (
+            <Table
+              sx={{
+                "& .MuiTableCell-root": {
+                  borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                  padding: "16px",
+                },
+                "& .MuiTableRow-root:hover": {
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                },
+                "& .MuiTableCell-head": {
+                  borderBottom: "1px solid #dbdbdb",
+                },
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">Type</TableCell>
+                  <TableCell align="center">Recipient</TableCell>
+                  <TableCell align="center">Status</TableCell>
+                  <TableCell align="center">⚙️</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {notifications.map((notification: INotifacationDetails) => (
+                  <TableRow key={notification._id}>
+                    <TableCell align="center">
+                      <Chip
+                        icon={
+                          notification.type === "email" ? (
+                            <EmailIcon />
+                          ) : (
+                            <ChatIcon />
+                          )
+                        }
+                        label={notification.type.toUpperCase()}
+                        color={
+                          notification.type === "email" ? "primary" : "success"
+                        }
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      {notification.recipient.name}
+                    </TableCell>
+                    <TableCell align="center">
+                      {notification.enabled ? "Enable" : "Disable"}
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        aria-label="edit"
+                        onClick={() => handleEditClick(notification)}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => handleDeleteClick(notification._id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">Type</TableCell>
+                  <TableCell align="center">Recipient</TableCell>
+                  <TableCell align="right">Status</TableCell>
+                  <TableCell align="right">⚙️</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={4} align="center">
+                    <Typography variant="body1" color="text.secondary">
+                      No notifications available. Add a notification to get
+                      started.
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell align="center">Type</TableCell>
-                <TableCell align="center">Recipient</TableCell>
-                <TableCell align="right">Status</TableCell>
-                <TableCell align="right">⚙️</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell colSpan={4} align="center">
-                  <Typography variant="body1" color="text.secondary">
-                    No notifications available. Add a notification to get
-                    started.
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+              </TableBody>
+            </Table>
+          )}
+        </TableContainer>
+      )}
 
       <Dialog
         open={openDialog}

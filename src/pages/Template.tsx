@@ -27,6 +27,7 @@ import {
   TablePagination,
   MenuItem,
   Chip,
+  Link,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddTemplate from "../components/Modals/AddTemplate";
@@ -85,6 +86,7 @@ const Templates: React.FC = () => {
     open: false,
     message: "",
     severity: "success" as "success" | "error",
+    refreshCallback: null as (() => void) | null,
   });
   const [item, setItem] = useState<ItemTemplate>({
     item_name: "",
@@ -175,6 +177,7 @@ const Templates: React.FC = () => {
         open: true,
         message: "Failed to fetch templates",
         severity: "error",
+        refreshCallback: null,
       });
     } finally {
       setLoading(false);
@@ -221,11 +224,11 @@ const Templates: React.FC = () => {
               : template
           )
         );
-
         setSnackbar({
           open: true,
           message: "Template updated successfully",
           severity: "success",
+          refreshCallback: null
         });
         setEditDialogOpen(false);
       }
@@ -235,6 +238,7 @@ const Templates: React.FC = () => {
         open: true,
         message: "Failed to update template",
         severity: "error",
+        refreshCallback: null
       });
     } finally {
       setFormLoading(false);
@@ -277,6 +281,7 @@ const Templates: React.FC = () => {
           open: true,
           message: "Template deleted successfully",
           severity: "success",
+          refreshCallback: null
         });
       }
     } catch (error) {
@@ -285,6 +290,7 @@ const Templates: React.FC = () => {
         open: true,
         message: "Failed to delete template",
         severity: "error",
+        refreshCallback: null
       });
     } finally {
       setDeleteDialogOpen(false);
@@ -608,6 +614,24 @@ const Templates: React.FC = () => {
     }));
   };
 
+  const handleTemplateAddSuccess = (message: string, refreshCallback?: () => void) => {
+    const hasRefreshKeyword = message.includes("REFRESH");
+    const baseMessage = hasRefreshKeyword
+      ? message.split(" REFRESH")[0]
+      : message;
+
+    // Use custom refresh callback or create one that calls fetchDevices
+    const finalRefreshCallback = refreshCallback || (() => fetchTemplates());
+
+    setSnackbar({
+      open: true,
+      message: baseMessage,
+      severity: "success",
+      refreshCallback: hasRefreshKeyword ? finalRefreshCallback : null,
+    });
+    fetchTemplates();
+  };
+
   return (
     <>
       {windowSize.width > 600 && (
@@ -636,14 +660,14 @@ const Templates: React.FC = () => {
               fontSize: "1rem",
               fontWeight: 600,
               borderRadius: "70px",
-              width: "9rem",
+              width: "8rem",
               height: "2.5rem",
               "&:hover": {
                 backgroundColor: "#F37E58",
               },
             }}
           >
-            Add Template
+            + Template
           </Button>
         </Box>
       )}
@@ -655,7 +679,13 @@ const Templates: React.FC = () => {
       )}
 
       {!loading && (
+        
         <Box sx={{ mt: 2 }}>
+          {templates.length === 0 ? (
+          <Paper sx={{ p: 3, textAlign: "center" }}>
+            <Typography variant="body1">No template found</Typography>
+          </Paper>
+        ) : (
           <Grid container spacing={2}>
             {templates
               .slice((page - 1) * itemsPerPage, page * itemsPerPage)
@@ -767,6 +797,7 @@ const Templates: React.FC = () => {
                 </Grid>
               ))}
           </Grid>
+        )}
           {pageCount > 1 && (
             <Box
               sx={{
@@ -801,7 +832,10 @@ const Templates: React.FC = () => {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <AddTemplate onClose={handleClose} onSuccess={fetchTemplates} />
+          <AddTemplate
+            onClose={handleClose}
+            onSuccess={handleTemplateAddSuccess}
+          />
         </DialogContent>
       </Dialog>
 
@@ -2092,7 +2126,7 @@ const Templates: React.FC = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={3000} // Changed from 6000 to 3000 to match your requirement
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
@@ -2100,6 +2134,14 @@ const Templates: React.FC = () => {
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
         >
           {snackbar.message}
         </Alert>

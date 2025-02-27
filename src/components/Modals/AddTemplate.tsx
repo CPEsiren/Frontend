@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -22,7 +22,9 @@ import {
   DialogActions,
   MenuItem,
   Chip,
+  Snackbar,
   Alert,
+  Tooltip,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -38,12 +40,12 @@ import {
   ExpressionPart,
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 interface AddTemplateProps {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void; // Updated with optional refresh callback
 }
-
 const functionofItem = [
   { value: "avg", label: "avg()" },
   { value: "min", label: "min()" },
@@ -88,23 +90,56 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     interval: false,
   });
 
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<
+    "success" | "error" | "info"
+  >("success");
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const success = await storeNewTemplate();
     if (success) {
       setTemplateName("");
       setDescription("");
+      setItems([]);
+      setTriggers([]);
 
-      await onSuccess();
-      alert("Template added successfully!");
+      // Close the modal
       onClose();
+      if (onSuccess) {
+        // Pass the success message with REFRESH keyword and a callback function
+        onSuccess(
+          `Template "${template_name}" successfully added. REFRESH`,
+          () => {
+            // This function will be called when the REFRESH link is clicked
+            window.location.reload();
+          }
+        );
+      }
+    } else {
+      // Show error alert
+      alert("Failed to add template. Please try again.");
     }
   };
 
   const storeNewTemplate = async (): Promise<boolean> => {
     try {
       if (!template_name.trim()) {
-        alert("Template name is required");
+        setSnackbarMessage("Template name is required");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return false;
       }
 
@@ -114,17 +149,17 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       );
 
       // Construct the template data with additional user info
-    const templateData: Omit<ITemplate, "_id"> & {
-      userRole: string | null;
-      userName: string | null;
-    } = {
-      template_name,
-      description,
-      items: filledItems as Item[], // Type assertion to ignore *id
-      triggers: triggers as ITriggerTemplate[], // Type assertion to ignore *id
-      userRole: localStorage.getItem("userRole"),
-      userName: localStorage.getItem("username"),
-    };
+      const templateData: Omit<ITemplate, "_id"> & {
+        userRole: string | null;
+        userName: string | null;
+      } = {
+        template_name,
+        description,
+        items: filledItems as Item[], // Type assertion to ignore *id
+        triggers: triggers as ITriggerTemplate[], // Type assertion to ignore *id
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username"),
+      };
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/template`,
@@ -141,13 +176,19 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     } catch (error) {
       console.error("Error storing template:", error);
       if (axios.isAxiosError(error)) {
-        alert(
+        setSnackbarMessage(
           `Failed to store template: ${
             error.response?.data?.message || error.message
           }`
         );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       } else {
-        alert("An unexpected error occurred while storing the template");
+        setSnackbarMessage(
+          "An unexpected error occurred while storing the template"
+        );
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
       return false;
     }
@@ -170,6 +211,16 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     if (validateItemForm()) {
       // Add the item to the list
       setItems([...items, item]);
+
+      // Clear the item input fields after adding
+      setItem({
+        item_name: "",
+        oid: "",
+        type: "",
+        unit: "",
+        interval: 60,
+      });
+
       // Clear errors
       setErrorFieldItem({
         item_name: false,
@@ -178,7 +229,34 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
         unit: false,
         interval: false,
       });
+
+      // Show success notification
+      setSnackbarMessage("Item added successfully");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleCopyItem = (itemToCopy: NewTemplateItem) => {
+    // Set the item state to the copied item values
+    setItem({
+      item_name: itemToCopy.item_name,
+      oid: itemToCopy.oid,
+      type: itemToCopy.type,
+      unit: itemToCopy.unit,
+      interval: itemToCopy.interval,
+    });
+
+    // Show notification
+    setSnackbarMessage("Item copied to input");
+    setSnackbarSeverity("info");
+    setSnackbarOpen(true);
+
+    // Optionally, scroll to the input section
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleDeleteRow = (index: number) => {
@@ -200,8 +278,17 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     fontSize: 14,
   };
 
-  const [activeTab, setActiveTab] = useState(0);
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const [activeTab, setActiveTab] = useState("template");
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    // Prevent switching to trigger tab if there are no items
+    if (newValue === "trigger" && items.length === 0) {
+      setSnackbarMessage(
+        "You need to add at least one item before creating triggers"
+      );
+      setSnackbarSeverity("info");
+      setSnackbarOpen(true);
+      return;
+    }
     setActiveTab(newValue);
   };
 
@@ -476,6 +563,20 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     setTriggers(newTriggers);
   };
 
+  const [isEmptyinItemTab, setIsEmptyinItemTab] = useState(false);
+  useEffect(() => {
+    // If we're on the trigger tab and items become empty, switch to the item tab
+    if (activeTab === "trigger" && items.length === 0) {
+      setActiveTab("item");
+      // Show notification to the user
+      setSnackbarMessage(
+        "You need to add at least one item before creating triggers"
+      );
+      setSnackbarSeverity("info");
+      setSnackbarOpen(true);
+    }
+  }, [items, activeTab]);
+
   return (
     <Box sx={{ p: 0, width: "100%" }}>
       {windowSize.width > 600 && (
@@ -485,11 +586,19 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       <Paper elevation={0} sx={{ px: 3, backgroundColor: "#FFFFFB", mt: -2 }}>
         <Box component="form" onSubmit={handleSubmit}>
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Template" />
-            <Tab label="Item" />
-            <Tab label="Trigger" />
+            <Tab value="template" label="Template" />
+            <Tab value="item" label="Item" />
+            {items.length === 0 ? (
+              <Tooltip title="Add at least one item before creating triggers">
+                <Box component="span" sx={{ display: "inline-block" }}>
+                  <Tab value="trigger" label="Trigger" disabled={true} />
+                </Box>
+              </Tooltip>
+            ) : (
+              <Tab value="trigger" label="Trigger" />
+            )}
           </Tabs>
-          {activeTab === 0 && (
+          {activeTab === "template" && (
             <Box
               sx={{
                 display: "flex",
@@ -559,7 +668,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
               </Box>
             </Box>
           )}
-          {activeTab === 1 && (
+          {activeTab === "item" && (
             <Box>
               {(errorFieldItem.item_name ||
                 errorFieldItem.oid ||
@@ -710,7 +819,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                       bgcolor: "#F25A28",
                       border: "1px solid #F25A28",
                       borderRadius: "8px",
-                      width: "17%",
+                      width: "12%",
                       mr: 0.5,
                     }}
                   >
@@ -725,7 +834,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         },
                       }}
                     />
-                    <Typography fontSize={14}>another item</Typography>
+                    <Typography fontSize={14}> item</Typography>
                   </Button>
                   <Button
                     onClick={handleDeleteAllItems}
@@ -805,6 +914,12 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 </TableCell>
                                 <TableCell align="center">
                                   <IconButton
+                                    onClick={() => handleCopyItem(item)}
+                                    title="Copy item"
+                                  >
+                                    <ContentCopyIcon />
+                                  </IconButton>
+                                  <IconButton
                                     onClick={() => handleDeleteRow(index)}
                                   >
                                     <DeleteIcon />
@@ -829,7 +944,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
               </Box>
             </Box>
           )}
-          {activeTab === 2 && (
+          {activeTab === "trigger" && (
             <Box>
               <Box
                 sx={{
@@ -1679,6 +1794,27 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -24,12 +24,13 @@ const EventComponent = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/event`,{
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },})
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/event`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -104,183 +105,159 @@ const EventComponent = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Container>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
-          <Typography color="error" variant="h6">
-            {`Error fetching events: ${error}`}
-          </Typography>
-        </Box>
-      </Container>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <Container>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="200px"
-        >
-          <Typography align="center" sx={{ mt: 2 }}>
-            No events found
-          </Typography>
-        </Box>
-      </Container>
-    );
-  }
-
   return (
     <Container maxWidth={false}>
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          backgroundColor: "white",
-          borderRadius: 3,
-           mx: -3,
-           mb: 5,
-        }}
-      >
-        <Table
+      {events.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1">No events found</Typography>
+        </Paper>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
           sx={{
-            minWidth: 650,
-            "& .MuiTableCell-root": {
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-              padding: "25px",
-            },
-            "& .MuiTableRow-root:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-            "& .MuiTableRow-root": {
-              "&[data-status='PROBLEM']:hover": {
-                backgroundColor: "#fff5f8",
-              },
-            },
+            backgroundColor: "white",
+            borderRadius: 3,
+            // mt: 2,
+            mx: -3,
           }}
         >
-          <TableHead
+          <Table
+            sx={{
+              minWidth: 650,
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                padding: "25px",
+              },
+              "& .MuiTableRow-root:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+              "& .MuiTableRow-root": {
+                "&[data-status='PROBLEM']:hover": {
+                  backgroundColor: "#fff5f8",
+                },
+              },
+            }}
+          >
+            <TableHead
             // sx={{
             //   backgroundColor: "#242D5D",
             //   "& .MuiTableCell-root": {
             //     color: "white",
             //   },
             // }}
-          >
-            <TableRow>
-              <TableCell align="center"
-                sx={{
-                  width: "100px",
-                  flexBasis: "100px",
-                }}
-              >
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Time
-                </Typography>
-              </TableCell>
-              <TableCell align="center"
-                sx={{
-                  width: "180px",
-                  flexBasis: "180px",
-                }}
-              >
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Device's name
-                </Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Severity
-                </Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Description
-                </Typography>
-              </TableCell>
-              <TableCell align="center">
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Status
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {events.map((event) => {
-              const displayTime =
-                event.status === "PROBLEM" ? event.createdAt : event.updatedAt;
-
-              return (
-                <TableRow
-                  key={event._id}
-                  data-status={event.status}
-                  hover
+            >
+              <TableRow>
+                <TableCell
+                  align="center"
                   sx={{
-                    backgroundColor:
-                      event.status === "PROBLEM" ? "#fff5f8" : "inherit",
+                    width: "100px",
+                    flexBasis: "100px",
                   }}
                 >
-                  <TableCell align="center">
-                    <Typography variant="body2">
-                      {formatTimeInThaiTimezone(displayTime)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2">{event.hostname}</Typography>
-                  </TableCell>
-
-                  {/* Severity */}
-                  <TableCell
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Time
+                  </Typography>
+                </TableCell>
+                <TableCell
                   align="center"
+                  sx={{
+                    width: "180px",
+                    flexBasis: "180px",
+                  }}
+                >
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Device's name
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Severity
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Description
+                  </Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Status
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {events.map((event) => {
+                const displayTime =
+                  event.status === "PROBLEM"
+                    ? event.createdAt
+                    : event.updatedAt;
+
+                return (
+                  <TableRow
+                    key={event._id}
+                    data-status={event.status}
+                    hover
                     sx={{
-                      color: (() => {
-                        switch (event.severity.toLowerCase()) {
-                          case "not classified":
-                            return "#808080";
-                          case "information":
-                            return "#0000FF";
-                          case "warning":
-                            return "#FFA500";
-                          case "average":
-                            return "#FF4500";
-                          case "high":
-                            return "#FF0000";
-                          case "disaster":
-                            return "#8B0000";
-                          default:
-                            return "inherit";
-                        }
-                      })(),
-                      fontWeight: "bold",
+                      backgroundColor:
+                        event.status === "PROBLEM" ? "#fff5f8" : "inherit",
                     }}
                   >
-                    {event.severity}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2">{event.message}</Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      label={getStatusLabel(event.status)}
-                      color={getStatusColor(event.status)}
-                      size="small"
-                      sx={{ minWidth: "80px" }}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                    <TableCell align="center">
+                      <Typography variant="body2">
+                        {formatTimeInThaiTimezone(displayTime)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{event.hostname}</Typography>
+                    </TableCell>
+
+                    {/* Severity */}
+                    <TableCell
+                      align="center"
+                      sx={{
+                        color: (() => {
+                          switch (event.severity.toLowerCase()) {
+                            case "not classified":
+                              return "#808080";
+                            case "information":
+                              return "#0000FF";
+                            case "warning":
+                              return "#FFA500";
+                            case "average":
+                              return "#FF4500";
+                            case "high":
+                              return "#FF0000";
+                            case "disaster":
+                              return "#8B0000";
+                            default:
+                              return "inherit";
+                          }
+                        })(),
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {event.severity}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{event.message}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={getStatusLabel(event.status)}
+                        color={getStatusColor(event.status)}
+                        size="small"
+                        sx={{ minWidth: "80px" }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Container>
   );
 };

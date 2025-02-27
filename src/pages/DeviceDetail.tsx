@@ -7,6 +7,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Snackbar,
+  Alert,
+  Link,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
@@ -27,6 +30,14 @@ const DeviceDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
+
+  // Add snackbar state
+  const [snackbarState, setSnackbarState] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+    refreshCallback: null as (() => void) | null,
+  });
 
   const toggleModal = () => {
     setModalOpen(!isModalOpen);
@@ -64,6 +75,46 @@ const DeviceDetailPage = () => {
     refreshDeviceData(); // Refresh data after modal closes
   };
 
+  // Handle snackbar close
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarState({
+      ...snackbarState,
+      open: false,
+    });
+  };
+
+  // Handle success callback from AddItemOnly
+  const handleAddItemSuccess = (
+    message: string,
+    refreshCallback?: () => void
+  ) => {
+    // Check if message contains "REFRESH" keyword
+    const hasRefreshKeyword = message.includes("REFRESH");
+    const baseMessage = hasRefreshKeyword
+      ? message.split(" REFRESH")[0]
+      : message;
+
+    // Set the snackbar state
+    setSnackbarState({
+      open: true,
+      message: baseMessage,
+      severity: "success",
+      refreshCallback: null,
+    });
+
+    // Close the modal
+    setModalOpen(false);
+
+    // Refresh the data
+    refreshDeviceData();
+  };
+
   useEffect(() => {
     if (!deviceData) {
       setLoading(true);
@@ -89,6 +140,32 @@ const DeviceDetailPage = () => {
       fetchDeviceData();
     }
   }, [deviceData, location.state?.device?.DName]);
+
+  // Custom snackbar content with refresh link
+  const snackbarContent = (
+    <span>
+      {snackbarState.message}{" "}
+      {/* {snackbarState.refreshCallback && (
+        <Link
+          component="button"
+          onClick={() => {
+            if (snackbarState.refreshCallback) snackbarState.refreshCallback();
+          }}
+          sx={{ 
+            color: 'inherit', 
+            textDecoration: 'underline', 
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            '&:hover': {
+              textDecoration: 'none'
+            }
+          }}
+        >
+          REFRESH
+        </Link>
+      )} */}
+    </span>
+  );
 
   if (loading) {
     return <div>Loading...</div>;
@@ -169,28 +246,6 @@ const DeviceDetailPage = () => {
           >
             INTERFACES
           </Typography>
-          {/* <Button
-            type="submit"
-            onClick={handleClick}
-            sx={{
-              color: "#FFFFFB",
-              backgroundColor: "#F25A28",
-              fontSize: "1rem",
-              fontWeight: 600,
-              borderRadius: "70px",
-              width: "5.5rem",
-              height: "2.5rem",
-              "&:focus": {
-                outline: "none",
-                color: "#FFFFFB",
-              },
-              "&:hover": {
-                backgroundColor: "#F37E58",
-              },
-            }}
-          >
-            Graph
-          </Button> */}
         </Box>
 
         <Box
@@ -293,9 +348,36 @@ const DeviceDetailPage = () => {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <AddItemOnly onClose={handleModalClose} deviceId={deviceData._id} />
+          <AddItemOnly
+            onClose={handleModalClose}
+            deviceId={deviceData._id}
+            onSuccess={handleAddItemSuccess}
+          />
         </DialogContent>
       </Dialog>
+
+      {/* Snackbar for showing success/error messages */}
+      <Snackbar
+        open={snackbarState.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarState.severity}
+          variant="filled"
+          sx={{
+            width: "100%",
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarContent}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
