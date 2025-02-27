@@ -7,6 +7,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Snackbar,
+  Alert,
+  Link,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import useWindowSize from "../hooks/useWindowSize";
@@ -21,33 +24,94 @@ const Devices: React.FC = () => {
   const [devices, setDevices] = useState<IDevice[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch devices");
-        }
-        const result = await response.json();
-        setDevices(result.data);
-      } catch (error) {
-        console.error("Error fetching devices:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Enhanced snackbar state to handle refresh callback, matching the Templates component
+  const [snackbarState, setSnackbarState] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+    refreshCallback: null as (() => void) | null,
+  });
 
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarState({
+      ...snackbarState,
+      open: false,
+    });
+  };
+
+  const fetchDevices = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch devices");
+      }
+      const result = await response.json();
+      setDevices(result.data);
+    } catch (error) {
+      console.error("Error fetching devices:", error);
+      // Show error in snackbar
+      setSnackbarState({
+        open: true,
+        message: "Failed to fetch devices",
+        severity: "error",
+        refreshCallback: null,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Updated success handler with support for refresh callback - matches template implementation
+  const handleAddDeviceSuccess = (
+    message: string,
+    refreshCallback?: () => void
+  ) => {
+    // Check if message contains "REFRESH" keyword
+    const hasRefreshKeyword = message.includes("REFRESH");
+    const baseMessage = hasRefreshKeyword
+      ? message.split(" REFRESH")[0]
+      : message;
+
+    // Use custom refresh callback or create one that calls fetchDevices
+    const finalRefreshCallback =
+      refreshCallback || (() => window.location.reload());
+
+    setSnackbarState({
+      open: true,
+      message: baseMessage,
+      severity: "success",
+      refreshCallback: hasRefreshKeyword ? finalRefreshCallback : null,
+    });
+
+    // Close the modal
+    setModalOpen(false);
+
+    // Still refresh devices list automatically
+    fetchDevices();
+  };
+
+  useEffect(() => {
     fetchDevices();
   }, []);
 
   const toggleModal = () => {
     setModalOpen(!isModalOpen);
   };
+
+  // Custom message with clickable refresh link if refresh callback exists
+  const snackbarContent = <span>{snackbarState.message} </span>;
 
   return (
     <>
@@ -101,7 +165,7 @@ const Devices: React.FC = () => {
 
       <Dialog
         open={isModalOpen}
-        onClose={toggleModal}
+        onClose={() => setModalOpen(false)}
         fullWidth
         maxWidth="lg"
         PaperProps={{
@@ -123,9 +187,35 @@ const Devices: React.FC = () => {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <AddDevice onClose={toggleModal} />
+          <AddDevice
+            onClose={() => setModalOpen(false)}
+            onSuccess={handleAddDeviceSuccess}
+          />
         </DialogContent>
       </Dialog>
+
+      <Snackbar
+        open={snackbarState.open}
+        autoHideDuration={3000} // Changed to 3000 to match Templates component
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarState.severity}
+          variant="filled"
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarContent}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

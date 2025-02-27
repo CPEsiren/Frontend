@@ -276,7 +276,6 @@ const Dashboard = () => {
         // Check if user is superadmin before fetching viewer dashboards
         const userRole = localStorage.getItem("userRole");
         if (userRole === "superadmin") {
-          console.log("Fetching viewer dashboards for superadmin"); // Debug log
           const viewerDashboardResponse = await fetch(
             `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
             {
@@ -729,7 +728,7 @@ const Dashboard = () => {
     componentConfig: ComponentConfig
   ) => {
     const Component = componentConfig.component;
-  
+
     const handleTodoUpdate = async (newTodos: TodoItem[]) => {
       try {
         // First update local state
@@ -739,7 +738,7 @@ const Dashboard = () => {
             : comp
         );
         setActiveComponents(updatedComponents);
-  
+
         // Then update in database
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
@@ -760,11 +759,11 @@ const Dashboard = () => {
             }),
           }
         );
-  
+
         if (!response.ok) {
           throw new Error("Failed to update dashboard");
         }
-  
+
         setSnackbar({
           open: true,
           message: "Todo list updated successfully",
@@ -779,7 +778,7 @@ const Dashboard = () => {
         });
       }
     };
-  
+
     return (
       <Box
         sx={{
@@ -806,12 +805,14 @@ const Dashboard = () => {
             <RemoveIcon />
           </IconButton>
         )}
-        <Box sx={{ 
-          flexGrow: 1,
-          height: "100%", 
-          width: "100%",
-          overflow: "hidden",
-        }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            height: "100%",
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
           <Component
             graphSelection={activeComp.graphSelection}
             todoItems={activeComp.todoItems}

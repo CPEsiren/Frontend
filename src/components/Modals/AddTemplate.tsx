@@ -22,6 +22,7 @@ import {
   DialogActions,
   MenuItem,
   Chip,
+  Snackbar,
   Alert,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
@@ -41,7 +42,7 @@ import {
 
 interface AddTemplateProps {
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void; // Updated with optional refresh callback
 }
 
 const functionofItem = [
@@ -88,44 +89,74 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     interval: false,
   });
 
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const success = await storeNewTemplate();
     if (success) {
       setTemplateName("");
       setDescription("");
-
-      await onSuccess();
-      alert("Template added successfully!");
+      setItems([]);
+      setTriggers([]);
+      
+      // Close the modal
       onClose();
+      if (onSuccess) {
+        // Pass the success message with REFRESH keyword and a callback function
+        onSuccess(`Template "${template_name}" successfully added. REFRESH`, () => {
+          // This function will be called when the REFRESH link is clicked
+          window.location.reload();
+        });
+      }
+    } else {
+      // Show error alert
+      alert("Failed to add template. Please try again.");
     }
   };
 
   const storeNewTemplate = async (): Promise<boolean> => {
     try {
       if (!template_name.trim()) {
-        alert("Template name is required");
+        setSnackbarMessage("Template name is required");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
         return false;
       }
-
+  
       // Filter out empty items
       const filledItems = items.filter(
         (item) => item.item_name.trim() || item.oid.trim()
       );
-
+  
       // Construct the template data with additional user info
-    const templateData: Omit<ITemplate, "_id"> & {
-      userRole: string | null;
-      userName: string | null;
-    } = {
-      template_name,
-      description,
-      items: filledItems as Item[], // Type assertion to ignore *id
-      triggers: triggers as ITriggerTemplate[], // Type assertion to ignore *id
-      userRole: localStorage.getItem("userRole"),
-      userName: localStorage.getItem("username"),
-    };
-
+      const templateData: Omit<ITemplate, "_id"> & {
+        userRole: string | null;
+        userName: string | null;
+      } = {
+        template_name,
+        description,
+        items: filledItems as Item[], // Type assertion to ignore *id
+        triggers: triggers as ITriggerTemplate[], // Type assertion to ignore *id
+        userRole: localStorage.getItem("userRole"),
+        userName: localStorage.getItem("username"),
+      };
+  
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/template`,
         templateData,
@@ -136,18 +167,20 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
           },
         }
       );
-
+  
       return response.status === 200 || response.status === 201;
     } catch (error) {
       console.error("Error storing template:", error);
       if (axios.isAxiosError(error)) {
-        alert(
-          `Failed to store template: ${
-            error.response?.data?.message || error.message
-          }`
-        );
+        setSnackbarMessage(`Failed to store template: ${
+          error.response?.data?.message || error.message
+        }`);
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       } else {
-        alert("An unexpected error occurred while storing the template");
+        setSnackbarMessage("An unexpected error occurred while storing the template");
+        setSnackbarSeverity("error");
+        setSnackbarOpen(true);
       }
       return false;
     }
@@ -1679,6 +1712,27 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
