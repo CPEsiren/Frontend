@@ -25,6 +25,7 @@ import {
   TextField,
   Typography,
   MenuItem,
+  Container,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -54,6 +55,11 @@ interface RecoveryPart {
   duration: string;
 }
 
+interface TriggerComponentProps {
+  refreshTriggers?: () => void;
+}
+
+
 const functionofItem = [
   { value: "avg", label: "avg()" },
   { value: "min", label: "min()" },
@@ -74,7 +80,7 @@ const operations = [
   { value: "<=", label: "<=" },
 ];
 
-const TriggerComponent = () => {
+const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
   //Global State
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
@@ -298,7 +304,11 @@ const TriggerComponent = () => {
         }
       );
 
-      fetchTriggerData();
+      if (refreshTriggers) {
+        refreshTriggers();
+      } else {
+        fetchTriggerData();
+      }
 
       setSnackbar({
         open: true,
@@ -426,7 +436,11 @@ const TriggerComponent = () => {
         }
       );
 
-      fetchTriggerData();
+      if (refreshTriggers) {
+        refreshTriggers();
+      } else {
+        fetchTriggerData();
+      }
 
       setSnackbar({
         open: true,
@@ -466,28 +480,49 @@ const TriggerComponent = () => {
   }
 
   return (
+    <>
+    <Container maxWidth={false} >
+       {DataGroupByHost.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1">No triggers found</Typography>
+        </Paper>
+      ) : (
     <Box sx={{ width: 1 }}>
       {DataGroupByHost.map((group, index) => (
-        <Box key={index} sx={{ mb: 4 }}>
+        <Box key={index} sx={{ mb: 4 ,mt:4}}>
+          <Box sx={{ mb:3}}>
           <Typography
             variant="h6"
             sx={{
-              backgroundColor: "#242D5D",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#242d5d",
+              borderRadius: "80px",
+              display: "inline-block",
               color: "white",
-              p: 2,
-              borderRadius: "4px 4px 0 0",
-              fontWeight: "bold",
+              fontWeight: "semi-bold",
+              minWidth: "100px",
+              textAlign: "center",
+              p: 1.5,             
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",          
+              width: "100%",             
+              // margin: "0 auto",          
             }}
           >
             {group.host_id.hostname}
           </Typography>
+          </Box>
+          
           <TableContainer
             component={Paper}
             sx={{
               boxShadow: "none",
               "& .MuiPaper-root": { boxShadow: "none" },
               backgroundColor: "transparent",
-              mb: 2,
+              mb: 10,
+              border: "2px solid white", 
+              borderRadius: "8px", 
+              overflow: "hidden",
             }}
           >
             <Table
@@ -498,10 +533,10 @@ const TriggerComponent = () => {
                 },
                 "& .MuiTableCell-root": { borderBottom: "none" },
                 "& .MuiTableBody-root .MuiTableRow-root": {
-                  "&:nth-of-type(even)": { backgroundColor: "white" },
-                  "&:nth-of-type(odd)": { backgroundColor: "#f5f5f5" },
+                  // "&:nth-of-type(even)": {backgroundColor: "transparent" },
+                  "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
                   "&:hover": {
-                    backgroundColor: "#FFF3E0",
+                    backgroundColor: "#ebf1ff",
                     transition: "background-color 0.3s ease",
                     cursor: "pointer",
                   },
@@ -586,7 +621,7 @@ const TriggerComponent = () => {
                         position: "relative",
                         "&:hover": {
                           "& .full-expression": {
-                            display: "block",
+                            display: "inline-block", 
                           },
                         },
                       }}
@@ -609,6 +644,9 @@ const TriggerComponent = () => {
                             maxWidth: "400px",
                             wordWrap: "break-word",
                             whiteSpace: "normal",
+                            position: "absolute",  
+                            top: "0", 
+                            left: "30%",
                           }}
                         >
                           {trigger.expression}
@@ -628,10 +666,9 @@ const TriggerComponent = () => {
                         "&:hover": {
                           "& .full-Recovery-expression": {
                             display:
-                              trigger.ok_event_generation.toLowerCase() ===
-                              "recovery expression"
-                                ? "block"
-                                : "none",
+                              trigger.ok_event_generation.toLowerCase() === "recovery expression"
+                                ? "inline-block"  
+                                : "none", 
                           },
                         },
                       }}
@@ -644,8 +681,12 @@ const TriggerComponent = () => {
                         <Box
                           className="full-Recovery-expression"
                           sx={{
-                            display: "none",
-                            zIndex: 1,
+                            display: "none", 
+                            position: "absolute",  
+                            top: "0", 
+                            left: "50%", 
+                            transform: "translateX(-50%)",  
+                            zIndex: 1000, // ทำให้ลอยเหนือทุกอย่าง
                             backgroundColor: "white",
                             border: "1px solid #ccc",
                             padding: "5px",
@@ -653,13 +694,13 @@ const TriggerComponent = () => {
                             boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
                             maxWidth: "400px",
                             wordWrap: "break-word",
-                            whiteSpace: "normal",
                           }}
                         >
                           {trigger.recovery_expression}
                         </Box>
                       </Stack>
                     </TableCell>
+
 
                     {/* Status */}
                     <TableCell
@@ -1395,7 +1436,11 @@ const TriggerComponent = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+      </Box>
+      )}
+  </Container>
+  {/* </Box> */}
+  </>
   );
 };
 
