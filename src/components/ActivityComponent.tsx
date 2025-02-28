@@ -55,7 +55,6 @@ const ActivityComponent: React.FC = () => {
       });
       if (!response.ok) {
         // throw new Error(`Error: ${response.status} ${response.statusText}`);
-
       }
 
       const result: ApiResponse = await response.json();
@@ -181,10 +180,12 @@ const ActivityComponent: React.FC = () => {
       ) : (
         <>
           {logs.length === 0 ? (
-            <Paper sx={{ p: 3, textAlign: "center" }}>
-              <Typography variant="body1">No activity logs found</Typography>
-            </Paper>
+            // <Paper sx={{ p: 3, textAlign: "center" }}>
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
+              No activity found
+            </Typography>
           ) : (
+            // </Paper>
             <>
               <TableContainer
                 component={Paper}
@@ -214,7 +215,7 @@ const ActivityComponent: React.FC = () => {
                       </TableCell>
                       <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
-                          Username
+                          User
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ color: "black" }}>

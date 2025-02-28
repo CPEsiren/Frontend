@@ -108,9 +108,9 @@ const EventComponent = () => {
   return (
     <Container maxWidth={false}>
       {events.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: "center" }}>
-          <Typography variant="body1">No events found</Typography>
-        </Paper>
+        // <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1" sx={{textAlign: "center" }}>No events found</Typography>
+        // </Paper>
       ) : (
         <TableContainer
           component={Paper}
