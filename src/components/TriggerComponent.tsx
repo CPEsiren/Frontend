@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Item, ITrigger } from "../interface/InterfaceCollection";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from "axios";
 import {
   Alert,
@@ -26,9 +27,13 @@ import {
   Typography,
   MenuItem,
   Container,
+  Menu,
+  Fade,
+  Tooltip,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
+import React from "react";
 interface GroupedTriggers {
   triggers: ITrigger[];
   host_id: {
@@ -359,6 +364,16 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
     }
   };
 
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+
   const handleEditSubmit = async () => {
     if (!editIdTrigger) return;
 
@@ -618,41 +633,32 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        position: "relative",
-                        "&:hover": {
-                          "& .full-expression": {
-                            display: "inline-block", 
-                          },
-                        },
                       }}
                     >
-                      {trigger.expression}
-                      <Stack
-                        direction={"column"}
-                        sx={{ justifyContent: "center", alignItems: "center" }}
+                      <Tooltip
+                        title={trigger.expression}  // ใช้ข้อความจาก trigger.expression
+                        arrow
+                        placement="top"
+                        componentsProps={{
+                          tooltip: {
+                            sx: {
+                              backgroundColor: "white",
+                              color: "black",
+                              padding: "10px",
+                              borderRadius: "8px",
+                              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                              maxWidth: "400px",
+                              fontSize: "14px",
+                            },
+                          },
+                        }}
                       >
-                        <Box
-                          className="full-expression"
-                          sx={{
-                            display: "none",
-                            zIndex: 1000,
-                            backgroundColor: "white",
-                            border: "1px solid #ccc",
-                            padding: "5px",
-                            borderRadius: "4px",
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                            maxWidth: "400px",
-                            wordWrap: "break-word",
-                            whiteSpace: "normal",
-                            position: "absolute",  
-                            top: "0", 
-                            left: "30%",
-                          }}
-                        >
+                        <Typography sx={{ cursor: "pointer", fontSize: "14px" }}>
                           {trigger.expression}
-                        </Box>
-                      </Stack>
+                        </Typography>
+                      </Tooltip>
                     </TableCell>
+
 
                     {/* Ok event generation */}
                     <TableCell
@@ -662,43 +668,43 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        position: "relative",
-                        "&:hover": {
-                          "& .full-Recovery-expression": {
-                            display:
-                              trigger.ok_event_generation.toLowerCase() === "recovery expression"
-                                ? "inline-block"  
-                                : "none", 
-                          },
-                        },
                       }}
                     >
-                      {trigger.ok_event_generation.toLocaleUpperCase()}
-                      <Stack
-                        direction={"column"}
-                        sx={{ justifyContent: "center", alignItems: "center" }}
+                      <Tooltip
+                        title={
+                          trigger.ok_event_generation.toLowerCase() === "recovery expression"
+                            ? (
+                              <Box>
+                                {trigger.recovery_expression}
+                              </Box>
+                            )
+                            : ""
+                        }
+                        arrow
+                        placement="top"
+                        componentsProps={{
+                          tooltip: {
+                            sx: {
+                              backgroundColor: "white",
+                              color: "black",
+                              padding: "10px",
+                              borderRadius: "8px",
+                              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                              maxWidth: "400px",
+                              fontSize: "14px",
+                            },
+                          },
+                        }}
                       >
-                        <Box
-                          className="full-Recovery-expression"
+                        <Typography
                           sx={{
-                            display: "none", 
-                            position: "absolute",  
-                            top: "0", 
-                            left: "50%", 
-                            transform: "translateX(-50%)",  
-                            zIndex: 1000, // ทำให้ลอยเหนือทุกอย่าง
-                            backgroundColor: "white",
-                            border: "1px solid #ccc",
-                            padding: "5px",
-                            borderRadius: "4px",
-                            boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-                            maxWidth: "400px",
-                            wordWrap: "break-word",
+                            cursor: "pointer",
+                            fontSize: "16px",
                           }}
                         >
-                          {trigger.recovery_expression}
-                        </Box>
-                      </Stack>
+                          {trigger.ok_event_generation.toLocaleUpperCase()}
+                        </Typography>
+                      </Tooltip>
                     </TableCell>
 
 
@@ -713,36 +719,84 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
                       {trigger.enabled ? "Enabled" : "Disabled"}
                     </TableCell>
 
-                    {/* Manage */}
-                    {/* Edit */}
-                    <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        sx={{
-                          color: "warning.main",
-                          "&:hover": {
-                            backgroundColor: "warning.light",
-                          },
-                        }}
-                        onClick={() => handleEditClick(trigger)}
-                      >
-                        <EditNoteIcon fontSize="small" />
-                      </IconButton>
+      
+                {/* Manage */}
+                <TableCell align="center">
+                  <Button
+                    id="fade-button"
+                    aria-controls={open ? "fade-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={open ? "true" : undefined}
+                    onClick={handleClick}
+                    sx={{
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px",
+                      minWidth: "unset",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      "&:hover": {
+                        backgroundColor: "rgba(175, 175, 255, 0.1)",
+                      },
+                    }}
+                  >
+                    <MoreVertIcon sx={{ fontSize: 24, color: "#242d5d", }} />
+                  </Button>
 
-                      {/* Delete */}
+                  <Menu
+                    id="fade-menu"
+                    MenuListProps={{
+                      "aria-labelledby": "fade-button",
+                    }}
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleClose}
+                    TransitionComponent={Fade}
+                  >
+
+                    <MenuItem onClick={() => handleEditClick(trigger)} sx={{ display: "flex", alignItems: "center" }}>
+                      <IconButton
+                        size="medium"
+                        sx={{
+                          color: "black",
+                          width: "40px",
+                          height: "40px",
+                          minWidth: "unset",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          "&:hover": {
+                            backgroundColor: "transparent",
+                          },
+                        }}
+                      >
+                        <EditNoteIcon fontSize="inherit" color="warning" />
+                      </IconButton>
+                      <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>Edit</Typography>
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeleteClick(trigger)} sx={{ display: "flex", alignItems: "center" }}>
                       <IconButton
                         size="small"
                         sx={{
-                          color: "error.main",
+                          color: "black",
+                          width: "40px",
+                          height: "40px",
+                          minWidth: "unset",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           "&:hover": {
-                            backgroundColor: "error.light",
+                            backgroundColor: "transparent",
                           },
                         }}
-                        onClick={() => handleDeleteClick(trigger)}
                       >
-                        <DeleteIcon fontSize="small" />
+                        <DeleteIcon fontSize="small" color="error" />
                       </IconButton>
-                    </TableCell>
+                      <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>Delete</Typography>
+                    </MenuItem>
+                  </Menu>
+                </TableCell>
                   </TableRow>
                 </TableBody>
               ))}
