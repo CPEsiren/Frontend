@@ -113,6 +113,8 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
+
+  
   //All Trigger Data
   const [DataGroupByHost, setDataGroupByHost] = useState<GroupedTriggers[]>([]);
   //Fetch Trigger
@@ -217,7 +219,11 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
   const [editOk_eve, setEditOk_eve] = useState("");
   const [editEnabled, setEditEnabled] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedTrigger, setSelectedTrigger] = useState<ITrigger | null>(null);
+
   const handleEditClick = (trigger: ITrigger) => {
+    console.log("Editing trigger ID:", trigger._id);  // ตรวจสอบค่า ID
+    setSelectedTrigger(trigger);
     setEditTriggerName(trigger.trigger_name);
     setEditIdTrigger(trigger._id);
     setEditSeverity(trigger.severity);
@@ -279,6 +285,13 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
     fetchItems(trigger.host_id);
   };
 
+
+useEffect(() => {
+  console.log("Dialog Opened with Trigger:", selectedTrigger);
+}, [editDialogOpen]);
+
+  
+
   //Delete Trigger
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [removeIdTrigger, setRemoveIdTrigger] = useState("");
@@ -334,6 +347,7 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
 
   //items
   const [items, setItems] = useState<Item[]>([]);
+  
 
   const fetchItems = async (hostId: string) => {
     if (!hostId) return;
@@ -366,16 +380,23 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, trigger: ITrigger) => {
     setAnchorEl(event.currentTarget);
+    setSelectedTrigger(trigger);
   };
+  
   const handleClose = () => {
     setAnchorEl(null);
   };
 
 
   const handleEditSubmit = async () => {
-    if (!editIdTrigger) return;
+    if (!editIdTrigger) {
+      console.error("No editIdTrigger found!");
+      return;
+    }
+  
+    console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
 
     setFormLoading(true);
     try {
@@ -636,7 +657,7 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
                       }}
                     >
                       <Tooltip
-                        title={trigger.expression}  // ใช้ข้อความจาก trigger.expression
+                        title={trigger.expression}  
                         arrow
                         placement="top"
                         componentsProps={{
@@ -707,96 +728,89 @@ const TriggerComponent =({ refreshTriggers }: TriggerComponentProps) => {
                       </Tooltip>
                     </TableCell>
 
-
-                    {/* Status */}
-                    <TableCell
-                      align="center"
-                      sx={{
-                        color: trigger.enabled ? "green" : "red",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {trigger.enabled ? "Enabled" : "Disabled"}
-                    </TableCell>
-
-      
-                {/* Manage */}
-                <TableCell align="center">
-                  <Button
-                    id="fade-button"
-                    aria-controls={open ? "fade-menu" : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={open ? "true" : undefined}
-                    onClick={handleClick}
-                    sx={{
-                      borderRadius: "50%",
-                      width: "40px",
-                      height: "40px",
-                      minWidth: "unset",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        backgroundColor: "rgba(175, 175, 255, 0.1)",
-                      },
-                    }}
-                  >
-                    <MoreVertIcon sx={{ fontSize: 24, color: "#242d5d", }} />
-                  </Button>
-
-                  <Menu
-                    id="fade-menu"
-                    MenuListProps={{
-                      "aria-labelledby": "fade-button",
-                    }}
-                    anchorEl={anchorEl}
-                    open={open}
-                    onClose={handleClose}
-                    TransitionComponent={Fade}
-                  >
-
-                    <MenuItem onClick={() => handleEditClick(trigger)} sx={{ display: "flex", alignItems: "center" }}>
-                      <IconButton
-                        size="medium"
+                      {/* Status */}
+                      <TableCell
+                        align="center"
                         sx={{
-                          color: "black",
-                          width: "40px",
-                          height: "40px",
-                          minWidth: "unset",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          "&:hover": {
-                            backgroundColor: "transparent",
-                          },
+                          color: trigger.enabled ? "green" : "red",
+                          fontWeight: "bold",
                         }}
                       >
-                        <EditNoteIcon fontSize="inherit" color="warning" />
-                      </IconButton>
-                      <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>Edit</Typography>
-                    </MenuItem>
-                    <MenuItem onClick={() => handleDeleteClick(trigger)} sx={{ display: "flex", alignItems: "center" }}>
-                      <IconButton
-                        size="small"
-                        sx={{
-                          color: "black",
-                          width: "40px",
-                          height: "40px",
-                          minWidth: "unset",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          "&:hover": {
-                            backgroundColor: "transparent",
-                          },
-                        }}
-                      >
-                        <DeleteIcon fontSize="small" color="error" />
-                      </IconButton>
-                      <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>Delete</Typography>
-                    </MenuItem>
-                  </Menu>
-                </TableCell>
+                        {trigger.enabled ? "Enabled" : "Disabled"}
+                      </TableCell>
+
+                      {/* Manage */}
+                      <TableCell align="center" sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <Button
+                          id="fade-button"
+                          aria-controls={open ? "fade-menu" : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={open ? "true" : undefined}
+                          onClick={(event) => handleMenuClick(event, trigger)}
+                          sx={{
+                            borderRadius: "50%",
+                            width: "40px",
+                            height: "40px",
+                            minWidth: "unset",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            "&:hover": {
+                              backgroundColor: "rgba(239, 239, 255, 0.1)",
+                            },
+                          }}
+                        >
+                          <MoreVertIcon sx={{ fontSize: 24, color: "#242d5d" }} />
+                        </Button>
+
+                        {/* Menu */}
+                        <Menu
+                          id="fade-menu"
+                          MenuListProps={{ "aria-labelledby": "fade-button" }}
+                          anchorEl={anchorEl}
+                          open={open}
+                          onClose={handleClose}
+                          TransitionComponent={Fade}
+                          sx={{
+                            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", 
+                            "& .MuiMenu-paper": {
+                              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", 
+                            },
+                          }}
+                        >
+                          {/* Edit */}
+                          <MenuItem
+                            onClick={() => {
+                              if (selectedTrigger) {
+                                handleEditClick(selectedTrigger); 
+                              }
+                              handleClose();
+                            }}
+                            sx={{ display: "flex", alignItems: "center" }}
+                          >
+                            <EditNoteIcon sx={{ color: "warning.main", fontSize: 20 }} />
+                            <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>
+                              Edit
+                            </Typography>
+                          </MenuItem>
+
+                          {/* Delete */}
+                          <MenuItem
+                            onClick={() => {
+                              if (selectedTrigger) {
+                                handleDeleteClick(selectedTrigger);
+                              }
+                              handleClose();
+                            }}
+                            sx={{ display: "flex", alignItems: "center" }}
+                          >
+                            <DeleteIcon sx={{ color: "error.main", fontSize: 20 }} />
+                            <Typography sx={{ fontSize: 14, color: "black", marginLeft: 1 }}>
+                              Delete
+                            </Typography>
+                          </MenuItem>
+                        </Menu>
+                      </TableCell>
                   </TableRow>
                 </TableBody>
               ))}
