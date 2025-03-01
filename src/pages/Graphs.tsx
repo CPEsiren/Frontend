@@ -391,12 +391,12 @@ const Graphs: React.FC = () => {
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
-          const host: IHost = hosts[0];
+          const host = hosts.find((host) => host.hostname === selectedHost);
           setUrl(
             `${
               import.meta.env.VITE_API_URL
             }/data/between?startTime=${pastforStartTime.toISOString()}&endTime=${now.toISOString()}&host_id=${
-              host.host_id
+              host?.host_id
             }`
           );
         } else {
@@ -408,7 +408,7 @@ const Graphs: React.FC = () => {
     updateUrlAndFetch();
     const interval = setInterval(updateUrlAndFetch, 10000);
     return () => clearInterval(interval);
-  }, [isAuto, hosts]);
+  }, [isAuto, hosts, selectedHost]);
 
   const fetchData = async () => {
     try {

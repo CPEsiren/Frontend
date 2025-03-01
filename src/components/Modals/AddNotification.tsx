@@ -493,7 +493,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
   ] = useState(false);
 
   const defaultProblemTitle = "{EVENT.STATUS} : {TRIGGER.NAME}";
-  const defaultProblemBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nStatus: {TRIGGER.STATUS}\nTime: {EVENT.TIME} on {EVENT.DATE}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nOriginal problem ID: {EVENT.ID}`;
+  const defaultProblemBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\nStatus: {TRIGGER.STATUS}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nProblem Date: {EVENT.PROBLEM.TIMESTAMP}`;
 
   const placeholderProblemGroups = [
     {
@@ -633,7 +633,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
   ] = useState(false);
 
   const defaultRecoveryTitle = "{EVENT.STATUS} : {TRIGGER.NAME}";
-  const defaultRecoveryBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nStatus: {TRIGGER.STATUS}\nTime: {EVENT.TIME} on {EVENT.DATE}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nOriginal problem ID: {EVENT.ID}`;
+  const defaultRecoveryBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\nRecovery Expression: {TRIGGER.RECOVERY_EXPRESSION}\nStatus: {TRIGGER.STATUS}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nProblem Date: {EVENT.RECOVERY.TIMESTAMP}`;
 
   const placeholderRecoveryGroups = [
     {
