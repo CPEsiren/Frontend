@@ -1,26 +1,33 @@
 import { useState } from "react";
-import { Typography, Alert } from "@mui/material";
+import { Typography, Alert, useMediaQuery, useTheme } from "@mui/material";
 import { Box } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import NewLogo from "../assets/NewLogo.svg";
 import LoginLeftside from "../assets/LoginLeftside.svg";
 import useWindowSize from "../hooks/useWindowSize";
-import LoginAuthen from "../authenticated/LoginAuthen"; // ✅ นำเข้า Component ที่แยกออกมา
+import LoginAuthen from "../authenticated/LoginAuthen";
 
 const Login = () => {
   const windowSize = useWindowSize();
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const theme = useTheme();
+
+  // Media queries for different iPad sizes
+  const isIpadMini = useMediaQuery("(min-width:768px) and (max-width:1024px)");
+  const isIpadAir = useMediaQuery("(min-width:820px) and (max-width:1180px)");
+  const isIpadPro = useMediaQuery("(min-width:1024px) and (max-width:1366px)");
+  const isIpad = isIpadMini || isIpadAir || isIpadPro;
 
   // Function to handle successful login
   const handleLoginSuccess = () => {
     localStorage.setItem("isAuthenticated", "true");
-    navigate("/dashboard"); // Redirect to dashboard after successful login
+    navigate("/dashboard");
   };
 
   // Function to handle login failure
   const handleLoginFailure = (errorMessage: string) => {
-    setError(errorMessage); // Display error message if login fails
+    setError(errorMessage);
   };
 
   // Screen is too small (smaller than iPad mini)
@@ -80,17 +87,18 @@ const Login = () => {
         alt="CMU Siren Logo"
         sx={{
           position: "absolute",
-          top: "5px",
-          right: "5px",
-          width: "20vh",
+          top: isIpad ? "3px" : "5px",
+          right: isIpad ? "3px" : "5px",
+          width: isIpad ? "15vh" : "20vh",
           height: "auto",
+          zIndex: 10,
         }}
       />
 
-      {/* Left Section */} 
+      {/* Left Section */}
       <Box
         sx={{
-          flex: 100,
+          flex: isIpadMini ? 70 : isIpadAir ? 70 : isIpadPro ? 80 : 100,
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "center",
@@ -98,22 +106,21 @@ const Login = () => {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          width: "100vh",
-          height: "100vh",
+          height: "auto",
         }}
       ></Box>
 
       {/* Right Section */}
       <Box
         sx={{
-          flex: 35,
+          flex: isIpadMini ? 30 : isIpadAir ? 30 : isIpadPro ? 20 : 35,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: 3,
-          marginRight: 8,
-          marginLeft: -15,
+          padding: isIpad ? 2 : 3,
+          marginRight: isIpad ? 4 : 8,
+          marginLeft: isIpadMini ? -8 : isIpadAir ? -10 : isIpadPro ? -12 : -15,
           bgcolor: "#ebf1ff",
           overflowY: "auto",
         }}
@@ -128,9 +135,15 @@ const Login = () => {
           sx={{
             textAlign: "center",
             fontWeight: 1000,
-            fontSize: "4.5rem",
+            fontSize: isIpadMini
+              ? "3rem"
+              : isIpadAir
+              ? "3.5rem"
+              : isIpadPro
+              ? "4rem"
+              : "4.5rem",
             color: "#2c44b7",
-            mb: 2,
+            mb: isIpad ? 1 : 2,
             fontFamily: "Georgia, serif",
           }}
         >
@@ -140,15 +153,19 @@ const Login = () => {
           sx={{
             textAlign: "center",
             color: "#2e2e2e",
-            mb: 8,
-            fontSize: "1.2rem",
+            mb: isIpad ? 4 : 8,
+            fontSize: isIpad ? "1rem" : "1.2rem",
           }}
         >
           Sign in to your Account
         </Typography>
 
-        <Box >
-          <LoginAuthen  
+        <Box
+          sx={{
+            width: isIpad ? "90%" : "auto",
+          }}
+        >
+          <LoginAuthen
             onSuccess={handleLoginSuccess}
             onError={handleLoginFailure}
           />

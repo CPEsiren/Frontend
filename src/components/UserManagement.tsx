@@ -215,7 +215,7 @@ const UserManagement = () => {
                 borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
                 padding: "16px",
               },
-              "& .MuiTableRow-root:hover": {
+              "& .MuiTableRow-body:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
               "& .MuiTableCell-head": {

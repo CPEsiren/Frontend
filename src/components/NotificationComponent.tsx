@@ -361,13 +361,20 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                         color={
                           notification.type === "email" ? "primary" : "success"
                         }
+                        sx={{ px: 1 }}
                       />
                     </TableCell>
                     <TableCell align="center">
                       {notification.recipient.name}
                     </TableCell>
                     <TableCell align="center">
-                      {notification.enabled ? "Enable" : "Disable"}
+                      <Chip
+                        label={notification.enabled ? "Enable" : "Disable"}
+                        color={notification.enabled ? "success" : "error"}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontWeight: "bold", border: "2px solid" }}
+                      />
                     </TableCell>
                     <TableCell align="center">
                       <IconButton
