@@ -129,7 +129,7 @@ const EventComponent = () => {
                 borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
                 padding: "25px",
               },
-              "& .MuiTableRow-root:hover": {
+              "& .MuiTableRow-body:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
               "& .MuiTableRow-root": {

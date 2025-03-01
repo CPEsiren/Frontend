@@ -563,20 +563,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     setTriggers(newTriggers);
   };
 
-  const [isEmptyinItemTab, setIsEmptyinItemTab] = useState(false);
-  useEffect(() => {
-    // If we're on the trigger tab and items become empty, switch to the item tab
-    if (activeTab === "trigger" && items.length === 0) {
-      setActiveTab("item");
-      // Show notification to the user
-      setSnackbarMessage(
-        "You need to add at least one item before creating triggers"
-      );
-      setSnackbarSeverity("info");
-      setSnackbarOpen(true);
-    }
-  }, [items, activeTab]);
-
   return (
     <Box sx={{ p: 0, width: "100%" }}>
       {windowSize.width > 600 && (

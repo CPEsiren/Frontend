@@ -1,15 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 declare global {
   interface Window {
     gapi: any;
   }
 }
 import axios from "axios";
-import { GoogleOAuthProvider} from "@react-oauth/google";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { gapi } from "gapi-script";
-import { Box } from "@mui/material";
+import { Box, Button, Typography, styled, CircularProgress } from "@mui/material";
 import GoogleLogo from "../assets/GoogleIcon.png";
-
 
 interface LoginAuthenProps {
   onSuccess: () => void;
@@ -50,15 +49,60 @@ const authenticateWithServer = async (token: string) => {
   }
 };
 
+// Styled components using MUI styling system
+const GoogleButton = styled(Button)(({ theme }) => ({
+  backgroundColor: "#FFFFFF",
+  padding: "10px",
+  paddingLeft: "20px",
+  paddingRight: "20px",
+  borderRadius: "50px",
+  width: "100%",
+  cursor: "pointer",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  border: "none",
+  color: "black",
+  boxShadow: theme.shadows[1],
+  "&:hover": {
+    backgroundColor: "#f5f5f5",
+    boxShadow: theme.shadows[2],
+  },
+  "&.Mui-disabled": {
+    backgroundColor: "#FFFFFF",
+  }
+}));
+
+const GoogleButtonIcon = styled("img")({
+  width: "38px",
+  marginRight: "10px",
+});
+
+const LoginContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: "transparent",
+  fontWeight: "bold",
+  padding: "10px 10px",
+  borderRadius: "100px",
+  maxWidth: "350px",
+  width: "100%",
+  outline: "none",
+  border: `3px solid #242D5D`,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: theme.spacing(12),
+}));
+
 const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const initGapi = () => {
       gapi.load("auth2", () => {
         gapi.auth2.init({
           client_id: clientId,
-          scope: "openid profile email", 
+          scope: "openid profile email",
         });
       });
     };
@@ -72,6 +116,7 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
 
   const handleGoogleLogin = async (googleUser: any) => {
     try {
+      setLoading(true);
       console.log("Google authentication successful");
       const token = googleUser.getAuthResponse().id_token;
       localStorage.setItem("token", token);
@@ -81,12 +126,14 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
       if (serverResponse && localStorage.getItem("userRole")) {
         setTimeout(() => {
           onSuccess();
+          setLoading(false);
         }, 2000);
       } else {
         const errorMessage = !serverResponse
           ? "No response from server"
           : "User role not received from server";
         console.error(errorMessage);
+        setLoading(false);
         onError(errorMessage);
       }
     } catch (error: any) {
@@ -95,6 +142,7 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
         error.message ||
         "Authentication failed";
       console.error("Authentication error:", errorMessage);
+      setLoading(false);
       onError(`Authentication failed: ${errorMessage}`);
     }
   };
@@ -102,66 +150,42 @@ const LoginAuthen: React.FC<LoginAuthenProps> = ({ onSuccess, onError }) => {
   const handleError = (error: any) => {
     const errorMessage = error?.error || "Failed to authenticate with Google";
     console.error(errorMessage);
+    setLoading(false);
     onError(errorMessage);
   };
 
-  const customStyle = {
-    backgroundColor: "transparent",
-    fontWeight: "bold",
-    padding: "10px 10px",
-    borderRadius: "100px",
-    maxWidth: "350px", 
-    width: "100%",
-    outline: "none",
-    border: "3px solid #3e51c7",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  };
-  
   const handleLoginClick = () => {
+    setLoading(true);
     const auth2 = gapi.auth2.getAuthInstance();
     auth2.signIn().then(
       (googleUser: any) => handleGoogleLogin(googleUser),
       (error: any) => handleError(error)
     );
   };
-  
+
   return (
-    <>
-      <Box sx={customStyle} marginRight={12}>
-        <GoogleOAuthProvider clientId={clientId}>
-          <Box sx={{ width: "100%" }}>
-            <button
-              onClick={handleLoginClick}
-              onError={() => handleError(new Error("Google login failed"))}
-              style={{
-                backgroundColor: "#FFFFFF",
-                padding: "10px",
-                paddingInline: "20px",
-                borderRadius: "50px",
-                width: "100%",
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                border: "none",
-              }}
-            >
-              <img
-                src={GoogleLogo}
-                alt="Google Logo"
-                style={{
-                  width: "38px",
-                  marginRight: "10px",
-                }}
-              />
-              Sign in with Google
-            </button>
-          </Box>
-        </GoogleOAuthProvider>
-      </Box>
-    </>
+    <LoginContainer>
+      <GoogleOAuthProvider clientId={clientId}>
+        <Box sx={{ width: "100%" }}>
+          <GoogleButton
+            onClick={handleLoginClick}
+            variant="contained"
+            disableElevation
+            disabled={loading}
+          >
+            {loading ? (
+              <CircularProgress size={24} color="primary" />
+            ) : (
+              <>
+                <GoogleButtonIcon src={GoogleLogo} alt="Google Logo" />
+                <Typography variant="button">Sign in with Google</Typography>
+              </>
+            )}
+          </GoogleButton>
+        </Box>
+      </GoogleOAuthProvider>
+    </LoginContainer>
   );
-}  
+};
+
 export default LoginAuthen;

@@ -43,6 +43,7 @@ import {
 import TemplateIcon from "../assets/template.svg";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
+import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
 
 const functionofItem = [
   { value: "avg", label: "avg()" },
@@ -228,7 +229,7 @@ const Templates: React.FC = () => {
           open: true,
           message: "Template updated successfully",
           severity: "success",
-          refreshCallback: null
+          refreshCallback: null,
         });
         setEditDialogOpen(false);
       }
@@ -238,7 +239,7 @@ const Templates: React.FC = () => {
         open: true,
         message: "Failed to update template",
         severity: "error",
-        refreshCallback: null
+        refreshCallback: null,
       });
     } finally {
       setFormLoading(false);
@@ -281,7 +282,7 @@ const Templates: React.FC = () => {
           open: true,
           message: "Template deleted successfully",
           severity: "success",
-          refreshCallback: null
+          refreshCallback: null,
         });
       }
     } catch (error) {
@@ -290,7 +291,7 @@ const Templates: React.FC = () => {
         open: true,
         message: "Failed to delete template",
         severity: "error",
-        refreshCallback: null
+        refreshCallback: null,
       });
     } finally {
       setDeleteDialogOpen(false);
@@ -614,7 +615,10 @@ const Templates: React.FC = () => {
     }));
   };
 
-  const handleTemplateAddSuccess = (message: string, refreshCallback?: () => void) => {
+  const handleTemplateAddSuccess = (
+    message: string,
+    refreshCallback?: () => void
+  ) => {
     const hasRefreshKeyword = message.includes("REFRESH");
     const baseMessage = hasRefreshKeyword
       ? message.split(" REFRESH")[0]
@@ -679,125 +683,143 @@ const Templates: React.FC = () => {
       )}
 
       {!loading && (
-        
         <Box sx={{ mt: 2 }}>
           {templates.length === 0 ? (
-          <Paper sx={{ p: 3, textAlign: "center" }}>
-            <Typography variant="body1">No template found</Typography>
-          </Paper>
-        ) : (
-          <Grid container spacing={2}>
-            {templates
-              .slice((page - 1) * itemsPerPage, page * itemsPerPage)
-              .map((template) => (
-                <Grid item xs={12} sm={6} md={4} key={template._id}>
-                  <Box
-                    sx={{
-                      position: "relative",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 2,
-                      border: "1px solid #ddd",
-                      borderRadius: 2,
-                      height: "80%",
-                      backgroundColor: "#f9f9f9",
-                      transition: "opacity 0.3s ease-in-out",
-                      opacity: 1,
-                    }}
-                  >
-                    {/* Edit/Delete buttons positioned at the top right */}
+            <Paper sx={{ p: 3, textAlign: "center" }}>
+              <Typography variant="body1">No template found</Typography>
+            </Paper>
+          ) : (
+            <Grid container spacing={2} sx={{ borderRadius: 2 }}>
+              {templates
+                .slice((page - 1) * itemsPerPage, page * itemsPerPage)
+                .map((template) => (
+                  <Grid item xs={12} sm={6} md={4} key={template._id}>
                     <Box
                       sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
+                        position: "relative",
                         display: "flex",
-                        zIndex: 1,
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        sx={{
-                          padding: 0.5,
-                          mr: 0.5,
-                          "&:hover": {
-                            backgroundColor: "rgba(255, 193, 7, 0.1)",
-                          },
-                        }}
-                        onClick={() => handleEditClick(template)}
-                      >
-                        <EditIcon
-                          sx={{ color: "warning.main", fontSize: 18 }}
-                        />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        sx={{
-                          padding: 0.5,
-                          "&:hover": {
-                            backgroundColor: "rgba(244, 67, 54, 0.1)",
-                          },
-                        }}
-                        onClick={() => handleDeleteClick(template)}
-                      >
-                        <DeleteIcon
-                          sx={{ color: "error.main", fontSize: 18 }}
-                        />
-                      </IconButton>
-                    </Box>
-
-                    {/* Main template content */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "row",
+                        flexDirection: "column",
                         alignItems: "center",
-                        width: "100%",
+                        justifyContent: "center",
+                        padding: 2,
+                        borderRadius: 2,
+                        height: "80%",
+                        backgroundColor: "#f9f9f9",
+                        transition: "opacity 0.3s ease-in-out",
+                        opacity: 1,
+                        // border: "2px solid #242D5D",
                       }}
                     >
-                      <img
+                      {/* Edit/Delete buttons positioned at the top right */}
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          display: "flex",
+                          zIndex: 1,
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          sx={{
+                            padding: 0.5,
+                            mr: 0.5,
+                            "&:hover": {
+                              backgroundColor: "rgba(255, 193, 7, 0.1)",
+                            },
+                          }}
+                          onClick={() => handleEditClick(template)}
+                        >
+                          <EditIcon
+                            sx={{ color: "warning.main", fontSize: 18 }}
+                          />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          sx={{
+                            padding: 0.5,
+                            "&:hover": {
+                              backgroundColor: "rgba(244, 67, 54, 0.1)",
+                            },
+                          }}
+                          onClick={() => handleDeleteClick(template)}
+                        >
+                          <DeleteIcon
+                            sx={{ color: "error.main", fontSize: 18 }}
+                          />
+                        </IconButton>
+                      </Box>
+
+                      {/* Main template content */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          width: "100%",
+                        }}
+                      >
+                        {/* <Box
+                          component="img"
+                          src={TemplateIcon}
+                          alt="Template"
+                          sx={{
+                            width: "25%",
+                            color: "blue",
+                            mr:2
+                          }}
+                        /> */}
+                        <IconButton
+                          sx={{
+                            color: "#242D5D",
+                            mr: 2,
+                          }}
+                        >
+                          <FileCopyOutlinedIcon sx={{ fontSize: 100 }} />
+                        </IconButton>
+                        {/* <img
                         src={TemplateIcon}
                         alt="Template Icon"
                         style={{
-                          width: "30%",
+                          
                           marginRight: 2,
+                          color: "#242D5D",
                         }}
-                      />
-                      <Box sx={{ width: "70%" }}>
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight={600}
-                          sx={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            lineHeight: 1.2,
-                            maxHeight: "3.6em",
-                            maxWidth: "70%",
-                          }}
-                        >
-                          {template.template_name}
-                        </Typography>
-                        <Typography variant="body2">
-                          Description: {template.description}
-                        </Typography>
-                        <Typography variant="body2">
-                          Items: {template.items.length}
-                        </Typography>
-                        <Typography variant="body2">
-                          Trigger: {template.triggers.length}
-                        </Typography>
+                      /> */}
+                        <Box sx={{ width: "70%" }}>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight={600}
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              lineHeight: 1.2,
+                              maxHeight: "3.6em",
+                              maxWidth: "70%",
+                            }}
+                          >
+                            {template.template_name}
+                          </Typography>
+                          <Typography variant="body2">
+                            Description: {template.description}
+                          </Typography>
+                          <Typography variant="body2">
+                            Items: {template.items.length}
+                          </Typography>
+                          <Typography variant="body2">
+                            Trigger: {template.triggers.length}
+                          </Typography>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                </Grid>
-              ))}
-          </Grid>
-        )}
+                  </Grid>
+                ))}
+            </Grid>
+          )}
           {pageCount > 1 && (
             <Box
               sx={{

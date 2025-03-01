@@ -28,6 +28,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import liff from "@line/liff";
 import axios from "axios";
@@ -38,6 +40,8 @@ import Profile404 from "../../assets/profile404.jpg";
 import { useLocation } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { InfoIcon } from "lucide-react";
+import { InfoOutlined } from "@mui/icons-material";
 
 interface SnackbarState {
   open: boolean;
@@ -79,7 +83,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     "email"
   );
   const [email, setemail] = useState("");
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState("noti");
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -151,7 +155,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       //email
       setOtp("");
       setOtpSent(false);
-      setActiveTab(0);
+      setActiveTab("noti");
       setCooldownTime(0);
       setIsValidEmail(false);
       setIsOtpVerified(false);
@@ -218,7 +222,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     //email
     setOtp("");
     setOtpSent(false);
-    setActiveTab(0);
+    setActiveTab("noti");
     setCooldownTime(0);
     setIsValidEmail(false);
     setIsOtpVerified(false);
@@ -250,7 +254,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     setShowConfirmCancle(false);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
   };
 
@@ -761,11 +765,12 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       <DialogTitle>Add Notification Channel</DialogTitle>
       <DialogContent>
         <Tabs value={activeTab} onChange={handleTabChange}>
-          <Tab label="Notification Channel" />
-          <Tab label="Message Alert" />
+          <Tab value={"noti"} label="Notification Channel" />
+          <Tab value={"prob"} label="Problem Message" />
+          <Tab value={"recov"} label="Recovery Message" />
         </Tabs>
         <Box sx={{ p: 2 }}>
-          {activeTab === 0 && (
+          {activeTab === "noti" && (
             <>
               <RadioGroup
                 value={selectedChannel}
@@ -777,7 +782,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                   }
                 }}
               >
-                <div>
+                <Box>
                   <FormControlLabel
                     value="email"
                     control={<Radio />}
@@ -790,7 +795,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                     label="Line"
                     disabled={isOtpVerified}
                   />
-                </div>
+                </Box>
               </RadioGroup>
               {selectedChannel === "email" && (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -922,12 +927,22 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
               )}
             </>
           )}
-          {activeTab === 1 && (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {activeTab === "prob" && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                width: 1,
+                mt: 2,
+                border: "1px solid #D3D3D3",
+                borderRadius: "8px",
+              }}
+            >
               <Box
                 sx={{
                   display: "flex",
-                  flexDirection: "raw",
+                  flexDirection: "column",
                   gap: 2,
                 }}
               >
@@ -937,60 +952,83 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                     display: "flex",
                     flexDirection: "column",
                     gap: 2,
-                    width: "50%",
-                    backgroundColor: (theme) => theme.palette.error.main + "20",
+                    // backgroundColor: (theme) => theme.palette.error.main + "20",
                     borderRadius: "8px",
-                    padding: 2,
+                    width: 1,
+                    p: 2,
                   }}
                 >
-                  <Paper
-                    elevation={2}
+                  <Box
                     sx={{
-                      padding: 1,
-                      backgroundColor: (theme) => theme.palette.error.main,
-                      color: (theme) => theme.palette.error.contrastText,
-                      borderRadius: "8px",
+                      px: 1,
+                      pt: 2,
+                      display: "flex",
+                      flexDirection: "row",
                     }}
                   >
-                    <Typography variant="h5" align="center" fontWeight="bold">
+                    <Typography
+                      // variant="h5"
+                      sx={{
+                        alignItems: "left",
+                        fontWeight: "bold",
+                        color: "red",
+                        fontSize: "1.7rem",
+                      }}
+                    >
                       Problem Message
                     </Typography>
-                  </Paper>
+                    <Tooltip
+                      title="Message for alerting problem"
+                      arrow
+                      placement="right"
+                    >
+                      <IconButton>
+                        <InfoOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Divider sx={{ width: "95%", mt: -1 }} />
                   <FormControlLabel
                     control={
                       <Checkbox
                         checked={isDefaultProblemMessage}
                         onChange={handleDefaultProblemMessageChange}
+                        sx={{
+                          "&.Mui-checked": {
+                            color: "blue", // Set background color when checked
+                          },
+                          ml: 1,
+                        }}
                       />
                     }
-                    label="Default Message"
-                    sx={{ alignSelf: "start-end", width: "50%" }}
+                    label="Use Default Message"
                   />
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", ml: 1, mb: 2 }}
+                  >
                     <TextField
                       id="alert-title"
                       label="Alert Title"
                       value={messageProblemTitle}
                       onChange={handleProblemTitleChange}
                       placeholder="Enter alert title"
-                      fullWidth
-                      color="error"
+                      sx={{ width: "90%" }}
                     />
-                    <Button
-                      sx={{ position: "absolute", right: "52%" }}
+                    <IconButton
+                      sx={{ width: "5%", ml: 1.5, color: "#242D5D" }}
                       onClick={() => openPlaceholderProblemDialog("title")}
                     >
                       <AddIcon />
-                    </Button>
+                    </IconButton>
                   </Box>
 
-                  <Divider />
+                  {/* <Divider sx={{ width: "95%" }} /> */}
 
                   <Box
                     sx={{
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "stretch",
+                      flexDirection: "row",
+                      ml: 1,
                     }}
                   >
                     <TextField
@@ -1002,81 +1040,126 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       multiline
                       rows={10}
                       maxRows={20}
-                      fullWidth
-                      color="error"
+                      sx={{ width: "90%" }}
                     />
-                    <Button
-                      sx={{ position: "absolute", right: "52%" }}
+                    <IconButton
+                      sx={{
+                        width: "5%",
+                        ml: 1.5,
+                        color: "#242D5D",
+                        height: "5%",
+                      }}
                       onClick={() => openPlaceholderProblemDialog("body")}
                     >
                       <AddIcon />
-                    </Button>
+                    </IconButton>
                   </Box>
                 </Box>
 
                 <Divider orientation="vertical" flexItem />
-
+              </Box>
+            </Box>
+          )}
+          {activeTab === "recov" && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                width: 1,
+                mt: 2,
+                border: "1px solid #D3D3D3",
+                borderRadius: "8px",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 {/* Recovery Message */}
                 <Box
                   sx={{
                     display: "flex",
                     flexDirection: "column",
                     gap: 2,
-                    width: "50%",
-                    backgroundColor: (theme) =>
-                      theme.palette.success.main + "20",
                     borderRadius: "8px",
-                    padding: 2,
+                    width: 1,
+                    p: 2,
                   }}
                 >
-                  <Paper
-                    elevation={2}
+                  <Box
                     sx={{
-                      padding: 1,
-                      backgroundColor: (theme) => theme.palette.success.main,
-                      color: (theme) => theme.palette.success.contrastText,
-                      borderRadius: "8px",
+                      px: 1,
+                      pt: 2,
+                      display: "flex",
+                      flexDirection: "row",
                     }}
                   >
-                    <Typography variant="h5" align="center" fontWeight="bold">
+                    <Typography
+                      sx={{
+                        alignItems: "left",
+                        fontWeight: "bold",
+                        color: "green",
+                        fontSize: "1.7rem",
+                      }}
+                    >
                       Recovery Message
                     </Typography>
-                  </Paper>
+                    <Tooltip
+                      title="Message for alerting that the problem is recovery"
+                      arrow
+                      placement="right"
+                    >
+                      <IconButton>
+                        <InfoOutlined />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Divider sx={{ width: "95%", mt: -1 }} />
                   <FormControlLabel
                     control={
                       <Checkbox
                         checked={isDefaultRecoveryMessage}
                         onChange={handleDefaultRecoveryMessageChange}
+                        sx={{
+                          "&.Mui-checked": {
+                            color: "blue", // Set background color when checked
+                          },
+                          ml: 1,
+                        }}
                       />
                     }
-                    label="Default Message"
-                    sx={{ alignSelf: "start-end", width: "50%" }}
+                    label="Use Default Message"
                   />
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", ml: 1, mb: 2 }}
+                  >
                     <TextField
                       id="alert-title"
                       label="Alert Title"
                       value={messageRecoveryTitle}
                       onChange={handleRecoveryTitleChange}
                       placeholder="Enter alert title"
-                      fullWidth
-                      color="success"
+                      sx={{ width: "90%" }}
                     />
-                    <Button
-                      sx={{ position: "absolute", right: "5%" }}
+                    <IconButton
+                      sx={{ width: "5%", ml: 1.5, color: "#242D5D" }}
                       onClick={() => openPlaceholderRecoveryDialog("title")}
                     >
                       <AddIcon />
-                    </Button>
+                    </IconButton>
                   </Box>
 
-                  <Divider />
+                  {/* <Divider /> */}
 
                   <Box
                     sx={{
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "stretch",
+                      flexDirection: "row",
+                      ml: 1,
                     }}
                   >
                     <TextField
@@ -1088,27 +1171,56 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                       multiline
                       rows={10}
                       maxRows={20}
-                      fullWidth
-                      color="success"
+                      sx={{ width: "90%" }}
                     />
-                    <Button
-                      sx={{ position: "absolute", right: "5%" }}
+                    <IconButton
+                      sx={{
+                        width: "5%",
+                        ml: 1.5,
+                        color: "#242D5D",
+                        height: "5%",
+                      }}
                       onClick={() => openPlaceholderRecoveryDialog("body")}
                     >
                       <AddIcon />
-                    </Button>
+                    </IconButton>
                   </Box>
                 </Box>
+                <Divider orientation="vertical" flexItem />
               </Box>
             </Box>
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel} color="error">
+      <DialogActions sx={{ mb: 1, mr: 1 }}>
+        <Button
+          onClick={handleCancel}
+          variant="outlined"
+          sx={{
+            fontSize: 14,
+            color: "black",
+            borderColor: "#B9B9B9",
+            borderRadius: 2,
+          }}
+        >
           Cancel
         </Button>
-        <Button onClick={handleSave} variant="contained" color="success">
+        <Button
+          onClick={handleSave}
+          variant="outlined"
+          sx={{
+            fontSize: 14,
+            color: "white",
+            bgcolor: "#0281F2",
+            borderColor: "white",
+            borderRadius: 2,
+            "&:hover": {
+              color: "white",
+              bgcolor: "#0274d9",
+              borderColor: "white",
+            },
+          }}
+        >
           Add
         </Button>
       </DialogActions>

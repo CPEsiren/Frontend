@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import useWindowSize from "../hooks/useWindowSize";
+``;
 import LogoutAuthen from "../authenticated/LogoutAuthen";
 import axios from "axios";
 
@@ -99,21 +100,23 @@ export default function Footer({ isHideSidebar }: FooterProps) {
     <Stack
       direction="row"
       sx={{
+        width: "100%",
         alignItems: "center",
         marginTop: "auto",
-        px: 0,
-        pb: 0,
         whiteSpace: "nowrap",
+        // justifyItems: "center",
+        // justifyContent: "center",
       }}
     >
       <Button
         disabled={!isAdmin}
         onClick={handleclick}
         sx={{
+          // alignItems: "left",
           ml: isHideSidebar ? 0 : 1,
           mr: isHideSidebar ? 0 : 2,
           color: "black",
-          width: "50%",
+          width: "80%",
           "&:focus": {
             outline: "none",
             border: "none",
@@ -122,11 +125,14 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             // Corrected selector
             color: "black",
           },
+          // border: "1px solid #d4d4d4",
+         justifyContent: "start",
         }}
       >
         <Avatar
           ref={anchorRef}
           sx={{
+            ml: 0,
             width: "30px",
             height: "30px",
             cursor: isAdmin ? "pointer" : "default",
@@ -136,13 +142,13 @@ export default function Footer({ isHideSidebar }: FooterProps) {
           onClick={isAdmin ? handleOpenSignout : undefined}
         />
         {!isHideSidebar && (
-          <Stack direction="row" spacing={1} marginLeft={1.5}>
+          <Stack direction="row" spacing={1} marginLeft={1.5} marginRight={2}>
             <Typography fontWeight={"medium"}>{user.username}</Typography>
           </Stack>
         )}
       </Button>
 
-      <Popper
+      {/* <Popper
         open={openSignout}
         anchorEl={anchorRef.current}
         placement="right"
@@ -158,7 +164,13 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             }}
           >
             <Paper>
-              <Box sx={{ marginBlockEnd: 1, width: "100%" }}>
+              <Box
+                sx={{
+                  marginBlockEnd: 1,
+                  width: "100%",
+                  border: "1px solid rgb(255, 4, 4)",
+                }}
+              >
                 <ClickAwayListener onClickAway={handleClose}>
                   <LogoutAuthen />
                 </ClickAwayListener>
@@ -166,12 +178,19 @@ export default function Footer({ isHideSidebar }: FooterProps) {
             </Paper>
           </Grow>
         )}
-      </Popper>
+      </Popper> */}
 
       {/* Logout button when sidebar is not hidden */}
       {!(isHideSidebar || windowSize.width < 1100) && (
-        <Box sx={{ marginLeft: "auto", marginRight: 2 }}>
-          <LogoutAuthen />
+        <Box
+          sx={{
+            // border: "1px solid rgb(255, 4, 4)",
+            width: "20%",
+            justifyItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
+          <LogoutAuthen  />
         </Box>
       )}
     </Stack>
