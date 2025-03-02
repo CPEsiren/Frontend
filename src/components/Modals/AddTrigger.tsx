@@ -384,7 +384,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
       expression: !expression,
       ok_eventGen: !ok_eventGen,
       recoveryExpression:
-        ok_eventGen === "recovery expression" && !recoveryExpression,
+        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
     setErrors(newErrors);
@@ -975,7 +975,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
               >
                 {[
                   { level: "Expression", color: "#808080" },
-                  { level: "Recovery expression", color: "#808080" },
+                  { level: "Resolved expression", color: "#808080" },
                   { level: "None", color: "#808080" },
                 ].map(({ level, color }) => (
                   <Button
@@ -1018,7 +1018,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
             </Box>
 
             {/* Recovery Expression field */}
-            {ok_eventGen === "recovery expression" && !isFormDisabled && (
+            {ok_eventGen === "resolved expression" && !isFormDisabled && (
               <Box
                 sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
               >
@@ -1044,7 +1044,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                       mb: 1,
                     }}
                   >
-                    + Recovery Expression
+                    + Resolved Expression
                   </Button>
                 </Box>
                 {recoveryParts.map((part, index) => (
