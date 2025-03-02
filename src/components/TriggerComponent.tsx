@@ -179,8 +179,16 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     field: keyof RecoveryPart,
     value: string
   ) => {
-    const newParts = [...recoveryParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    const newParts = [...expressionParts];
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setRecoveryParts(newParts);
   };
 
@@ -197,7 +205,15 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     value: string
   ) => {
     const newParts = [...expressionParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setExpressionParts(newParts);
   };
 
@@ -215,6 +231,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
   const [editEnabled, setEditEnabled] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedTrigger, setSelectedTrigger] = useState<ITrigger | null>(null);
+  //Threshold Breach Duration
+  const [ThresholdBreachDuration, setThresholdBreachDuration] =
+    useState<number>(0);
 
   const handleEditClick = (trigger: ITrigger) => {
     // console.log("Editing trigger ID:", trigger._id); // ตรวจสอบค่า ID
@@ -224,6 +243,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     setEditSeverity(trigger.severity);
     setEditOk_eve(trigger.ok_event_generation);
     setEditEnabled(trigger.enabled);
+    setThresholdBreachDuration(trigger.thresholdDuration);
 
     // Set expression parts from trigger data
     if (trigger.expressionPart && trigger.expressionPart.length > 0) {
@@ -234,7 +254,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
           value: part.value || "",
           operator: part.operator || "and",
           functionofItem: part.functionofItem || "",
-          duration: part.duration?.toString() || "",
+          duration: part.duration?.toString(),
         }))
       );
     } else {
@@ -400,16 +420,18 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
         value: part.value,
         operator: part.operator,
         functionofItem: part.functionofItem,
-        duration: parseInt(part.duration) || 0,
+        duration: part.duration,
       }));
 
       const editExpression = expressionParts
         .map((part, idx) => {
           // Format: functionofItem(item,duration) operation value
-          const durationInMinutes = part.duration ? `${part.duration}m` : "";
-          const functionCall = part.duration
-            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-            : `${part.functionofItem}(${part.item})`;
+          const durationInMinutes =
+            part.functionofItem === "last" ? "" : `${part.duration}`;
+          const functionCall =
+            part.functionofItem !== "last"
+              ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+              : `${part.functionofItem}(${part.item})`;
           const expr = `${functionCall} ${part.operation} ${part.value}`;
           return idx < expressionParts.length - 1
             ? `${expr} ${part.operator || "and"}`
@@ -424,16 +446,18 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
         value: part.value,
         operator: part.operator,
         functionofItem: part.functionofItem,
-        duration: parseInt(part.duration) || 0,
+        duration: part.duration,
       }));
 
       const editRecoveryExpression = recoveryParts
         .map((part, idx) => {
           // Format: functionofItem(item,duration) operation value
-          const durationInMinutes = part.duration ? `${part.duration}m` : "";
-          const functionCall = part.duration
-            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-            : `${part.functionofItem}(${part.item})`;
+          const durationInMinutes =
+            part.functionofItem === "last" ? "" : `${part.duration}`;
+          const functionCall =
+            part.functionofItem !== "last"
+              ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+              : `${part.functionofItem}(${part.item})`;
           const expr = `${functionCall} ${part.operation} ${part.value}`;
           return idx < recoveryParts.length - 1
             ? `${expr} ${part.operator || "and"}`
@@ -455,6 +479,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
           expressionRecoveryPart: formattedRecoveryParts,
           userRole: localStorage.getItem("userRole"),
           userName: localStorage.getItem("username"),
+          thresholdDuration: ThresholdBreachDuration,
         },
         {
           method: "PUT",
@@ -881,6 +906,49 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       />
                     </Box>
 
+                    {/* Threshold Breach Duration selection field */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          minWidth: 150,
+                          width: "13%",
+                        }}
+                      >
+                        <Typography color="error" {...typographyProps}>
+                          *
+                        </Typography>
+                        <Typography sx={{ ml: 1 }} {...typographyProps}>
+                          Threshold Breach Duration
+                        </Typography>
+                      </Box>
+                      <TextField
+                        select
+                        value={ThresholdBreachDuration}
+                        onChange={(e) =>
+                          setThresholdBreachDuration(parseInt(e.target.value))
+                        }
+                        size="small"
+                        sx={{
+                          backgroundColor: "white",
+                          "&.MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        <MenuItem value={0}>Real-Time</MenuItem>
+                        {[...Array(6)].map((_, index) => (
+                          <MenuItem
+                            key={index + 1}
+                            value={(index * 5 + 5) * 60 * 1000}
+                          >
+                            {index * 5 + 5} minute.
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Box>
+
                     {/* Severity field */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <Box
@@ -1021,6 +1089,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                               </MenuItem>
                             ))}
                           </TextField>
+
                           {/* Duration section */}
                           <TextField
                             value={part.duration}
@@ -1031,7 +1100,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 e.target.value
                               )
                             }
-                            label="Duration"
+                            disabled={part.functionofItem === "last"}
+                            select
+                            label="Interval"
                             size="small"
                             sx={{
                               width: "10%",
@@ -1040,7 +1111,11 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 fontSize: 14,
                               },
                             }}
-                          />
+                          >
+                            <MenuItem value="15m">15m</MenuItem>
+                            <MenuItem value="30m">30m</MenuItem>
+                            <MenuItem value="1h">1h</MenuItem>
+                          </TextField>
 
                           {/* Item Selection */}
                           <TextField
@@ -1302,6 +1377,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                             </TextField>
                             {/* Duration section */}
                             <TextField
+                              select
                               value={part.duration}
                               onChange={(e) =>
                                 handleRecoveryPartChange(
@@ -1310,7 +1386,8 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                   e.target.value
                                 )
                               }
-                              label="Duration"
+                              disabled={part.functionofItem === "last"}
+                              label="Interval"
                               size="small"
                               sx={{
                                 width: "10%",
@@ -1319,7 +1396,11 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                   fontSize: 14,
                                 },
                               }}
-                            />
+                            >
+                              <MenuItem value="15m">15m</MenuItem>
+                              <MenuItem value="30m">30m</MenuItem>
+                              <MenuItem value="1h">1h</MenuItem>
+                            </TextField>
 
                             {/* Item Selection */}
                             <TextField
