@@ -38,6 +38,7 @@ interface DashboardData {
     total: number;
     problem: number;
     resolved: number;
+    event: number;
   };
   templates: {
     total: number;
@@ -48,11 +49,12 @@ interface TableData {
   id: number;
   name: string;
   value: number;
-  enabled: string;
-  disabled: string;
+  enabled?: string;
+  disabled?: string;
   template?: number;
   problem?: string;
   resolved?: string;
+  event?: string;
 }
 
 const highlightText = (text: string) => {
@@ -176,10 +178,8 @@ const TableComponent = () => {
     return [
       {
         id: 1,
-        name: "Number of users (online/offline/templates)",
+        name: "Number of users (number/templates)",
         value: dashboardData.users.total,
-        enabled: dashboardData.users.online.toString(),
-        disabled: dashboardData.users.offline.toString(),
         template: dashboardData.templates.total,
       },
       {
@@ -205,12 +205,11 @@ const TableComponent = () => {
       },
       {
         id: 5,
-        name: "Number of events (resolved/problem)",
+        name: "Number of events (resolved/problem/event)",
         value: dashboardData.events.total,
         problem: dashboardData.events.problem.toString(),
         resolved: dashboardData.events.resolved.toString(),
-        enabled: "",
-        disabled: "",
+        event: dashboardData.events.event.toString(),
       },
     ];
   };
@@ -313,7 +312,12 @@ const TableComponent = () => {
                   </Box>
                 </TableCell>
                 <TableCell sx={{ textAlign: "left" }}>
-                  {row.name.includes("event") ? (
+                  {row.name.includes("users") && (
+                    <Typography component="span" sx={{ fontSize: "0.8rem" }}>
+                      {row.value}
+                    </Typography>
+                  )}
+                  {row.name.includes("event") && (
                     <Box sx={{ width: "20%", alignSelf: "center" }}>
                       <Typography
                         component="span"
@@ -328,8 +332,47 @@ const TableComponent = () => {
                       >
                         {row.problem}
                       </Typography>
+                      /
+                      <Typography component="span" sx={{ fontSize: "0.8rem" }}>
+                        {row.event}
+                      </Typography>
                     </Box>
-                  ) : (
+                  )}
+                  {row.name.includes("host") && (
+                    <>
+                      <Typography
+                        component="span"
+                        sx={{ color: "green", fontSize: "0.8rem" }}
+                      >
+                        {row.enabled}
+                      </Typography>
+                      /
+                      <Typography
+                        component="span"
+                        sx={{ color: "red", fontSize: "0.8rem" }}
+                      >
+                        {row.disabled}
+                      </Typography>
+                    </>
+                  )}
+                  {row.name.includes("items") && (
+                    <>
+                      <Typography
+                        component="span"
+                        sx={{ color: "green", fontSize: "0.8rem" }}
+                      >
+                        {row.enabled}
+                      </Typography>
+                      /
+                      <Typography
+                        component="span"
+                        sx={{ color: "red", fontSize: "0.8rem" }}
+                      >
+                        {row.disabled}
+                      </Typography>
+                    </>
+                  )}
+                  {row.name.includes("triggers") && (
                     <>
                       <Typography
                         component="span"
