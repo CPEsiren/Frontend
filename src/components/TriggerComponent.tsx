@@ -28,6 +28,7 @@ import {
   Menu,
   Fade,
   Tooltip,
+  IconButton,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -564,301 +565,298 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                 </Box>
 
                 <TableContainer
-                  component={Paper}
-                  sx={{
-                    boxShadow: "none",
-                    "& .MuiPaper-root": { boxShadow: "none" },
-                    backgroundColor: "transparent",
-                    mb: 10,
-                    border: "2px solid white",
+  component={Paper}
+  sx={{
+    boxShadow: "none",
+    "& .MuiPaper-root": { boxShadow: "none" },
+    backgroundColor: "transparent",
+    mb: 10,
+    border: "2px solid white",
+    borderRadius: "8px",
+    overflow: "hidden",
+  }}
+>
+  <Table
+    sx={{
+      "& .MuiTable-root": {
+        borderCollapse: "separate",
+        borderSpacing: 0,
+      },
+      "& .MuiTableCell-root": { borderBottom: "none" },
+      "& .MuiTableBody-root .MuiTableRow-root": {
+        "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
+        "&:hover": {
+          backgroundColor: "#ebf1ff",
+          transition: "background-color 0.3s ease",
+          cursor: "pointer",
+        },
+      },
+    }}
+  >
+    <TableHead>
+      <TableRow>
+        <TableCell
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          Trigger Name
+        </TableCell>
+        <TableCell
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          Severity
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          Expression
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          OK event generation
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          Status
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+        >
+          ⚙️
+        </TableCell>
+      </TableRow>
+    </TableHead>
+    
+    <TableBody>
+      {group.triggers.map((trigger, index) => (
+        <TableRow key={trigger._id || index}>
+          {/* Trigger Name */}
+          <TableCell>{trigger.trigger_name}</TableCell>
+          {/* Severity */}
+          <TableCell
+            sx={{
+              color: (() => {
+                switch (trigger.severity.toLowerCase()) {
+                  case "warning":
+                    return "#FFA500";
+                  case "critical":
+                    return "#FF0000";
+                  case "disaster":
+                    return "#8B0000";
+                  default:
+                    return "inherit";
+                }
+              })(),
+              fontWeight: "bold",
+            }}
+          >
+            {trigger.severity}
+          </TableCell>
+
+          {/* Expression */}
+          <TableCell
+            align="center"
+            sx={{
+              maxWidth: "300px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Tooltip
+              title={trigger.expression}
+              arrow
+              placement="top"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "white",
+                    color: "black",
+                    padding: "10px",
                     borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Table
-                    sx={{
-                      "& .MuiTable-root": {
-                        borderCollapse: "separate",
-                        borderSpacing: 0,
-                      },
-                      "& .MuiTableCell-root": { borderBottom: "none" },
-                      "& .MuiTableBody-root .MuiTableRow-root": {
-                        // "&:nth-of-type(even)": {backgroundColor: "transparent" },
-                        "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
-                        "&:hover": {
-                          backgroundColor: "#ebf1ff",
-                          transition: "background-color 0.3s ease",
-                          cursor: "pointer",
-                        },
-                      },
-                    }}
-                  >
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          Trigger Name
-                        </TableCell>
-                        <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          Severity
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          Expression
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          OK event generation
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          Status
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
-                        >
-                          ⚙️
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
+                    boxShadow:
+                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                    maxWidth: "400px",
+                    fontSize: "14px",
+                  },
+                },
+              }}
+            >
+              <Typography
+                sx={{ cursor: "pointer", fontSize: "14px" }}
+              >
+                {trigger.expression}
+              </Typography>
+            </Tooltip>
+          </TableCell>
 
-                    {group.triggers.map((trigger, index) => (
-                      <TableBody>
-                        <TableRow key={index}>
-                          {/* Trigger Name */}
-                          <TableCell>{trigger.trigger_name}</TableCell>
-                          {/* Severity */}
-                          <TableCell
-                            sx={{
-                              color: (() => {
-                                switch (trigger.severity.toLowerCase()) {
-                                  case "warning":
-                                    return "#FFA500";
-                                  case "critical":
-                                    return "#FF0000";
-                                  case "disaster":
-                                    return "#8B0000";
-                                  default:
-                                    return "inherit";
-                                }
-                              })(),
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {trigger.severity}
-                          </TableCell>
+          {/* Ok event generation */}
+          <TableCell
+            align="center"
+            sx={{
+              maxWidth: "300px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Tooltip
+              title={
+                trigger.ok_event_generation.toLowerCase() ===
+                "recovery expression" ? (
+                  <Box>{trigger.recovery_expression}</Box>
+                ) : (
+                  ""
+                )
+              }
+              arrow
+              placement="top"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: "white",
+                    color: "black",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    boxShadow:
+                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                    maxWidth: "400px",
+                    fontSize: "14px",
+                  },
+                },
+              }}
+            >
+              <Typography
+                sx={{
+                  cursor: "pointer",
+                  fontSize: "16px",
+                }}
+              >
+                {trigger.ok_event_generation.toLocaleUpperCase()}
+              </Typography>
+            </Tooltip>
+          </TableCell>
 
-                          {/* Expression */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              maxWidth: "300px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            <Tooltip
-                              title={trigger.expression}
-                              arrow
-                              placement="top"
-                              componentsProps={{
-                                tooltip: {
-                                  sx: {
-                                    backgroundColor: "white",
-                                    color: "black",
-                                    padding: "10px",
-                                    borderRadius: "8px",
-                                    boxShadow:
-                                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                    maxWidth: "400px",
-                                    fontSize: "14px",
-                                  },
-                                },
-                              }}
-                            >
-                              <Typography
-                                sx={{ cursor: "pointer", fontSize: "14px" }}
-                              >
-                                {trigger.expression}
-                              </Typography>
-                            </Tooltip>
-                          </TableCell>
+          {/* Status */}
+          <TableCell
+            align="center"
+            sx={{
+              color: trigger.enabled ? "green" : "red",
+              fontWeight: "bold",
+            }}
+          >
+            {trigger.enabled ? "Enabled" : "Disabled"}
+          </TableCell>
 
-                          {/* Ok event generation */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              maxWidth: "300px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            <Tooltip
-                              title={
-                                trigger.ok_event_generation.toLowerCase() ===
-                                "recovery expression" ? (
-                                  <Box>{trigger.recovery_expression}</Box>
-                                ) : (
-                                  ""
-                                )
-                              }
-                              arrow
-                              placement="top"
-                              componentsProps={{
-                                tooltip: {
-                                  sx: {
-                                    backgroundColor: "white",
-                                    color: "black",
-                                    padding: "10px",
-                                    borderRadius: "8px",
-                                    boxShadow:
-                                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                    maxWidth: "400px",
-                                    fontSize: "14px",
-                                  },
-                                },
-                              }}
-                            >
-                              <Typography
-                                sx={{
-                                  cursor: "pointer",
-                                  fontSize: "16px",
-                                }}
-                              >
-                                {trigger.ok_event_generation.toLocaleUpperCase()}
-                              </Typography>
-                            </Tooltip>
-                          </TableCell>
+          {/* Manage */}
+          <TableCell
+            align="center"
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Button
+              aria-controls={`fade-menu-${trigger._id}`}
+              aria-haspopup="true"
+              onClick={(event) =>
+                handleMenuClick(event, trigger)
+              }
+              sx={{
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                minWidth: "unset",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                "&:hover": {
+                  backgroundColor: "rgba(239, 239, 255, 0.1)",
+                },
+              }}
+            >
+              <MoreVertIcon
+                sx={{ fontSize: 24, color: "#242d5d" }}
+              />
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
 
-                          {/* Status */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              color: trigger.enabled ? "green" : "red",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {trigger.enabled ? "Enabled" : "Disabled"}
-                          </TableCell>
+{/* Menu (outside the table) */}
+<Menu
+  id="fade-menu"
+  MenuListProps={{
+    "aria-labelledby": "fade-button",
+  }}
+  anchorEl={anchorEl}
+  open={open}
+  onClose={handleClose}
+  TransitionComponent={Fade}
+  sx={{
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    "& .MuiMenu-paper": {
+      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+    },
+  }}
+>
+  {/* Edit */}
+  <MenuItem
+    onClick={() => {
+      if (selectedTrigger) {
+        handleEditClick(selectedTrigger);
+      }
+      handleClose();
+    }}
+    sx={{ display: "flex", alignItems: "center" }}
+  >
+    <EditNoteIcon
+      sx={{ color: "warning.main", fontSize: 20 }}
+    />
+    <Typography
+      sx={{
+        fontSize: 14,
+        color: "black",
+        marginLeft: 1,
+      }}
+    >
+      Edit
+    </Typography>
+  </MenuItem>
 
-                          {/* Manage */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              display: "flex",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Button
-                              id="fade-button"
-                              aria-controls={open ? "fade-menu" : undefined}
-                              aria-haspopup="true"
-                              aria-expanded={open ? "true" : undefined}
-                              onClick={(event) =>
-                                handleMenuClick(event, trigger)
-                              }
-                              sx={{
-                                borderRadius: "50%",
-                                width: "40px",
-                                height: "40px",
-                                minWidth: "unset",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                "&:hover": {
-                                  backgroundColor: "rgba(239, 239, 255, 0.1)",
-                                },
-                              }}
-                            >
-                              <MoreVertIcon
-                                sx={{ fontSize: 24, color: "#242d5d" }}
-                              />
-                            </Button>
-
-                            {/* Menu */}
-                            <Menu
-                              id="fade-menu"
-                              MenuListProps={{
-                                "aria-labelledby": "fade-button",
-                              }}
-                              anchorEl={anchorEl}
-                              open={open}
-                              onClose={handleClose}
-                              TransitionComponent={Fade}
-                              sx={{
-                                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                                "& .MuiMenu-paper": {
-                                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                                },
-                              }}
-                            >
-                              {/* Edit */}
-                              <MenuItem
-                                onClick={() => {
-                                  if (selectedTrigger) {
-                                    handleEditClick(selectedTrigger);
-                                  }
-                                  handleClose();
-                                }}
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <EditNoteIcon
-                                  sx={{ color: "warning.main", fontSize: 20 }}
-                                />
-                                <Typography
-                                  sx={{
-                                    fontSize: 14,
-                                    color: "black",
-                                    marginLeft: 1,
-                                  }}
-                                >
-                                  Edit
-                                </Typography>
-                              </MenuItem>
-
-                              {/* Delete */}
-                              <MenuItem
-                                onClick={() => {
-                                  if (selectedTrigger) {
-                                    handleDeleteClick(selectedTrigger);
-                                  }
-                                  handleClose();
-                                }}
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <DeleteIcon
-                                  sx={{ color: "error.main", fontSize: 20 }}
-                                />
-                                <Typography
-                                  sx={{
-                                    fontSize: 14,
-                                    color: "black",
-                                    marginLeft: 1,
-                                  }}
-                                >
-                                  Delete
-                                </Typography>
-                              </MenuItem>
-                            </Menu>
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    ))}
-                  </Table>
-                </TableContainer>
+  {/* Delete */}
+  <MenuItem
+    onClick={() => {
+      if (selectedTrigger) {
+        handleDeleteClick(selectedTrigger);
+      }
+      handleClose();
+    }}
+    sx={{ display: "flex", alignItems: "center" }}
+  >
+    <DeleteIcon
+      sx={{ color: "error.main", fontSize: 20 }}
+    />
+    <Typography
+      sx={{
+        fontSize: 14,
+        color: "black",
+        marginLeft: 1,
+      }}
+    >
+      Delete
+    </Typography>
+  </MenuItem>
+</Menu>
               </Box>
             ))}
 
