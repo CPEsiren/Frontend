@@ -272,8 +272,7 @@ const ActivityComponent: React.FC = () => {
                 </Table>
               </TableContainer>
 
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+              <TablePagination rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 component="div"
                 count={logs.length}
                 rowsPerPage={rowsPerPage}
