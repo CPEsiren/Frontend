@@ -116,7 +116,16 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     value: string
   ) => {
     const newParts = [...expressionParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
+
     setExpressionParts(newParts);
 
     // Update the final expression
@@ -126,10 +135,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     const newExpression = validParts
       .map((part, idx) => {
         // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
+        const durationInMinutes =
+          part.functionofItem === "last" ? "" : `${part.duration}`;
+        const functionCall =
+          part.functionofItem !== "last"
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
         const expr = `${functionCall} ${part.operation} ${part.value}`;
         return idx < validParts.length - 1
           ? `${expr} ${part.operator || "and"}`
@@ -145,7 +156,15 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     value: string
   ) => {
     const newParts = [...recoveryParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setRecoveryParts(newParts);
 
     // Update the final expression
@@ -155,10 +174,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     const newRecovery = validParts
       .map((part, idx) => {
         // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
+        const durationInMinutes =
+          part.functionofItem === "last" ? "" : `${part.duration}`;
+        const functionCall =
+          part.functionofItem !== "last"
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
         const expr = `${functionCall} ${part.operation} ${part.value}`;
         return idx < validParts.length - 1
           ? `${expr} ${part.operator || "and"}`
@@ -251,7 +272,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
       recoveryExpression,
       enabled,
       expressionParts,
-      recoveryParts
+      recoveryParts,
+      ThresholdBreachDuration
     );
 
     if (success) {
@@ -308,7 +330,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     recovery_expression: string,
     enabled: boolean,
     expressionParts: ExpressionPart[],
-    recoveryParts: RecoveryPart[]
+    recoveryParts: RecoveryPart[],
+    ThresholdBreachDuration: number
   ): Promise<boolean> => {
     try {
       const requestBody = {
@@ -318,6 +341,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
         expression,
         ok_event_generation,
         recovery_expression,
+        thresholdDuration: ThresholdBreachDuration,
         enabled,
         // Store expressionParts as expressionPart in the model
         expressionPart: expressionParts.map((part) => ({
@@ -451,6 +475,10 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
       setLoading(false);
     }
   };
+
+  //Threshold Breach Duration
+  const [ThresholdBreachDuration, setThresholdBreachDuration] =
+    useState<number>(0);
 
   // Severity
   const [severity, setSeverity] = useState<string>("");
@@ -588,6 +616,47 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
               </TextField>
             </Box>
 
+            {/* Threshold Breach Duration selection field */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: 150,
+                  width: "14%",
+                }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                  Threshold Breach Duration
+                </Typography>
+              </Box>
+              <TextField
+                select
+                value={ThresholdBreachDuration}
+                onChange={(e) =>
+                  setThresholdBreachDuration(parseInt(e.target.value))
+                }
+                disabled={isFormDisabled}
+                size="small"
+                sx={{
+                  backgroundColor: "white",
+                  "&.MuiInputBase-input": {
+                    fontSize: 14,
+                  },
+                }}
+              >
+                <MenuItem value={0}>Real-Time</MenuItem>
+                {[...Array(6)].map((_, index) => (
+                  <MenuItem key={index + 1} value={(index * 5 + 5) * 60 * 1000}>
+                    {index * 5 + 5} minute.
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+
             {/* Severity field */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <Box
@@ -703,13 +772,13 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                     <TextField
                       select
                       value={part.functionofItem}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         handleExpressionPartChange(
                           index,
                           "functionofItem",
                           e.target.value
-                        )
-                      }
+                        );
+                      }}
                       disabled={isFormDisabled}
                       label="Function"
                       size="small"
@@ -727,6 +796,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         </MenuItem>
                       ))}
                     </TextField>
+
                     {/* Duration section */}
                     <TextField
                       value={part.duration}
@@ -737,8 +807,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           e.target.value
                         )
                       }
-                      disabled={isFormDisabled}
-                      label="Duration"
+                      disabled={
+                        isFormDisabled || part.functionofItem === "last"
+                      }
+                      select
+                      label="Interval"
                       size="small"
                       sx={{
                         width: "10%",
@@ -747,7 +820,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           fontSize: 14,
                         },
                       }}
-                    />
+                    >
+                      <MenuItem value="15m">15m</MenuItem>
+                      <MenuItem value="30m">30m</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                    </TextField>
 
                     {/* Item Selection */}
                     <TextField
@@ -1009,6 +1086,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                       ))}
                     </TextField>
                     <TextField
+                      select
                       value={part.duration}
                       onChange={(e) =>
                         handleRecoveryPartChange(
@@ -1017,8 +1095,10 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           e.target.value
                         )
                       }
-                      disabled={isFormDisabled}
-                      label="Duration"
+                      disabled={
+                        isFormDisabled || part.functionofItem === "last"
+                      }
+                      label="Interval"
                       size="small"
                       sx={{
                         width: "10%",
@@ -1027,7 +1107,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           fontSize: 14,
                         },
                       }}
-                    />
+                    >
+                      <MenuItem value="15m">15m</MenuItem>
+                      <MenuItem value="30m">30m</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                    </TextField>
 
                     {/* Item Selection */}
                     <TextField
