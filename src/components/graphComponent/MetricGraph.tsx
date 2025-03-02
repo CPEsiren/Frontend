@@ -88,29 +88,29 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
   return (
     <Box
-    sx={{
-      width: "100%",
-      height: isSmall ? "80%" : "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      bgcolor: "#f5f5f5",
-      borderRadius: 2,
-      boxSizing: "border-box",
-    }}
-  >
-    <Box
       sx={{
         width: "100%",
-        height: "100%",
+        height: isSmall ? "80%" : "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
-        py: isSmall ? 0 : 2,
+        overflow: "hidden",
+        bgcolor: "#f5f5f5",
+        borderRadius: 2,
+        boxSizing: "border-box",
       }}
     >
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          py: isSmall ? 0 : 2,
+        }}
+      >
         <LineChart
           height={isSmall ? 240 : 420}
           width={isSmall ? 380 : 1000}
@@ -215,11 +215,14 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
           ]}
           yAxis={[
             {
-              label: `${item.item_id.unit}/s`,
+              label:
+                item.item_id.type === "counter"
+                  ? `${item.item_id.unit}/s`
+                  : item.item_id.unit,
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
-                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
+                // transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
