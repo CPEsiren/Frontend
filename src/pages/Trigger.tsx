@@ -60,12 +60,12 @@ const Triggers = () => {
       setTriggerKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error("Error fetching triggers:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch triggers",
-        severity: "error",
-        refreshCallback: null,
-      });
+      // setSnackbar({
+      //   open: true,
+      //   message: "Failed to fetch triggers",
+      //   severity: "error",
+      //   refreshCallback: null,
+      // });
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ const Triggers = () => {
             minHeight: "fit-content",
             py: 3,
             px: 3,
-            mb:8,
+            mb: 8,
           }}
         >
           {windowSize.width < 1100 && (

@@ -134,41 +134,6 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     setEditDialogOpen(true);
   };
 
-  // const fetchUpdatedDeviceData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     // const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
-  //     const response = await fetch(
-  //       `${import.meta.env.VITE_API_URL}/host/${deviceData._id}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //         body: JSON.stringify({
-  //           userRole: localStorage.getItem("userRole"),
-  //           userName: localStorage.getItem("username"),
-  //         }),
-  //       }
-  //     );
-  //     if (!response.ok) {
-  //       throw new Error("Failed to fetch updated device data");
-  //     }
-  //     const result = await response.json();
-  //     if (result.status === "success") {
-  //       setItems(result.data.items || []);
-  //     }
-  //   } catch (err) {
-  //     const errorMessage =
-  //       err instanceof Error ? err.message : "Failed to fetch items";
-  //     setError(errorMessage);
-  //     console.error("Error fetching items:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   // Add this effect to listen for updates
   useEffect(() => {
     if (deviceData?.items) {
@@ -344,7 +309,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
   };
 
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "row" }}>
       <Grid container spacing={2}>
         {items
           .slice((page - 1) * itemsPerPage, page * itemsPerPage)
@@ -386,25 +351,30 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                     <DeleteIcon sx={{ color: "error.main" }} />
                   </IconButton>
                 </Box>
-                <Typography
-                  variant="subtitle1"
-                  fontWeight={600}
-                  sx={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    lineHeight: 1.2,
-                    maxHeight: "3.6em", // 3 lines * 1.2em line-height
-                  }}
-                >
-                  {item.item_name}
-                </Typography>
-                <Typography>OID: {item.oid}</Typography>
-                <Typography>Type: {item.type}</Typography>
-                <Typography>Unit: {item.unit}</Typography>
-                <Typography>Interval: {item.interval}</Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  {" "}
+                  {/* This box will grow to fill available space */}
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    sx={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: 1.2,
+                      maxHeight: "3.6em", // 3 lines * 1.2em line-height
+                      mb: 1,
+                    }}
+                  >
+                    {item.item_name}
+                  </Typography>
+                  <Typography>OID: {item.oid}</Typography>
+                  <Typography>Type: {item.type}</Typography>
+                  <Typography>Unit: {item.unit}</Typography>
+                  <Typography>Interval: {item.interval}</Typography>
+                </Box>
               </Box>
             </Grid>
           ))}

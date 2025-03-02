@@ -318,7 +318,7 @@ const DeviceDetailPage = () => {
             borderRadius: 8,
             flexDirection: "column",
             justifyContent: windowSize.width >= 1100 ? "center" : "start",
-            alignItems: "center",
+            alignItems: "left",
             minHeight: "fit-content",
             marginBottom: 5,
             padding: 3,

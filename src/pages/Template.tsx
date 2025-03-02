@@ -770,14 +770,14 @@ const Templates: React.FC = () => {
                             mr:2
                           }}
                         /> */}
-                        <IconButton
+                        <Box
                           sx={{
                             color: "#242D5D",
                             mr: 2,
                           }}
                         >
                           <FileCopyOutlinedIcon sx={{ fontSize: 100 }} />
-                        </IconButton>
+                        </Box>
                         {/* <img
                         src={TemplateIcon}
                         alt="Template Icon"
@@ -795,7 +795,7 @@ const Templates: React.FC = () => {
                               display: "-webkit-box",
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
+                              // overflow: "hidden",
                               textOverflow: "ellipsis",
                               lineHeight: 1.2,
                               maxHeight: "3.6em",
