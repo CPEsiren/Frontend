@@ -291,7 +291,7 @@ const DeviceDetailPage = () => {
             onClick={toggleModal}
             sx={{
               color: "#FFFFFB",
-              backgroundColor: "blue",
+              backgroundColor: "#F25A28",
               fontSize: "1rem",
               fontWeight: 600,
               borderRadius: "70px",
@@ -306,7 +306,7 @@ const DeviceDetailPage = () => {
               },
             }}
           >
-            Add Item
+            + Item
           </Button>
         </Box>
 
@@ -359,7 +359,7 @@ const DeviceDetailPage = () => {
       {/* Snackbar for showing success/error messages */}
       <Snackbar
         open={snackbarState.open}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >

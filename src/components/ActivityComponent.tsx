@@ -289,7 +289,7 @@ const ActivityComponent: React.FC = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={error !== null}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={() => setError(null)}
       >
         <Alert

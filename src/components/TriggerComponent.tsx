@@ -1551,7 +1551,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
             {/* Snackbar for notifications */}
             <Snackbar
               open={snackbar.open}
-              autoHideDuration={6000}
+              autoHideDuration={3000}
               onClose={handleCloseSnackbar}
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >

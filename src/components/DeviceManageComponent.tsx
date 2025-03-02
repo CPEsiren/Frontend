@@ -505,13 +505,7 @@ const ManageComponent = () => {
                   <TableCell>
                     <Typography variant="body2">{device.hostgroup}</Typography>
                   </TableCell>
-                  {/* <TableCell>
-                  <Typography variant="body2">
-                    {device.details?.Location ||
-                      device.details?.Location ||
-                      "N/A"}
-                  </Typography>
-                </TableCell> */}
+
                   <TableCell>
                     <Chip
                       label={getStatusLabel(device.status)}

@@ -1,38 +1,70 @@
-import { Grid, Typography } from "@mui/material";
+import { Grid, Typography, Box } from "@mui/material";
 import { IDevice } from "../../../interface/InterfaceCollection"; // Update the path accordingly
+import { DisplaySettings } from "@mui/icons-material";
 
 const DeviceDetailComponent = ({ deviceData }: { deviceData: IDevice }) => {
   const deviceDetails = deviceData.details; // Extracting the DeviceDetails from the deviceData object
 
   return (
-    <Grid container spacing={3}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        width: "100%",
+        p: 2,
+        gap: 2,
+      }}
+    >
       {/* Basic Information Section */}
-      <Grid item xs={12} md={6}>
-        <Typography variant="h6" fontWeight={600} gutterBottom>
+      <Grid item xs={12} md={6} width={"40%"} sx={{ ml: 2 }}>
+        {/* <Typography variant="h6" fontWeight={600} gutterBottom>
           Basic Information
-        </Typography>
-        <Typography>Device's name: {deviceData.hostname}</Typography>
-        <Typography>IP Address: {deviceData.ip_address}</Typography>
-        <Typography>Host Group: {deviceData.hostgroup}</Typography>
-        <Typography>SNMP Version: {deviceData.snmp_version}</Typography>
-        <Typography>SNMP Port: {deviceData.snmp_port}</Typography>
+        </Typography> */}
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>Device's name:</Typography>
+          <Typography>{deviceData.hostname}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>IP Address:</Typography>
+          <Typography>{deviceData.ip_address}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>Host Group:</Typography>
+          <Typography>{deviceData.hostgroup}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>SNMP Version:</Typography>
+          <Typography>{deviceData.snmp_version}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>SNMP Port:</Typography>
+          <Typography>{deviceData.snmp_port}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Typography fontWeight={600}>SNMP Community:</Typography>
+          <Typography>{deviceData.snmp_community}</Typography>
+        </Box>
       </Grid>
 
       {/* Device Details Section */}
-      <Grid item xs={12} md={6}>
-        <Typography variant="h6" fontWeight={600} gutterBottom>
+      <Grid item xs={12} md={6} width={"45%"}>
+        {/* <Typography variant="h6" fontWeight={600} gutterBottom>
           Device Details
-        </Typography>
+        </Typography> */}
         {Object.entries(deviceDetails).map(
           ([key, value]) =>
             value !== "" && (
-              <Typography key={key}>
-                {key}: {value}
-              </Typography>
+              <Box
+                key={key}
+                sx={{ display: "flex", flexDirection: "row", gap: 1 }}
+              >
+                <Typography fontWeight={600}>{key}:</Typography>
+                <Typography>{value}</Typography>
+              </Box>
             )
         )}
       </Grid>
-    </Grid>
+    </Box>
   );
 };
 

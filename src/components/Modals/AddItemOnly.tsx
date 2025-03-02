@@ -492,7 +492,7 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId, onSuccess })
       </Paper>
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
