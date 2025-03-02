@@ -53,7 +53,6 @@ const AccountComponent = () => {
   const fetchUserData = async () => {
     const userId = localStorage.getItem("user_id");
     try {
-      
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/user/${userId}`,
         {
@@ -68,7 +67,13 @@ const AccountComponent = () => {
         throw new Error(`Failed to fetch user: ${response.statusText}`);
       }
       const result: ApiResponse = await response.json();
-      const processedUser = processUserData(result.user);
+  
+      // ใช้รูปภาพจาก API
+      const processedUser = {
+        ...processUserData(result.user),
+        picture: result.user.picture || "default-profile-image-url",
+      };
+  
       setUser(processedUser);
       setError(null);
     } catch (error) {
@@ -83,6 +88,7 @@ const AccountComponent = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchUserData();
@@ -162,15 +168,17 @@ const AccountComponent = () => {
           width: "100%",
         }}
       >
+        
         <Box sx={{ display: "flex", alignItems: "center", ml: 2, padding: 3 }}>
-          <Avatar
-            src={user?.picture || "default-profile-image-url"}
-            alt="Profile Picture"
-            sx={{
-              width: 100,
-              height: 100,
-            }}
-          />
+          
+        <Avatar
+          src={user.picture} 
+          alt="Profile Picture"
+          sx={{
+            width: 100,
+            height: 100,
+          }}
+        />
           <Box sx={{ ml: 5 }}>
             <Box sx={{ display: "flex", gap: 1, mb: 0.8 }}>
               <Typography
