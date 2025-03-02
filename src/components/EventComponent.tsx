@@ -109,9 +109,11 @@ const EventComponent = () => {
     <Container maxWidth={false}>
       {events.length === 0 ? (
         // <Paper sx={{ p: 3, textAlign: "center" }}>
-          <Typography variant="body1" sx={{textAlign: "center" }}>No events found</Typography>
-        // </Paper>
+        <Typography variant="body1" sx={{ textAlign: "center" }}>
+          No events found
+        </Typography>
       ) : (
+        // </Paper>
         <TableContainer
           component={Paper}
           elevation={0}
@@ -156,7 +158,18 @@ const EventComponent = () => {
                   }}
                 >
                   <Typography variant="subtitle1" fontWeight="medium">
-                    Time
+                    ProblemAt
+                  </Typography>
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    width: "100px",
+                    flexBasis: "100px",
+                  }}
+                >
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    ResolvedAt
                   </Typography>
                 </TableCell>
                 <TableCell
@@ -189,11 +202,6 @@ const EventComponent = () => {
             </TableHead>
             <TableBody>
               {events.map((event) => {
-                const displayTime =
-                  event.status === "PROBLEM"
-                    ? event.createdAt
-                    : event.updatedAt;
-
                 return (
                   <TableRow
                     key={event._id}
@@ -206,7 +214,14 @@ const EventComponent = () => {
                   >
                     <TableCell align="center">
                       <Typography variant="body2">
-                        {formatTimeInThaiTimezone(displayTime)}
+                        {formatTimeInThaiTimezone(event.createdAt)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">
+                        {event.resolvedAt === null
+                          ? "-"
+                          : formatTimeInThaiTimezone(event.resolvedAt)}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
@@ -219,15 +234,9 @@ const EventComponent = () => {
                       sx={{
                         color: (() => {
                           switch (event.severity.toLowerCase()) {
-                            case "not classified":
-                              return "#808080";
-                            case "information":
-                              return "#0000FF";
                             case "warning":
                               return "#FFA500";
-                            case "average":
-                              return "#FF4500";
-                            case "high":
+                            case "critical":
                               return "#FF0000";
                             case "disaster":
                               return "#8B0000";
