@@ -10,7 +10,7 @@ const LogoutAuthen = () => {
 
   const onLogoutSuccess = () => {
     localStorage.clear();
-    console.log("Logout Success and LocalStorage Cleared");
+    console.log("Logout Success");
 
     navigate("/login");  
   };

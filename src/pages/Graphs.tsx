@@ -100,7 +100,7 @@ const Graphs: React.FC = () => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
-      console.log(errorMessage);
+      // console.log(errorMessage);
     } finally {
       setIsLoading(false);
     }

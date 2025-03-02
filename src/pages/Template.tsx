@@ -173,13 +173,13 @@ const Templates: React.FC = () => {
       const result = await response.json();
       setTemplates(result.data);
     } catch (error) {
-      console.error("Error fetching templates:", error);
-      setSnackbar({
-        open: true,
-        message: "Failed to fetch templates",
-        severity: "error",
-        refreshCallback: null,
-      });
+      // console.error("Error fetching templates:", error);
+      // setSnackbar({
+      //   open: true,
+      //   message: "Failed to fetch templates",
+      //   severity: "error",
+      //   refreshCallback: null,
+      // });
     } finally {
       setLoading(false);
     }

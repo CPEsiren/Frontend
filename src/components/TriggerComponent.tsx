@@ -217,7 +217,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
   const [selectedTrigger, setSelectedTrigger] = useState<ITrigger | null>(null);
 
   const handleEditClick = (trigger: ITrigger) => {
-    console.log("Editing trigger ID:", trigger._id); // ตรวจสอบค่า ID
+    // console.log("Editing trigger ID:", trigger._id); // ตรวจสอบค่า ID
     setSelectedTrigger(trigger);
     setEditTriggerName(trigger.trigger_name);
     setEditIdTrigger(trigger._id);
@@ -281,7 +281,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
   };
 
   useEffect(() => {
-    console.log("Dialog Opened with Trigger:", selectedTrigger);
+    // console.log("Dialog Opened with Trigger:", selectedTrigger);
   }, [editDialogOpen]);
 
   //Delete Trigger
@@ -359,7 +359,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
         setItems(items);
-        console.log("Fetched items:", items); // Debug log
+        // console.log("Fetched items:", items); // Debug log
       } else {
         throw new Error("Invalid response format");
       }
@@ -389,7 +389,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
       return;
     }
 
-    console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
+    // console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
 
     setFormLoading(true);
     try {

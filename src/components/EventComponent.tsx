@@ -41,7 +41,7 @@ const EventComponent = () => {
         if (result.data && result.data.length > 0) {
           setevents(result.data);
         } else {
-          console.log("No events found");
+          // console.log("No events found");
         }
       } catch (err) {
         const errorMessage =

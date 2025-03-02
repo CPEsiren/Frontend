@@ -172,14 +172,14 @@ const ManageComponent = () => {
         },
       });
       if (!response.ok) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
       const result: ApiResponse = await response.json();
 
       if (result.status !== "success" || !result.data.length) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
