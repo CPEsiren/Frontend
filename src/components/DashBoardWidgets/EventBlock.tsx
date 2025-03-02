@@ -108,6 +108,7 @@ const EventBlock = () => {
             m: 0.5,
             color: "white",
             backgroundColor: filter === "ALL" ? "blue" : "gray",
+            "&:hover": { backgroundColor: "blue" },
           }}
           onClick={() => setFilter("ALL")}
         />
@@ -118,6 +119,7 @@ const EventBlock = () => {
             m: 0.5,
             color: "white",
             backgroundColor: filter === "PROBLEM" ? "red" : "gray",
+            "&:hover": { backgroundColor: "red" },
           }}
           onClick={() => setFilter("PROBLEM")}
         />
@@ -128,6 +130,7 @@ const EventBlock = () => {
             m: 0.5,
             color: "white",
             backgroundColor: filter === "RESOLVED" ? "#2E7D32" : "gray",
+            "&:hover": { backgroundColor: "#2E7D32" },
           }}
           onClick={() => setFilter("RESOLVED")}
         />
@@ -139,6 +142,8 @@ const EventBlock = () => {
             px: 1,
             color: "white",
             backgroundColor: filter === "EVENT" ? "#0288D1" : "gray",
+            "&:hover": { backgroundColor: "#0288D1" },
+
           }}
           onClick={() => setFilter("EVENT")}
         />

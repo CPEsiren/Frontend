@@ -461,12 +461,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
       );
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
-        setItems([
-          { _id: 1, item_name: "Device Status" },
-          { _id: 2, item_name: "Interface Admin Status" },
-          { _id: 3, item_name: "Interface Oper Status" },
-          ...items,
-        ]); // Now we store the complete item objects
+        setItems([...items]); // Now we store the complete item objects
       }
     } catch (error) {
       console.error("Error fetching items:", error);
