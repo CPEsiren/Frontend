@@ -107,6 +107,7 @@ export interface ITrigger {
     functionofItem: string;
     duration: number;
   }[];
+  thresholdDuration: number;
 }
 
 export interface IEvent {
