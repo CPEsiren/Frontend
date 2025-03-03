@@ -180,7 +180,15 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     value: string
   ) => {
     const newParts = [...recoveryParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setRecoveryParts(newParts);
   };
 
@@ -197,7 +205,15 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     value: string
   ) => {
     const newParts = [...expressionParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setExpressionParts(newParts);
   };
 
@@ -215,15 +231,19 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
   const [editEnabled, setEditEnabled] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedTrigger, setSelectedTrigger] = useState<ITrigger | null>(null);
+  //Threshold Breach Duration
+  const [ThresholdBreachDuration, setThresholdBreachDuration] =
+    useState<number>(0);
 
   const handleEditClick = (trigger: ITrigger) => {
-    console.log("Editing trigger ID:", trigger._id); // ตรวจสอบค่า ID
+    // console.log("Editing trigger ID:", trigger._id); // ตรวจสอบค่า ID
     setSelectedTrigger(trigger);
     setEditTriggerName(trigger.trigger_name);
     setEditIdTrigger(trigger._id);
     setEditSeverity(trigger.severity);
     setEditOk_eve(trigger.ok_event_generation);
     setEditEnabled(trigger.enabled);
+    setThresholdBreachDuration(trigger.thresholdDuration);
 
     // Set expression parts from trigger data
     if (trigger.expressionPart && trigger.expressionPart.length > 0) {
@@ -234,7 +254,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
           value: part.value || "",
           operator: part.operator || "and",
           functionofItem: part.functionofItem || "",
-          duration: part.duration?.toString() || "",
+          duration: part.duration?.toString(),
         }))
       );
     } else {
@@ -280,9 +300,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     fetchItems(trigger.host_id);
   };
 
-  useEffect(() => {
-    console.log("Dialog Opened with Trigger:", selectedTrigger);
-  }, [editDialogOpen]);
+  // useEffect(() => {
+  //   // console.log("Dialog Opened with Trigger:", selectedTrigger);
+  // }, [editDialogOpen]);
 
   //Delete Trigger
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -359,7 +379,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
         setItems(items);
-        console.log("Fetched items:", items); // Debug log
+        // console.log("Fetched items:", items); // Debug log
       } else {
         throw new Error("Invalid response format");
       }
@@ -389,7 +409,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
       return;
     }
 
-    console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
+    // console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
 
     setFormLoading(true);
     try {
@@ -400,16 +420,18 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
         value: part.value,
         operator: part.operator,
         functionofItem: part.functionofItem,
-        duration: parseInt(part.duration) || 0,
+        duration: part.duration,
       }));
 
       const editExpression = expressionParts
         .map((part, idx) => {
           // Format: functionofItem(item,duration) operation value
-          const durationInMinutes = part.duration ? `${part.duration}m` : "";
-          const functionCall = part.duration
-            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-            : `${part.functionofItem}(${part.item})`;
+          const durationInMinutes =
+            part.functionofItem === "last" ? "" : `${part.duration}`;
+          const functionCall =
+            part.functionofItem !== "last"
+              ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+              : `${part.functionofItem}(${part.item})`;
           const expr = `${functionCall} ${part.operation} ${part.value}`;
           return idx < expressionParts.length - 1
             ? `${expr} ${part.operator || "and"}`
@@ -424,16 +446,18 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
         value: part.value,
         operator: part.operator,
         functionofItem: part.functionofItem,
-        duration: parseInt(part.duration) || 0,
+        duration: part.duration,
       }));
 
       const editRecoveryExpression = recoveryParts
         .map((part, idx) => {
           // Format: functionofItem(item,duration) operation value
-          const durationInMinutes = part.duration ? `${part.duration}m` : "";
-          const functionCall = part.duration
-            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-            : `${part.functionofItem}(${part.item})`;
+          const durationInMinutes =
+            part.functionofItem === "last" ? "" : `${part.duration}`;
+          const functionCall =
+            part.functionofItem !== "last"
+              ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+              : `${part.functionofItem}(${part.item})`;
           const expr = `${functionCall} ${part.operation} ${part.value}`;
           return idx < recoveryParts.length - 1
             ? `${expr} ${part.operator || "and"}`
@@ -455,6 +479,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
           expressionRecoveryPart: formattedRecoveryParts,
           userRole: localStorage.getItem("userRole"),
           userName: localStorage.getItem("username"),
+          thresholdDuration: ThresholdBreachDuration,
         },
         {
           method: "PUT",
@@ -523,7 +548,6 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       alignItems: "center",
                       backgroundColor: "#242d5d",
                       borderRadius: "80px",
-                      display: "inline-block",
                       color: "white",
                       fontWeight: "semi-bold",
                       minWidth: "100px",
@@ -531,7 +555,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       p: 1.5,
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                       width: "100%",
-                      // margin: "0 auto",
+                      display: "block", // Change from -webkit-box to block for better line break support
+                      wordBreak: "break-word", // Allow words to break if needed
+                      hyphens: "auto",
                     }}
                   >
                     {group.host_id.hostname}
@@ -558,7 +584,6 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       },
                       "& .MuiTableCell-root": { borderBottom: "none" },
                       "& .MuiTableBody-root .MuiTableRow-root": {
-                        // "&:nth-of-type(even)": {backgroundColor: "transparent" },
                         "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
                         "&:hover": {
                           backgroundColor: "#ebf1ff",
@@ -566,50 +591,53 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                           cursor: "pointer",
                         },
                       },
+                      display: "block", // Change from -webkit-box to block for better line break support
+                        wordBreak: "break-word", // Allow words to break if needed
+                        hyphens: "auto",
                     }}
                   >
-                    <TableHead>
+                    <TableHead >
                       <TableRow>
-                        <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                        <TableCell 
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"30%" }}
                         >
                           Trigger Name
                         </TableCell>
                         <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           Severity
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"35%" }}
                         >
                           Expression
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           OK event generation
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           Status
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"5%" }}
                         >
                           ⚙️
                         </TableCell>
                       </TableRow>
                     </TableHead>
 
-                    {group.triggers.map((trigger, index) => (
-                      <TableBody>
-                        <TableRow key={index}>
+                    <TableBody>
+                      {group.triggers.map((trigger, index) => (
+                        <TableRow key={trigger._id || index}>
                           {/* Trigger Name */}
                           <TableCell>{trigger.trigger_name}</TableCell>
                           {/* Severity */}
@@ -683,7 +711,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                             <Tooltip
                               title={
                                 trigger.ok_event_generation.toLowerCase() ===
-                                "recovery expression" ? (
+                                "resolved expression" ? (
                                   <Box>{trigger.recovery_expression}</Box>
                                 ) : (
                                   ""
@@ -738,10 +766,8 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                             }}
                           >
                             <Button
-                              id="fade-button"
-                              aria-controls={open ? "fade-menu" : undefined}
+                              aria-controls={`fade-menu-${trigger._id}`}
                               aria-haspopup="true"
-                              aria-expanded={open ? "true" : undefined}
                               onClick={(event) =>
                                 handleMenuClick(event, trigger)
                               }
@@ -762,78 +788,76 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 sx={{ fontSize: 24, color: "#242d5d" }}
                               />
                             </Button>
-
-                            {/* Menu */}
-                            <Menu
-                              id="fade-menu"
-                              MenuListProps={{
-                                "aria-labelledby": "fade-button",
-                              }}
-                              anchorEl={anchorEl}
-                              open={open}
-                              onClose={handleClose}
-                              TransitionComponent={Fade}
-                              sx={{
-                                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                                "& .MuiMenu-paper": {
-                                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                                },
-                              }}
-                            >
-                              {/* Edit */}
-                              <MenuItem
-                                onClick={() => {
-                                  if (selectedTrigger) {
-                                    handleEditClick(selectedTrigger);
-                                  }
-                                  handleClose();
-                                }}
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <EditNoteIcon
-                                  sx={{ color: "warning.main", fontSize: 20 }}
-                                />
-                                <Typography
-                                  sx={{
-                                    fontSize: 14,
-                                    color: "black",
-                                    marginLeft: 1,
-                                  }}
-                                >
-                                  Edit
-                                </Typography>
-                              </MenuItem>
-
-                              {/* Delete */}
-                              <MenuItem
-                                onClick={() => {
-                                  if (selectedTrigger) {
-                                    handleDeleteClick(selectedTrigger);
-                                  }
-                                  handleClose();
-                                }}
-                                sx={{ display: "flex", alignItems: "center" }}
-                              >
-                                <DeleteIcon
-                                  sx={{ color: "error.main", fontSize: 20 }}
-                                />
-                                <Typography
-                                  sx={{
-                                    fontSize: 14,
-                                    color: "black",
-                                    marginLeft: 1,
-                                  }}
-                                >
-                                  Delete
-                                </Typography>
-                              </MenuItem>
-                            </Menu>
                           </TableCell>
                         </TableRow>
-                      </TableBody>
-                    ))}
+                      ))}
+                    </TableBody>
                   </Table>
                 </TableContainer>
+
+                {/* Menu (outside the table) */}
+                <Menu
+                  id="fade-menu"
+                  MenuListProps={{
+                    "aria-labelledby": "fade-button",
+                  }}
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={handleClose}
+                  TransitionComponent={Fade}
+                  sx={{
+                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                    "& .MuiMenu-paper": {
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                    },
+                  }}
+                >
+                  {/* Edit */}
+                  <MenuItem
+                    onClick={() => {
+                      if (selectedTrigger) {
+                        handleEditClick(selectedTrigger);
+                      }
+                      handleClose();
+                    }}
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <EditNoteIcon
+                      sx={{ color: "warning.main", fontSize: 20 }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        color: "black",
+                        marginLeft: 1,
+                      }}
+                    >
+                      Edit
+                    </Typography>
+                  </MenuItem>
+
+                  {/* Delete */}
+                  <MenuItem
+                    onClick={() => {
+                      if (selectedTrigger) {
+                        handleDeleteClick(selectedTrigger);
+                      }
+                      handleClose();
+                    }}
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <DeleteIcon sx={{ color: "error.main", fontSize: 20 }} />
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        color: "black",
+                        marginLeft: 1,
+                      }}
+                    >
+                      Delete
+                    </Typography>
+                  </MenuItem>
+                </Menu>
               </Box>
             ))}
 
@@ -879,6 +903,49 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                         fullWidth
                         required
                       />
+                    </Box>
+
+                    {/* Threshold Breach Duration selection field */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          minWidth: 150,
+                          width: "13%",
+                        }}
+                      >
+                        <Typography color="error" {...typographyProps}>
+                          *
+                        </Typography>
+                        <Typography sx={{ ml: 1 }} {...typographyProps}>
+                          Threshold Breach Duration
+                        </Typography>
+                      </Box>
+                      <TextField
+                        select
+                        value={ThresholdBreachDuration}
+                        onChange={(e) =>
+                          setThresholdBreachDuration(parseInt(e.target.value))
+                        }
+                        size="small"
+                        sx={{
+                          backgroundColor: "white",
+                          "&.MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      >
+                        <MenuItem value={0}>Real-Time</MenuItem>
+                        {[...Array(6)].map((_, index) => (
+                          <MenuItem
+                            key={index + 1}
+                            value={(index * 5 + 5) * 60 * 1000}
+                          >
+                            {index * 5 + 5} minute.
+                          </MenuItem>
+                        ))}
+                      </TextField>
                     </Box>
 
                     {/* Severity field */}
@@ -1021,6 +1088,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                               </MenuItem>
                             ))}
                           </TextField>
+
                           {/* Duration section */}
                           <TextField
                             value={part.duration}
@@ -1031,7 +1099,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 e.target.value
                               )
                             }
-                            label="Duration"
+                            disabled={part.functionofItem === "last"}
+                            select
+                            label="Interval"
                             size="small"
                             sx={{
                               width: "10%",
@@ -1040,7 +1110,11 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 fontSize: 14,
                               },
                             }}
-                          />
+                          >
+                            <MenuItem value="15m">15m</MenuItem>
+                            <MenuItem value="30m">30m</MenuItem>
+                            <MenuItem value="1h">1h</MenuItem>
+                          </TextField>
 
                           {/* Item Selection */}
                           <TextField
@@ -1194,7 +1268,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       >
                         {[
                           { level: "Expression", color: "#808080" },
-                          { level: "Recovery expression", color: "#808080" },
+                          { level: "Resolved expression", color: "#808080" },
                           { level: "None", color: "#808080" },
                         ].map(({ level, color }) => (
                           <Button
@@ -1204,7 +1278,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                 ? "contained"
                                 : "outlined"
                             }
-                            onClick={() => setEditOk_eve(level.toLowerCase())}
+                            onClick={() => {
+                              setEditOk_eve(level.toLowerCase());
+                            }}
                             sx={{
                               fontSize: 12,
                               minWidth: "auto",
@@ -1233,7 +1309,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                     </Box>
 
                     {/* Recovery Expression field */}
-                    {editOk_eve === "recovery expression" && (
+                    {editOk_eve === "resolved expression" && (
                       <Box
                         sx={{
                           display: "flex",
@@ -1261,7 +1337,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                               },
                             }}
                           >
-                            Add Recovery Expression
+                            Add Resolved Expression
                           </Button>
                         </Box>
                         {recoveryParts.map((part, index) => (
@@ -1302,6 +1378,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                             </TextField>
                             {/* Duration section */}
                             <TextField
+                              select
                               value={part.duration}
                               onChange={(e) =>
                                 handleRecoveryPartChange(
@@ -1310,7 +1387,8 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                   e.target.value
                                 )
                               }
-                              label="Duration"
+                              disabled={part.functionofItem === "last"}
+                              label="Interval"
                               size="small"
                               sx={{
                                 width: "10%",
@@ -1319,7 +1397,11 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                                   fontSize: 14,
                                 },
                               }}
-                            />
+                            >
+                              <MenuItem value="15m">15m</MenuItem>
+                              <MenuItem value="30m">30m</MenuItem>
+                              <MenuItem value="1h">1h</MenuItem>
+                            </TextField>
 
                             {/* Item Selection */}
                             <TextField

@@ -172,14 +172,14 @@ const ManageComponent = () => {
         },
       });
       if (!response.ok) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
       const result: ApiResponse = await response.json();
 
       if (result.status !== "success" || !result.data.length) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
@@ -456,32 +456,32 @@ const ManageComponent = () => {
             {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
             <TableHead sx={{ backgroundColor: "#ffffff" }}>
               <TableRow>
-                <TableCell sx={{ color: "black" }}>
+                <TableCell sx={{ color: "black",width:"35%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Device's name
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black" }}>
+                <TableCell sx={{ color: "black",width:"10%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     IP Address
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black" }}>
+                <TableCell sx={{ color: "black",width:"15%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     SNMP Version
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black" }}>
+                <TableCell sx={{ color: "black",width:"10%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Group
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black" }}>
+                <TableCell sx={{ color: "black",width:"10%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Status
                   </Typography>
                 </TableCell>
-                <TableCell width={120} align="center" sx={{ color: "black" }}>
+                <TableCell width={120} align="center" sx={{ color: "black",width:"10%" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Actions
                   </Typography>
@@ -491,7 +491,13 @@ const ManageComponent = () => {
             <TableBody>
               {devices.map((device) => (
                 <TableRow key={device._id} hover>
-                  <TableCell>
+                  <TableCell
+                    sx={{
+                      display: "block", // Change from -webkit-box to block for better line break support
+                      wordBreak: "break-word", // Allow words to break if needed
+                      hyphens: "auto",
+                    }}
+                  >
                     <Typography variant="body2">{device.hostname}</Typography>
                   </TableCell>
                   <TableCell>

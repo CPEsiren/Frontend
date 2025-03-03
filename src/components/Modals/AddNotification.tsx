@@ -40,7 +40,6 @@ import Profile404 from "../../assets/profile404.jpg";
 import { useLocation } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { InfoIcon } from "lucide-react";
 import { InfoOutlined } from "@mui/icons-material";
 
 interface SnackbarState {
@@ -496,8 +495,8 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     setShowConfirmDefaultProblemMessage,
   ] = useState(false);
 
-  const defaultProblemTitle = "{EVENT.STATUS} : {TRIGGER.NAME}";
-  const defaultProblemBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\nStatus: {TRIGGER.STATUS}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nProblem Date: {EVENT.PROBLEM.TIMESTAMP}`;
+  const defaultProblemTitle = "{TRIGGER.NAME}";
+  const defaultProblemBody = `Status: {EVENT.STATUS}\n\nHost: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\n\n<------Last value------>\n {TRIGGER.ALL.ITEM&VALUE}\n\nProblem Date: {EVENT.PROBLEM.TIMESTAMP}`;
 
   const placeholderProblemGroups = [
     {
@@ -505,12 +504,11 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       placeholders: [
         { value: "{TRIGGER.EXPRESSION}", label: "Trigger Expression" },
         { value: "{TRIGGER.NAME}", label: "Trigger Name" },
-        {
-          value: "{TRIGGER.RECOVERY_EXPRESSION}",
-          label: "Trigger Recovery Expression",
-        },
         { value: "{TRIGGER.SEVERITY}", label: "Trigger Severity" },
-        { value: "{TRIGGER.STATUS}", label: "Trigger Status" },
+        {
+          value: "{TRIGGER.ALL.ITEM&VALUE}",
+          label: "Trigger All Item & Value",
+        },
       ],
     },
     {
@@ -521,20 +519,13 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       ],
     },
     {
-      name: "Item",
-      placeholders: [
-        { value: "{ITEM.NAME}", label: "Item Name" },
-        { value: "{ITEM.VALUE}", label: "Item Value" },
-      ],
-    },
-    {
       name: "Event",
       placeholders: [
-        { value: "{EVENT.ID}", label: "Event ID" },
-        { value: "{EVENT.HOSTNAME}", label: "Event Hostname" },
-        { value: "{EVENT.LASTVALUE}", label: "Event Last Value" },
         { value: "{EVENT.STATUS}", label: "Event Status" },
-        { value: "{EVENT.TIMESTAMP}", label: "Event Timestamp" },
+        {
+          value: "{EVENT.PROBLEM.TIMESTAMP}",
+          label: "Event Problem Timestamp",
+        },
       ],
     },
   ];
@@ -636,8 +627,8 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     setShowConfirmDefaultRecoveryMessage,
   ] = useState(false);
 
-  const defaultRecoveryTitle = "{EVENT.STATUS} : {TRIGGER.NAME}";
-  const defaultRecoveryBody = `Host: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\nRecovery Expression: {TRIGGER.RECOVERY_EXPRESSION}\nStatus: {TRIGGER.STATUS}\n\nLast value: {TRIGGER.NAME} = {ITEM.LASTVALUE}\n\nProblem Date: {EVENT.RECOVERY.TIMESTAMP}`;
+  const defaultRecoveryTitle = "{TRIGGER.NAME}";
+  const defaultRecoveryBody = `Status: {EVENT.STATUS}\n\nHost: {HOST.NAME}\nIP Address: {HOST.IP}\nSeverity: {TRIGGER.SEVERITY}\nExpression: {TRIGGER.EXPRESSION}\nResolved Expression: {TRIGGER.RESOLVED.EXPRESSION}\n\n<------Last value------>\n {TRIGGER.ALL.ITEM&VALUE}\n\nResolved Date: {EVENT.RESOLVED.TIMESTAMP}`;
 
   const placeholderRecoveryGroups = [
     {
@@ -646,11 +637,14 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
         { value: "{TRIGGER.EXPRESSION}", label: "Trigger Expression" },
         { value: "{TRIGGER.NAME}", label: "Trigger Name" },
         {
-          value: "{TRIGGER.RECOVERY_EXPRESSION}",
-          label: "Trigger Recovery Expression",
+          value: "{TRIGGER.RESOLVED.EXPRESSION}",
+          label: "Trigger Resolved Expression",
         },
         { value: "{TRIGGER.SEVERITY}", label: "Trigger Severity" },
-        { value: "{TRIGGER.STATUS}", label: "Trigger Status" },
+        {
+          value: "{TRIGGER.ALL.ITEM&VALUE}",
+          label: "Trigger All Item & Value",
+        },
       ],
     },
     {
@@ -661,20 +655,13 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       ],
     },
     {
-      name: "Item",
-      placeholders: [
-        { value: "{ITEM.NAME}", label: "Item Name" },
-        { value: "{ITEM.VALUE}", label: "Item Value" },
-      ],
-    },
-    {
       name: "Event",
       placeholders: [
-        { value: "{EVENT.ID}", label: "Event ID" },
-        { value: "{EVENT.HOSTNAME}", label: "Event Hostname" },
-        { value: "{EVENT.LASTVALUE}", label: "Event Last Value" },
         { value: "{EVENT.STATUS}", label: "Event Status" },
-        { value: "{EVENT.TIMESTAMP}", label: "Event Timestamp" },
+        {
+          value: "{EVENT.RESOLVED.TIMESTAMP}",
+          label: "Event Resolved Timestamp",
+        },
       ],
     },
   ];
@@ -767,7 +754,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
         <Tabs value={activeTab} onChange={handleTabChange}>
           <Tab value={"noti"} label="Notification Channel" />
           <Tab value={"prob"} label="Problem Message" />
-          <Tab value={"recov"} label="Recovery Message" />
+          <Tab value={"recov"} label="Resolved Message" />
         </Tabs>
         <Box sx={{ p: 2 }}>
           {activeTab === "noti" && (
@@ -1079,7 +1066,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                   gap: 2,
                 }}
               >
-                {/* Recovery Message */}
+                {/* resolved Message */}
                 <Box
                   sx={{
                     display: "flex",
@@ -1106,10 +1093,10 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                         fontSize: "1.7rem",
                       }}
                     >
-                      Recovery Message
+                      Resolved Message
                     </Typography>
                     <Tooltip
-                      title="Message for alerting that the problem is recovery"
+                      title="Message for alerting that the problem is resolved"
                       arrow
                       placement="right"
                     >

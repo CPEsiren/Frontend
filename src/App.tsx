@@ -111,7 +111,12 @@ const App = () => {
 
   return (
     <ThemeProvider theme={ThemeConfig}>
-      <Router>
+      <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
         <Routes>
           <Route
             path="/"

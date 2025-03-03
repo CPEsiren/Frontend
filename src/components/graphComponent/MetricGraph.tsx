@@ -88,29 +88,29 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
 
   return (
     <Box
-    sx={{
-      width: "100%",
-      height: isSmall ? "80%" : "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      bgcolor: "#f5f5f5",
-      borderRadius: 2,
-      boxSizing: "border-box",
-    }}
-  >
-    <Box
       sx={{
         width: "100%",
-        height: "100%",
+        height: isSmall ? "80%" : "100%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
-        py: isSmall ? 0 : 2,
+        overflow: "hidden",
+        bgcolor: "#f5f5f5",
+        borderRadius: 2,
+        boxSizing: "border-box",
       }}
     >
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          py: isSmall ? 0 : 2,
+        }}
+      >
         <LineChart
           height={isSmall ? 240 : 420}
           width={isSmall ? 380 : 1000}
@@ -124,7 +124,10 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
             ...(yAxis.length === 0
               ? [
                   {
-                    data: maxValue,
+                    data: createConstantArray(
+                      Math.max(...maxValue),
+                      xAxis.length
+                    ),
                     label: `Maximum(${selectedLastTime})`,
                     curve: "linear" as const,
                     color: "#ff9800",
@@ -137,12 +140,16 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                     label: `Average(${selectedLastTime})`,
                     curve: "linear" as const,
                     color: "#4caf50",
+                    area: true,
                     showMark: false,
                     valueFormatter: formatYAxisLabel,
                     id: "avg",
                   },
                   {
-                    data: minValue,
+                    data: createConstantArray(
+                      Math.max(...minValue),
+                      xAxis.length
+                    ),
                     label: `Minimum(${selectedLastTime})`,
                     curve: "linear" as const,
                     color: "#f44336",
@@ -215,11 +222,13 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
           ]}
           yAxis={[
             {
-              label: `${item.item_id.unit}/s`,
+              label:
+                item.item_id.type === "counter"
+                  ? `${item.item_id.unit}/s`
+                  : item.item_id.unit,
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 fill: "#666",
-                transform: `translateX(-${isSmall ? 11 : 12}px)`, // Move label left
               },
               tickLabelStyle: {
                 fontSize: isSmall ? 8 : 10,
@@ -227,6 +236,8 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               },
               valueFormatter: formatYAxisLabel,
               tickNumber: isSmall ? 5 : 7,
+              scaleType:
+                yAxis.length !== 0 ? ("linear" as const) : ("log" as const),
             },
           ]}
           sx={{
@@ -239,7 +250,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               fill: "#2196f3",
             },
             " .MuiLineElement-series-max": {
-              strokeDasharray: yAxis.length === 0 ? "none" : "5 5",
+              strokeDasharray: "5 5",
               strokeWidth: isSmall ? 0.5 : 1,
             },
             " .MuiLineElement-series-avg": {
@@ -248,7 +259,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
             },
             " .MuiLineElement-series-min": {
               strokeWidth: isSmall ? 0.5 : 1,
-              strokeDasharray: yAxis.length === 0 ? "none" : "5 5",
+              strokeDasharray: "5 5",
             },
             // Add styles for axis areas
             "& .MuiChartsAxis-root": {

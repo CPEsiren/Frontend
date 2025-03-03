@@ -107,6 +107,7 @@ export interface ITrigger {
     functionofItem: string;
     duration: number;
   }[];
+  thresholdDuration: number;
 }
 
 export interface IEvent {
@@ -117,7 +118,7 @@ export interface IEvent {
   message: string;
   timestamp: string;
   createdAt: string;
-  updatedAt: string;
+  resolvedAt: string;
   __v: number;
 }
 

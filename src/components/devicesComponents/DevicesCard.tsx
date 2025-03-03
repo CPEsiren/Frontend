@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Box, Typography, ButtonBase } from "@mui/material";
+import { Card, Box, Typography, ButtonBase, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { IDevice } from "../../interface/InterfaceCollection";
 import ComputerDevice from "../../assets/ComputerDevice.svg";
@@ -19,6 +19,19 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
 
   const numofInterface = device.interfaces.length;
   const numofItem = device.items.length;
+  
+  // Function to truncate hostname
+  const truncateHostname = (hostname : string) => {
+    if (!hostname) return "Device Name";
+    
+    if (hostname.length <= 10) {
+      return hostname;
+    } else {
+      // Format: first7...last3 (e.g., "testcomp...ter")
+      const firstPart = hostname.substring(0, 10);
+      return `${firstPart}...`;
+    }
+  };
 
   return (
     <ButtonBase
@@ -56,22 +69,28 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
         }}
       >
         <Box sx={{ marginTop: "0.6rem" }}>
-          <Typography
-            variant="h6"
-            component="div"
-            color={"#242D5D"}
-            sx={{
-              transition: "color 0.3s ease",
-              "&:focus": {
-                outline: "none",
-              },
-              "&:hover": {
-                color: device.status ? "#3f51b5" : "#242D5D",
-              },
-            }}
-          >
-            {device.hostname || "Device Name"}
-          </Typography>
+          <Tooltip title={device.hostname || "Device Name"} placement="top">
+            <Typography
+              variant="h6"
+              component="div"
+              color={"#242D5D"}
+              sx={{
+                transition: "color 0.3s ease",
+                "&:focus": {
+                  outline: "none",
+                },
+                "&:hover": {
+                  color: device.status ? "#3f51b5" : "#242D5D",
+                },
+                maxWidth: "16rem",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {truncateHostname(device.hostname)}
+            </Typography>
+          </Tooltip>
         </Box>
         <Box
           sx={{
@@ -96,32 +115,6 @@ const DevicesCard: React.FC<DevicesCardProps> = ({ device }) => {
             />
             <Box>
               <Box sx={{}}>
-                {/* <Typography variant="h6" component="div" color={"#242D5D"}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Typography>Room</Typography>
-                  <Typography style={{ marginLeft: 10 }}>
-                    {device.details?.Room || "N/A"}
-                  </Typography>
-                </Box>
-              </Typography>
-              <Typography variant="h6" component="div" color={"#242D5D"}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Typography>Type</Typography>
-                  <Typography style={{ marginLeft: 10 }}>
-                    {device.details?.type || "N/A"}
-                  </Typography>
-                </Box>
-              </Typography> */}
                 <Typography variant="h6" component="div" color={"#242D5D"}>
                   <Box
                     sx={{

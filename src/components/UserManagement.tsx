@@ -20,6 +20,10 @@ import {
   Button,
   DialogActions,
   DialogContent,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import { IUser } from "../interface/InterfaceCollection";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
@@ -34,21 +38,19 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const [newRole, setNewRole] = useState<"admin" | "viewer" | "superadmin">("viewer");
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
   });
   const [swapRoleDialogOpen, setSwapRoleDialogOpen] = useState(false);
-
+  const currentUserRole = localStorage.getItem("userRole");
+  
   const roleColors = {
     admin: "red",
     superadmin: "orange",
     viewer: "blue",
-  };
-
-  const getNewRole = (currentRole: string) => {
-    return currentRole === "admin" ? "viewer" : "admin";
   };
 
   const fetchUsers = async () => {
@@ -81,15 +83,17 @@ const UserManagement = () => {
 
   const handleSwapRoleClick = (user: IUser) => {
     setSelectedUser(user);
+    // Set initial role based on current logic or user's current role
+    const nextRole = user.role === "admin" ? "viewer" : "admin";
+    setNewRole(nextRole);
     setSwapRoleDialogOpen(true);
   };
 
   const handleSwapRoleConfirm = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser || !newRole) return;
 
     try {
       setLoading(true);
-      const newRole = getNewRole(selectedUser.role);
       const nameofuserchanged = selectedUser.username;
 
       const response = await fetch(
@@ -194,6 +198,17 @@ const UserManagement = () => {
     );
   }
 
+  // Define available roles based on current user's role
+  const getAvailableRoles = (currentRole: string): Array<"admin" | "viewer" | "superadmin"> => {
+    if (currentRole === "superadmin") {
+      return ["admin", "viewer", "superadmin"];
+    } else {
+      return ["admin", "viewer"];
+    }
+  };
+
+  const availableRoles = getAvailableRoles(currentUserRole || "");
+
   return (
     <Box>
       {users.length === 0 ? (
@@ -272,11 +287,11 @@ const UserManagement = () => {
                   <TableCell sx={{ textAlign: "left" }}>
                     <IconButton
                       onClick={() => handleSwapRoleClick(user)}
-                      disabled={loading || user.role === "superadmin"}
+                      disabled={loading || (currentUserRole !== "superadmin" && user.role === "superadmin")}
                     >
                       <SwapHorizIcon
                         sx={{
-                          color: user.role === "superadmin" ? "gray" : "black",
+                          color: (currentUserRole !== "superadmin" && user.role === "superadmin") ? "gray" : "black",
                         }}
                       />
                     </IconButton>
@@ -294,13 +309,36 @@ const UserManagement = () => {
         aria-labelledby="swap-role-dialog-title"
       >
         <DialogTitle id="swap-role-dialog-title">
-          Confirm Switch Role
+          {currentUserRole === "superadmin" ? "Change User Role" : "Confirm Switch Role"}
         </DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to switch role of "{selectedUser?.username}"
-            to {selectedUser ? getNewRole(selectedUser.role) : ""}?
-          </Typography>
+          {currentUserRole === "superadmin" ? (
+            <>
+              <Typography sx={{ mb: 2 }}>
+                Change role for user "{selectedUser?.username}":
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel id="role-select-label">Role</InputLabel>
+                <Select
+                  labelId="role-select-label"
+                  value={newRole}
+                  label="Role"
+                  onChange={(e) => setNewRole(e.target.value as "admin" | "viewer" | "superadmin")}
+                >
+                  {availableRoles.map((role) => (
+                    <MenuItem key={role} value={role}>
+                      {role}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
+          ) : (
+            <Typography>
+              Are you sure you want to switch role of "{selectedUser?.username}"
+              to {newRole}?
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
           <Button
@@ -323,6 +361,7 @@ const UserManagement = () => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}

@@ -145,7 +145,6 @@ const Dashboard = () => {
   const [isViewerDashboard, setIsViewerDashboard] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  
 
   const handleDashboardMenuItemClick = (
     dashboard: DashboardLayout,
@@ -206,6 +205,10 @@ const Dashboard = () => {
           if (transformedDashboards.length > 0) {
             setCurrentDashboardId(transformedDashboards[0].id);
             setActiveComponents(transformedDashboards[0].components);
+          } else {
+            // If no dashboards exist, set to empty string explicitly
+            setCurrentDashboardId("");
+            setActiveComponents([]);
           }
         }
       } catch (error) {
@@ -351,6 +354,7 @@ const Dashboard = () => {
 
   const handleDashboardChange = (event: SelectChangeEvent<string>) => {
     const selectedId = event.target.value;
+    if (!selectedId) return;
 
     // If the target is the "New Dashboard" option, handle it separately
     if (selectedId === "new") {
@@ -826,17 +830,17 @@ const Dashboard = () => {
   };
 
   if (loading) {
-      return (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="400px"
-        >
-          <CircularProgress />
-        </Box>
-      );
-    }
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -898,23 +902,19 @@ const Dashboard = () => {
                   {(dashboards.length > 0 ||
                     (isSuperAdmin && viewerDashboards.length > 0)) && (
                     <Select
-                      value={currentDashboardId}
+                    value={currentDashboardId || ""}
                       onChange={handleDashboardChange}
                       open={selectOpen}
                       onOpen={() => setSelectOpen(true)}
                       onClose={() => setSelectOpen(false)}
                       displayEmpty
                       renderValue={(value) => {
-                        const selectedUserDash = dashboards.find(
-                          (d) => d.id === value
-                        );
-                        const selectedViewerDash = viewerDashboards.find(
-                          (d) => d.id === value
-                        );
-                        return (
-                          (selectedUserDash || selectedViewerDash)?.name ||
-                          "Select Dashboard"
-                        );
+                        if (!value) return "Select Dashboard";
+                        
+                        const selectedUserDash = dashboards.find((d) => d.id === value);
+                        const selectedViewerDash = viewerDashboards.find((d) => d.id === value);
+                        
+                        return (selectedUserDash || selectedViewerDash)?.name || "Select Dashboard";
                       }}
                       sx={{
                         backgroundColor: "white",

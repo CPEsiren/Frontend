@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Box, Stack, IconButton } from "@mui/material";
+import { Box, Stack, IconButton, Button } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import SirenLogo from "../assets/SirenLogo.svg"; 
 import CPESirenLogo from "../assets/CPESiren.svg"; 
 import MenuOpenImage from "../assets/menuOpen.png";
 import MenuCloseImage from "../assets/menuClose.png";
+import { useNavigate } from 'react-router-dom';
+
 
 interface HeaderProps {
   isHideSidebar: boolean;
@@ -22,6 +24,11 @@ const Header: React.FC<HeaderProps> = ({
     setIsMenuOpen(!isMenuOpen); 
     handleHideSidebar(windowSize.width);
   };
+  const navigate = useNavigate();
+
+  const handleClicked =()=> {
+    navigate("/dashboard"); 
+  };
 
   return (
     <>
@@ -35,7 +42,8 @@ const Header: React.FC<HeaderProps> = ({
       >
        
         {!isHideSidebar && windowSize.width >= 1100 && (
-          <Box
+          <Button
+          onClick={handleClicked}
             sx={{
               display: "flex",
               alignItems: "center",
@@ -66,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({
                 }}
               />
             )}
-          </Box>
+          </Button>
         )}
 
         <IconButton
