@@ -136,6 +136,7 @@ export interface ITriggerTemplate {
   expression: string;
   ok_event_generation: string;
   recovery_expression: string;
+  thresholdDuration: number;
   expressionPart: ExpressionPart[];
   expressionRecoveryPart: RecoveryPart[];
 }
