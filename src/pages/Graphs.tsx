@@ -903,7 +903,7 @@ const Graphs: React.FC = () => {
                       {item.item_id.item_name}
                     </Typography>
                     <Typography variant="caption" gutterBottom sx={{ ml: 0.5 }}>
-                      ($
+                      (
                       {item.item_id.type === "counter"
                         ? `${item.item_id.unit}/s`
                         : item.item_id.unit}

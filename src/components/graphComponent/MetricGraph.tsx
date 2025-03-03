@@ -125,7 +125,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               ? [
                   {
                     data: createConstantArray(
-                      Math.max(...maxValue),
+                      Math.max(...avgValue),
                       xAxis.length
                     ),
                     label: `Maximum(${selectedLastTime})`,
@@ -139,7 +139,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                     data: avgValue,
                     label: `Average(${selectedLastTime})`,
                     curve: "linear" as const,
-                    color: "#4caf50",
+                    color: "#2196f3",
                     area: true,
                     showMark: false,
                     valueFormatter: formatYAxisLabel,
@@ -147,7 +147,7 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                   },
                   {
                     data: createConstantArray(
-                      Math.max(...minValue),
+                      Math.min(...avgValue),
                       xAxis.length
                     ),
                     label: `Minimum(${selectedLastTime})`,
@@ -236,8 +236,6 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               },
               valueFormatter: formatYAxisLabel,
               tickNumber: isSmall ? 5 : 7,
-              scaleType:
-                yAxis.length !== 0 ? ("linear" as const) : ("log" as const),
             },
           ]}
           sx={{
