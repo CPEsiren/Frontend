@@ -28,11 +28,14 @@ import {
   MenuItem,
   Chip,
   Link,
+  Menu,
+  Fade,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddTemplate from "../components/Modals/AddTemplate";
-import EditIcon from "@mui/icons-material/Edit";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import axios from "axios";
 import {
   ExpressionPart,
@@ -314,6 +317,7 @@ const Templates: React.FC = () => {
 
   const handleClose = () => {
     setModalOpen(false);
+    setAnchorEl(null);
   };
 
   const handleCloseSnackbar = () => {
@@ -635,6 +639,16 @@ const Templates: React.FC = () => {
     });
     fetchTemplates();
   };
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [selectedItem, setSelectedItem] = useState<ITemplate | null>(null);
+  const open = Boolean(anchorEl);
+  const handleMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    item: ITemplate
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedItem(item);
+  };
 
   return (
     <>
@@ -696,59 +710,109 @@ const Templates: React.FC = () => {
                   <Grid item xs={12} sm={6} md={4} key={template._id}>
                     <Box
                       sx={{
-                        position: "relative",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
                         padding: 2,
+                        border: "1px solid #ddd",
                         borderRadius: 2,
-                        height: "80%",
                         backgroundColor: "#f9f9f9",
                         transition: "opacity 0.3s ease-in-out",
                         opacity: 1,
-                        // border: "2px solid #242D5D",
                       }}
                     >
-                      {/* Edit/Delete buttons positioned at the top right */}
+                      {/* Manage */}
                       <Box
                         sx={{
-                          position: "absolute",
-                          top: 8,
-                          right: 8,
                           display: "flex",
-                          zIndex: 1,
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          width: "100%",
+                          mt: -1,
                         }}
                       >
                         <IconButton
-                          size="small"
+                          id="fade-button"
+                          aria-controls={open ? "fade-menu" : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={open ? "true" : undefined}
+                          onClick={(event) => handleMenuClick(event, template)}
                           sx={{
-                            padding: 0.5,
-                            mr: 0.5,
+                            borderRadius: "50%",
+                            width: "5",
+
                             "&:hover": {
-                              backgroundColor: "rgba(255, 193, 7, 0.1)",
+                              backgroundColor: "rgba(239, 239, 255, 0.1)",
                             },
                           }}
-                          onClick={() => handleEditClick(template)}
                         >
-                          <EditIcon
-                            sx={{ color: "warning.main", fontSize: 18 }}
+                          <MoreVertIcon
+                            sx={{ fontSize: 24, color: "#242d5d" }}
                           />
                         </IconButton>
-                        <IconButton
-                          size="small"
+
+                        {/* Menu */}
+                        <Menu
+                          id="fade-menu"
+                          MenuListProps={{
+                            "aria-labelledby": "fade-button",
+                          }}
+                          anchorEl={anchorEl}
+                          open={open}
+                          onClose={handleClose}
+                          TransitionComponent={Fade}
                           sx={{
-                            padding: 0.5,
-                            "&:hover": {
-                              backgroundColor: "rgba(244, 67, 54, 0.1)",
+                            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                            "& .MuiMenu-paper": {
+                              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                             },
                           }}
-                          onClick={() => handleDeleteClick(template)}
                         >
-                          <DeleteIcon
-                            sx={{ color: "error.main", fontSize: 18 }}
-                          />
-                        </IconButton>
+                          {/* Edit */}
+                          <MenuItem
+                            onClick={() => {
+                              if (selectedItem) {
+                                handleEditClick(selectedItem);
+                              }
+                              handleClose();
+                            }}
+                            sx={{ display: "flex", alignItems: "center" }}
+                          >
+                            <EditNoteIcon
+                              sx={{ color: "warning.main", fontSize: 20 }}
+                            />
+                            <Typography
+                              sx={{
+                                fontSize: 14,
+                                color: "black",
+                                marginLeft: 1,
+                              }}
+                            >
+                              Edit
+                            </Typography>
+                          </MenuItem>
+
+                          {/* Delete */}
+                          <MenuItem
+                            onClick={() => {
+                              if (selectedItem) {
+                                handleDeleteClick(selectedItem);
+                              }
+                              handleClose();
+                            }}
+                            sx={{ display: "flex", alignItems: "center" }}
+                          >
+                            <DeleteIcon
+                              sx={{ color: "error.main", fontSize: 20 }}
+                            />
+                            <Typography
+                              sx={{
+                                fontSize: 14,
+                                color: "black",
+                                marginLeft: 1,
+                              }}
+                            >
+                              Delete
+                            </Typography>
+                          </MenuItem>
+                        </Menu>
                       </Box>
 
                       {/* Main template content */}
@@ -758,18 +822,9 @@ const Templates: React.FC = () => {
                           flexDirection: "row",
                           alignItems: "center",
                           width: "100%",
+                          mt: -1.5,
                         }}
                       >
-                        {/* <Box
-                          component="img"
-                          src={TemplateIcon}
-                          alt="Template"
-                          sx={{
-                            width: "25%",
-                            color: "blue",
-                            mr:2
-                          }}
-                        /> */}
                         <Box
                           sx={{
                             color: "#242D5D",
@@ -778,25 +833,17 @@ const Templates: React.FC = () => {
                         >
                           <FileCopyOutlinedIcon sx={{ fontSize: 100 }} />
                         </Box>
-                        {/* <img
-                        src={TemplateIcon}
-                        alt="Template Icon"
-                        style={{
-                          
-                          marginRight: 2,
-                          color: "#242D5D",
-                        }}
-                      /> */}
-                        <Box sx={{ width: "70%" }}>
+                        <Box sx={{ width: "100%" }}>
                           <Typography
                             variant="subtitle1"
                             fontWeight={600}
                             sx={{
-                              display: "-webkit-box",
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: "vertical",
-                              // overflow: "hidden",
                               textOverflow: "ellipsis",
+                              display: "block", // Change from -webkit-box to block for better line break support
+                              wordBreak: "break-word", // Allow words to break if needed
+                              hyphens: "auto",
                               lineHeight: 1.2,
                               maxHeight: "3.6em",
                               maxWidth: "70%",
@@ -804,7 +851,14 @@ const Templates: React.FC = () => {
                           >
                             {template.template_name}
                           </Typography>
-                          <Typography variant="body2">
+                          <Typography
+                            sx={{
+                              display: "block", // Change from -webkit-box to block for better line break support
+                              wordBreak: "break-word", // Allow words to break if needed
+                              hyphens: "auto",
+                            }}
+                            variant="body2"
+                          >
                             Description: {template.description}
                           </Typography>
                           <Typography variant="body2">

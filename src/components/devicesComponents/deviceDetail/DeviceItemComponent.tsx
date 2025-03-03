@@ -343,12 +343,12 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                 <Box
                   sx={{
                     padding: 2,
-                    border: "1px solid #ddd",
-                    borderRadius: 2,
-                    // height: "80%",
-                    backgroundColor: "#f9f9f9",
                     transition: "opacity 0.3s ease-in-out",
                     opacity: 1,
+                    border: "3px solid #5b71a5",
+                    borderRadius: 2,
+                    height: "80%",
+                    backgroundColor: "#FBFDFF",
                   }}
                 >
                   {/* Manage */}
@@ -356,8 +356,9 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                     sx={{
                       display: "flex",
                       justifyContent: "flex-end",
-                      alignItems: "center",
+                      alignItems: "Right",
                       width: "10%%",
+                      mb: -4,
                     }}
                   >
                     <IconButton

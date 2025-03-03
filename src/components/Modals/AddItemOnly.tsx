@@ -21,7 +21,6 @@ import TableRow from "@mui/material/TableRow";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { createTheme } from "@mui/material/styles";
 import { Pagination, Fade } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 
@@ -42,7 +41,6 @@ interface AddDeviceProps {
 
 const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId, onSuccess }) => {
   const windowSize = useWindowSize();
-  const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
@@ -437,7 +435,7 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId, onSuccess })
                     "& .MuiPaginationItem-root": {
                       transition: "all 0.1s ease",
                       "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        backgroundColor: "rgba(177, 103, 103, 0.04)",
                         transform: "scale(1.1)",
                       },
                     },

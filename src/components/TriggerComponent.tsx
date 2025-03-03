@@ -300,9 +300,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
     fetchItems(trigger.host_id);
   };
 
-  useEffect(() => {
-    // console.log("Dialog Opened with Trigger:", selectedTrigger);
-  }, [editDialogOpen]);
+  // useEffect(() => {
+  //   // console.log("Dialog Opened with Trigger:", selectedTrigger);
+  // }, [editDialogOpen]);
 
   //Delete Trigger
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -548,7 +548,6 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       alignItems: "center",
                       backgroundColor: "#242d5d",
                       borderRadius: "80px",
-                      display: "inline-block",
                       color: "white",
                       fontWeight: "semi-bold",
                       minWidth: "100px",
@@ -556,7 +555,9 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       p: 1.5,
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                       width: "100%",
-                      // margin: "0 auto",
+                      display: "block", // Change from -webkit-box to block for better line break support
+                      wordBreak: "break-word", // Allow words to break if needed
+                      hyphens: "auto",
                     }}
                   >
                     {group.host_id.hostname}
@@ -590,41 +591,44 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                           cursor: "pointer",
                         },
                       },
+                      display: "block", // Change from -webkit-box to block for better line break support
+                        wordBreak: "break-word", // Allow words to break if needed
+                        hyphens: "auto",
                     }}
                   >
-                    <TableHead>
+                    <TableHead >
                       <TableRow>
-                        <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                        <TableCell 
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"30%" }}
                         >
                           Trigger Name
                         </TableCell>
                         <TableCell
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           Severity
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"35%" }}
                         >
                           Expression
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           OK event generation
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
                         >
                           Status
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1.1rem", fontWeight: "medium" }}
+                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"5%" }}
                         >
                           ⚙️
                         </TableCell>
