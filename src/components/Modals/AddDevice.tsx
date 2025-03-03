@@ -37,6 +37,7 @@ import { Pagination, Fade } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 import { Router, Package } from "lucide-react";
 import SearchIcon from "@mui/icons-material/Search";
+import { ITriggerTemplate } from "../../interface/InterfaceCollection";
 
 // First, update the AddDeviceProps interface to accept hostGroups
 interface AddDeviceProps {
@@ -71,6 +72,7 @@ interface Template {
   _id: string;
   template_name: string;
   items: TemplateItem[];
+  triggers: ITriggerTemplate[];
   description: string;
 }
 const AddDevice: React.FC<AddDeviceProps> = ({
@@ -167,6 +169,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({
         },
       ]);
     }
+
+    if (selectedTemplate && selectedTemplate.triggers.length > 0) {
+      setTriggers(selectedTemplate.triggers);
+    }
   };
 
   useEffect(() => {
@@ -192,6 +198,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({
 
     fetchTemplates();
   }, []);
+
+  const [triggers, setTriggers] = useState<ITriggerTemplate[]>([]);
 
   const [itemRows, setItemRows] = useState<DeviceItems[]>([
     {
@@ -273,7 +281,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({
     snmp_version: string,
     snmp_community: string,
     hostgroup: string,
-    templates: string,
+    template_name: string,
     details: DeviceDetails
   ): Promise<boolean> => {
     try {
@@ -285,7 +293,8 @@ const AddDevice: React.FC<AddDeviceProps> = ({
         snmp_version,
         snmp_community,
         hostgroup,
-        templates,
+        template_name,
+        triggers: triggers,
         details,
         authenV3: {
           username: V3Username,
