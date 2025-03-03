@@ -371,6 +371,8 @@ const Templates: React.FC = () => {
   const [expression, setExpression] = useState("");
   const [ok_eventGen, setOk_eventGen] = useState<string>("");
   const [recoveryExpression, setRecoveryExpression] = useState<string>("");
+  const [ThresholdBreachDuration, setThresholdBreachDuration] =
+    useState<number>(0);
 
   const [errorFieldTrigger, setErrorsFieldTrigger] = useState({
     trigger_name: false,
@@ -425,7 +427,15 @@ const Templates: React.FC = () => {
     value: string
   ) => {
     const newParts = [...expressionParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setExpressionParts(newParts);
 
     // Update the final expression
@@ -485,7 +495,15 @@ const Templates: React.FC = () => {
     value: string
   ) => {
     const newParts = [...recoveryParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setRecoveryParts(newParts);
 
     // Update the final expression
@@ -548,6 +566,7 @@ const Templates: React.FC = () => {
           expression,
           ok_event_generation: ok_eventGen,
           recovery_expression: recoveryExpression,
+          thresholdDuration: ThresholdBreachDuration,
           expressionPart: expressionParts.map((part) => ({
             item: part.item,
             operation: part.operation,
@@ -574,6 +593,7 @@ const Templates: React.FC = () => {
     setExpression("");
     setOk_eventGen("");
     setRecoveryExpression("");
+    setThresholdBreachDuration(0);
     setExpressionParts([
       {
         item: "",
@@ -603,7 +623,7 @@ const Templates: React.FC = () => {
       expression: !expression,
       ok_eventGen: !ok_eventGen,
       recoveryExpression:
-        ok_eventGen === "recovery expression" && !recoveryExpression,
+        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
     setErrorsFieldTrigger(newErrors);
@@ -1357,6 +1377,56 @@ const Templates: React.FC = () => {
                         />
                       </Box>
 
+                      {/* Threshold Breach Duration selection field */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          mb: 2,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            minWidth: 150,
+                            width: "14%",
+                          }}
+                        >
+                          <Typography color="error" {...typographyProps}>
+                            *
+                          </Typography>
+                          <Typography sx={{ ml: 1 }} {...typographyProps}>
+                            Threshold Breach Duration
+                          </Typography>
+                        </Box>
+                        <TextField
+                          select
+                          value={ThresholdBreachDuration}
+                          onChange={(e) =>
+                            setThresholdBreachDuration(parseInt(e.target.value))
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: "white",
+                            "&.MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          <MenuItem value={0}>Real-Time</MenuItem>
+                          {[...Array(6)].map((_, index) => (
+                            <MenuItem
+                              key={index + 1}
+                              value={(index * 5 + 5) * 60 * 1000}
+                            >
+                              {index * 5 + 5} minute.
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Box>
+
                       {/* Severity field */}
                       <Box
                         sx={{
@@ -1521,6 +1591,7 @@ const Templates: React.FC = () => {
                               <TextField
                                 select
                                 value={part.duration}
+                                disabled={part.functionofItem === "last"}
                                 onChange={(e) =>
                                   handleExpressionPartChange(
                                     index,
@@ -1528,7 +1599,7 @@ const Templates: React.FC = () => {
                                     e.target.value
                                   )
                                 }
-                                label="Duration"
+                                label="Interval"
                                 size="small"
                                 sx={{
                                   width: "10%",
@@ -1710,7 +1781,7 @@ const Templates: React.FC = () => {
                         >
                           {[
                             { level: "Expression", color: "#808080" },
-                            { level: "Recovery expression", color: "#808080" },
+                            { level: "Resolved expression", color: "#808080" },
                             { level: "None", color: "#808080" },
                           ].map(({ level, color }) => (
                             <Button
@@ -1759,7 +1830,7 @@ const Templates: React.FC = () => {
                       </Box>
 
                       {/* Recovery Expression field */}
-                      {ok_eventGen === "recovery expression" && (
+                      {ok_eventGen === "resolved expression" && (
                         <Box
                           sx={{
                             display: "flex",
@@ -1789,7 +1860,7 @@ const Templates: React.FC = () => {
                                 mb: 1,
                               }}
                             >
-                              + Recovery Expression
+                              + Resolved Expression
                             </Button>
                           </Box>
                           {recoveryParts.map((part, index) => (
@@ -1831,6 +1902,7 @@ const Templates: React.FC = () => {
                               <TextField
                                 select
                                 value={part.duration}
+                                disabled={part.functionofItem === "last"}
                                 onChange={(e) =>
                                   handleRecoveryPartChange(
                                     index,
@@ -1838,7 +1910,7 @@ const Templates: React.FC = () => {
                                     e.target.value
                                   )
                                 }
-                                label="Duration"
+                                label="Interval"
                                 size="small"
                                 sx={{
                                   width: "10%",
@@ -2082,6 +2154,15 @@ const Templates: React.FC = () => {
                                 label={`OK Event: ${trigger.ok_event_generation}`}
                                 sx={{ mb: 1, backgroundColor: "#e0e0e0" }}
                               />
+                              <Chip
+                                label={
+                                  ThresholdBreachDuration === 0
+                                    ? `Threshold Breach Duration : Real-Time.`
+                                    : `Threshold Breach Duration : ${
+                                        ThresholdBreachDuration / 60000
+                                      } minute.`
+                                }
+                              />
                             </Box>
                             <Box
                               sx={{
@@ -2114,7 +2195,7 @@ const Templates: React.FC = () => {
                                 variant="subtitle1"
                                 sx={{ fontWeight: "bold", mb: 1 }}
                               >
-                                Recovery Expression:
+                                Resolved Expression:
                               </Typography>
                               <Paper
                                 elevation={0}
@@ -2122,7 +2203,7 @@ const Templates: React.FC = () => {
                               >
                                 <code>
                                   {trigger.recovery_expression === ""
-                                    ? "No recovery expression"
+                                    ? "No resolved expression"
                                     : trigger.recovery_expression}
                                 </code>
                               </Paper>
