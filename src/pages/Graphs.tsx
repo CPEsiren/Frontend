@@ -311,7 +311,7 @@ const Graphs: React.FC = () => {
     };
 
     setLastTime();
-  }, [selectedLastTime]);
+  }, [selectedLastTime, selectedDateTimeEnd]);
 
   //Apply Button
   const handleApplyClick = () => {
@@ -728,6 +728,8 @@ const Graphs: React.FC = () => {
                   setIsAuto(false);
                 }
               }}
+              disableFuture
+              maxDateTime={selectedDateTimeEnd}
             ></DateTimePicker>
             <DateTimePicker
               label="End"
@@ -741,6 +743,7 @@ const Graphs: React.FC = () => {
                   setIsAuto(false);
                 }
               }}
+              disableFuture
             ></DateTimePicker>
             {/* Cheack Box For Auto */}
             <Box sx={{ ml: 1 }}>
