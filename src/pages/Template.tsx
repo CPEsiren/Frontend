@@ -623,7 +623,7 @@ const Templates: React.FC = () => {
       expression: !expression,
       ok_eventGen: !ok_eventGen,
       recoveryExpression:
-        ok_eventGen === "recovery expression" && !recoveryExpression,
+        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
     setErrorsFieldTrigger(newErrors);
@@ -1781,7 +1781,7 @@ const Templates: React.FC = () => {
                         >
                           {[
                             { level: "Expression", color: "#808080" },
-                            { level: "Recovery expression", color: "#808080" },
+                            { level: "Resolved expression", color: "#808080" },
                             { level: "None", color: "#808080" },
                           ].map(({ level, color }) => (
                             <Button
@@ -1830,7 +1830,7 @@ const Templates: React.FC = () => {
                       </Box>
 
                       {/* Recovery Expression field */}
-                      {ok_eventGen === "recovery expression" && (
+                      {ok_eventGen === "resolved expression" && (
                         <Box
                           sx={{
                             display: "flex",
@@ -1860,7 +1860,7 @@ const Templates: React.FC = () => {
                                 mb: 1,
                               }}
                             >
-                              + Recovery Expression
+                              + Resolved Expression
                             </Button>
                           </Box>
                           {recoveryParts.map((part, index) => (
@@ -2195,7 +2195,7 @@ const Templates: React.FC = () => {
                                 variant="subtitle1"
                                 sx={{ fontWeight: "bold", mb: 1 }}
                               >
-                                Recovery Expression:
+                                Resolved Expression:
                               </Typography>
                               <Paper
                                 elevation={0}
@@ -2203,7 +2203,7 @@ const Templates: React.FC = () => {
                               >
                                 <code>
                                   {trigger.recovery_expression === ""
-                                    ? "No recovery expression"
+                                    ? "No resolved expression"
                                     : trigger.recovery_expression}
                                 </code>
                               </Paper>
