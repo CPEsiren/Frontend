@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Snackbar,
   Alert,
-  Link,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IDevice } from "../interface/InterfaceCollection";
@@ -28,7 +27,6 @@ const DeviceDetailPage = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
 
   // Add snackbar state
@@ -92,7 +90,6 @@ const DeviceDetailPage = () => {
   // Handle success callback from AddItemOnly
   const handleAddItemSuccess = (
     message: string,
-    refreshCallback?: () => void
   ) => {
     // Check if message contains "REFRESH" keyword
     const hasRefreshKeyword = message.includes("REFRESH");

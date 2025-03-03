@@ -35,10 +35,10 @@ const DeviceInterfaceComponent = ({
                 <Box
                   sx={{
                     padding: 2,
-                    border: "1px solid #ddd",
+                    border: "3px solid #5b71a5",
                     borderRadius: 2,
                     height: "80%",
-                    backgroundColor: "#f9f9f9",
+                    backgroundColor: "#FBFDFF",
                     transition: "opacity 0.3s ease-in-out",
                     opacity: 1,
                   }}
@@ -53,17 +53,18 @@ const DeviceInterfaceComponent = ({
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       lineHeight: 1.2,
-                      maxHeight: "3.6em", // 3 lines * 1.2em line-height
+                      maxHeight: "3.6em", 
+                      mb:1
                     }}
                   >
                     {item.interface_name}
                   </Typography>
-                  <Typography>Type: {item.interface_type}</Typography>
-                  <Typography>Speed: {item.interface_speed} bps</Typography>
-                  <Typography>
+                  <Typography sx={{mb:0.5}}>Type: {item.interface_type}</Typography>
+                  <Typography sx={{mb:0.5}}>Speed: {item.interface_speed} bps</Typography>
+                  <Typography sx={{mb:0.5}}>
                     Adminstatus: {item.interface_Adminstatus}
                   </Typography>
-                  <Typography>
+                  <Typography sx={{mb:0.5}}>
                     Operstatus: {item.interface_Operstatus}
                   </Typography>
                 </Box>
