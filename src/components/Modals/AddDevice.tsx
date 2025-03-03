@@ -200,7 +200,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({
       oid: "",
       type: "",
       unit: "",
-      interval: 10,
+      interval: 60,
       // history: "",
       // trend: "",
     },
@@ -1362,7 +1362,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({
                               <TableCell>OID</TableCell>
                               <TableCell>Type</TableCell>
                               <TableCell>Unit</TableCell>
-                              <TableCell>Update Interval</TableCell>
+                              <TableCell>Update Interval(s)</TableCell>
                               <TableCell>Action</TableCell>
                             </TableRow>
                           </TableHead>
@@ -1440,6 +1440,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({
                                     </TableCell>
                                     <TableCell>
                                       <TextField
+                                        type="number"
                                         {...textFieldProps}
                                         value={row.interval}
                                         onChange={(e) =>
