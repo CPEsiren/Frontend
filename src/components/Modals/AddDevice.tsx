@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Button,
@@ -106,6 +106,72 @@ const AddDevice: React.FC<AddDeviceProps> = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
+  const [isFormValid, setIsFormValid] = useState(false);
+  const validateForm = useCallback(() => {
+    // Check basic device fields
+    const isHostnameValid = hostname.trim() !== "";
+    const isHostgroupValid = hostgroup.trim() !== "";
+
+    // Check SNMP fields
+    const isIpAddressValid = ip_address.trim() !== "";
+    const isSnmpVersionValid = snmp_version !== "";
+    const isSnmpPortValid = snmp_port !== "";
+
+    // Check version-specific fields
+    let isSnmpDetailValid = false;
+
+    if (snmp_version === "SNMPv1" || snmp_version === "SNMPv2") {
+      // For v1 and v2, need community string
+      isSnmpDetailValid = snmp_community.trim() !== "";
+    } else if (snmp_version === "SNMPv3") {
+      // For v3, check the security level and corresponding fields
+      const isUsernameValid = V3Username.trim() !== "";
+      const isSecurityLevelValid = SecurLevel !== "";
+
+      if (SecurLevel === "noAuthNoPriv") {
+        isSnmpDetailValid = isUsernameValid && isSecurityLevelValid;
+      } else if (SecurLevel === "authNoPriv") {
+        isSnmpDetailValid =
+          isUsernameValid &&
+          isSecurityLevelValid &&
+          authenProtocol !== "" &&
+          authenPass.trim() !== "";
+      } else if (SecurLevel === "authPriv") {
+        const isPrivacyValid = privacyProtocol !== "";
+        const isPrivacyPassValid =
+          privacyProtocol === "NONE" || privacyPass.trim() !== "";
+        isSnmpDetailValid =
+          isUsernameValid &&
+          isSecurityLevelValid &&
+          authenProtocol !== "" &&
+          authenPass.trim() !== "" &&
+          isPrivacyValid &&
+          isPrivacyPassValid;
+      }
+    }
+
+    // Form is valid if all required fields are filled in
+    return (
+      isHostnameValid &&
+      isHostgroupValid &&
+      isIpAddressValid &&
+      isSnmpVersionValid &&
+      isSnmpDetailValid &&
+      isSnmpPortValid
+    );
+  }, [
+    hostname,
+    hostgroup,
+    ip_address,
+    snmp_version,
+    snmp_community,
+    V3Username,
+    SecurLevel,
+    authenProtocol,
+    authenPass,
+    privacyProtocol,
+    privacyPass,
+  ]);
 
   // const [currentTab, setCurrentTab] = useState("host");
 
@@ -174,6 +240,22 @@ const AddDevice: React.FC<AddDeviceProps> = ({
       setTriggers(selectedTemplate.triggers);
     }
   };
+  useEffect(() => {
+    setIsFormValid(validateForm());
+  }, [
+    hostname,
+    hostgroup,
+    ip_address,
+    snmp_version,
+    snmp_community,
+    V3Username,
+    SecurLevel,
+    authenProtocol,
+    authenPass,
+    privacyProtocol,
+    privacyPass,
+    validateForm,
+  ]);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -1195,9 +1277,27 @@ const AddDevice: React.FC<AddDeviceProps> = ({
                               </Box>
                             </Box>
                             <Box>
-                              <Typography sx={{ fontSize: 14, mt: 1 }}>
-                                Port
-                              </Typography>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "right",
+                                }}
+                              >
+                                <Typography
+                                  sx={{
+                                    fontSize: 14,
+                                    color: "red",
+                                    mt: 1,
+                                    mr: 1,
+                                  }}
+                                >
+                                  *
+                                </Typography>
+
+                                <Typography sx={{ fontSize: 14, mt: 1 }}>
+                                  Port
+                                </Typography>
+                              </Box>
                             </Box>
                             <Box>
                               <TextField
@@ -1535,15 +1635,16 @@ const AddDevice: React.FC<AddDeviceProps> = ({
                 <Button
                   type="submit"
                   variant="outlined"
+                  disabled={!isFormValid}
                   sx={{
                     fontSize: 14,
                     color: "white",
-                    bgcolor: "#0281F2",
+                    bgcolor: isFormValid ? "#0281F2" : "#cccccc",
                     borderColor: "white",
                     borderRadius: 2,
                     "&:hover": {
                       color: "white",
-                      bgcolor: "#0274d9",
+                      bgcolor: isFormValid ? "#0274d9" : "#cccccc",
                       borderColor: "white",
                     },
                   }}

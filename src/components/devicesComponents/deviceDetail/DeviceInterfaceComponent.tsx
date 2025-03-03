@@ -54,7 +54,8 @@ const DeviceInterfaceComponent = ({
                       textOverflow: "ellipsis",
                       lineHeight: 1.2,
                       maxHeight: "3.6em", 
-                      mb:1
+                       mb: 1,
+                        width:"90%"
                     }}
                   >
                     {item.interface_name}

@@ -195,22 +195,22 @@ const ActivityComponent: React.FC = () => {
                 >
                   <TableHead sx={{ backgroundColor: "#ffffff" }}>
                     <TableRow>
-                      <TableCell sx={{ color: "black", width: "5%" }}>
+                      <TableCell sx={{ color: "black", }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Timestamp
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "15%" }}>
+                      <TableCell sx={{ color: "black", }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           User
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "5%" }}>
+                      <TableCell sx={{ color: "black",  }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Role
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "40%" }}>
+                      <TableCell sx={{ color: "black",  }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Activity
                         </Typography>

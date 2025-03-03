@@ -456,32 +456,32 @@ const ManageComponent = () => {
             {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
             <TableHead sx={{ backgroundColor: "#ffffff" }}>
               <TableRow>
-                <TableCell sx={{ color: "black",width:"35%" }}>
+                <TableCell sx={{ color: "black",}}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Device's name
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
+                <TableCell sx={{ color: "black", }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     IP Address
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"15%" }}>
+                <TableCell sx={{ color: "black", }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     SNMP Version
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
+                <TableCell sx={{ color: "black" }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Group
                   </Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
+                <TableCell sx={{ color: "black"}}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Status
                   </Typography>
                 </TableCell>
-                <TableCell width={120} align="center" sx={{ color: "black",width:"10%" }}>
+                <TableCell width={120} align="center" sx={{ color: "black", }}>
                   <Typography variant="subtitle1" fontWeight="medium">
                     Actions
                   </Typography>
@@ -517,7 +517,7 @@ const ManageComponent = () => {
                       label={getStatusLabel(device.status)}
                       color={getStatusColor(device.status)}
                       size="small"
-                      sx={{ minWidth: "80px" }}
+                      sx={{ minWidth: "80px",py:2 }}
                     />
                   </TableCell>
                   <TableCell align="center">

@@ -38,7 +38,9 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-  const [newRole, setNewRole] = useState<"admin" | "viewer" | "superadmin">("viewer");
+  const [newRole, setNewRole] = useState<"admin" | "viewer" | "superadmin">(
+    "viewer"
+  );
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -46,7 +48,7 @@ const UserManagement = () => {
   });
   const [swapRoleDialogOpen, setSwapRoleDialogOpen] = useState(false);
   const currentUserRole = localStorage.getItem("userRole");
-  
+
   const roleColors = {
     admin: "red",
     superadmin: "orange",
@@ -199,7 +201,9 @@ const UserManagement = () => {
   }
 
   // Define available roles based on current user's role
-  const getAvailableRoles = (currentRole: string): Array<"admin" | "viewer" | "superadmin"> => {
+  const getAvailableRoles = (
+    currentRole: string
+  ): Array<"admin" | "viewer" | "superadmin"> => {
     if (currentRole === "superadmin") {
       return ["admin", "viewer", "superadmin"];
     } else {
@@ -276,6 +280,7 @@ const UserManagement = () => {
                       label={user.role}
                       size="small"
                       sx={{
+                        width: "55%",
                         p: 2,
                         m: 0,
                         color: "white",
@@ -285,16 +290,30 @@ const UserManagement = () => {
                     />
                   </TableCell>
                   <TableCell sx={{ textAlign: "left" }}>
-                    <IconButton
-                      onClick={() => handleSwapRoleClick(user)}
-                      disabled={loading || (currentUserRole !== "superadmin" && user.role === "superadmin")}
-                    >
-                      <SwapHorizIcon
-                        sx={{
-                          color: (currentUserRole !== "superadmin" && user.role === "superadmin") ? "gray" : "black",
-                        }}
-                      />
-                    </IconButton>
+                    {user.username === localStorage.getItem("username") ? (
+                      <Typography variant="body2" color="textSecondary">
+                        (You)
+                      </Typography>
+                    ) : (
+                      <IconButton
+                        onClick={() => handleSwapRoleClick(user)}
+                        disabled={
+                          loading ||
+                          (currentUserRole !== "superadmin" &&
+                            user.role === "superadmin")
+                        }
+                      >
+                        <SwapHorizIcon
+                          sx={{
+                            color:
+                              currentUserRole !== "superadmin" &&
+                              user.role === "superadmin"
+                                ? "gray"
+                                : "black",
+                          }}
+                        />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -309,7 +328,9 @@ const UserManagement = () => {
         aria-labelledby="swap-role-dialog-title"
       >
         <DialogTitle id="swap-role-dialog-title">
-          {currentUserRole === "superadmin" ? "Change User Role" : "Confirm Switch Role"}
+          {currentUserRole === "superadmin"
+            ? "Change User Role"
+            : "Confirm Switch Role"}
         </DialogTitle>
         <DialogContent>
           {currentUserRole === "superadmin" ? (
@@ -323,7 +344,11 @@ const UserManagement = () => {
                   labelId="role-select-label"
                   value={newRole}
                   label="Role"
-                  onChange={(e) => setNewRole(e.target.value as "admin" | "viewer" | "superadmin")}
+                  onChange={(e) =>
+                    setNewRole(
+                      e.target.value as "admin" | "viewer" | "superadmin"
+                    )
+                  }
                 >
                   {availableRoles.map((role) => (
                     <MenuItem key={role} value={role}>

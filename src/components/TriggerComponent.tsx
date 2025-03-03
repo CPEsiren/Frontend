@@ -537,7 +537,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
             <Typography variant="body1">No triggers found</Typography>
           </Box>
         ) : (
-          <Box sx={{ width: 1 }}>
+          <Box sx={{ width: 1,justifyContent:"center" }}>
             {DataGroupByHost.map((group, index) => (
               <Box key={index} sx={{ mb: 4, mt: 4 }}>
                 <Box sx={{ mb: 3 }}>
@@ -552,7 +552,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       fontWeight: "semi-bold",
                       minWidth: "100px",
                       textAlign: "center",
-                      p: 1.5,
+                      py: 1.5,
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                       width: "100%",
                       display: "block", // Change from -webkit-box to block for better line break support
@@ -565,75 +565,103 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                 </Box>
 
                 <TableContainer
-                  component={Paper}
-                  sx={{
-                    boxShadow: "none",
-                    "& .MuiPaper-root": { boxShadow: "none" },
-                    backgroundColor: "transparent",
-                    mb: 10,
-                    border: "2px solid white",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <Table
-                    sx={{
-                      "& .MuiTable-root": {
-                        borderCollapse: "separate",
-                        borderSpacing: 0,
-                      },
-                      "& .MuiTableCell-root": { borderBottom: "none" },
-                      "& .MuiTableBody-root .MuiTableRow-root": {
-                        "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
-                        "&:hover": {
-                          backgroundColor: "#ebf1ff",
-                          transition: "background-color 0.3s ease",
-                          cursor: "pointer",
-                        },
-                      },
-                      display: "block", // Change from -webkit-box to block for better line break support
-                        wordBreak: "break-word", // Allow words to break if needed
-                        hyphens: "auto",
-                    }}
-                  >
-                    <TableHead >
-                      <TableRow>
-                        <TableCell 
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"30%" }}
-                        >
-                          Trigger Name
-                        </TableCell>
-                        <TableCell
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
-                        >
-                          Severity
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"35%" }}
-                        >
-                          Expression
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
-                        >
-                          OK event generation
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
-                        >
-                          Status
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"5%" }}
-                        >
-                          ⚙️
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
+  component={Paper}
+  sx={{
+    boxShadow: "none",
+    "& .MuiPaper-root": { boxShadow: "none" },
+    backgroundColor: "transparent",
+    mb: 10,
+    border: "2px solid white",
+    borderRadius: "8px",
+    overflow: "hidden",
+    width: "100%" // Ensure the container takes full width
+  }}
+>
+  <Table
+    sx={{
+      width: "100%", // Make sure table takes 100% of container width
+      tableLayout: "fixed", // Fixed layout helps with column distribution
+      "& .MuiTable-root": {
+        borderCollapse: "separate",
+        borderSpacing: 0,
+      },
+      "& .MuiTableCell-root": { 
+        borderBottom: "none",
+        whiteSpace: "normal", // Allow text to wrap
+        wordBreak: "break-word" 
+      },
+      "& .MuiTableBody-root .MuiTableRow-root": {
+        "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
+        "&:hover": {
+          backgroundColor: "#ebf1ff",
+          transition: "background-color 0.3s ease",
+          cursor: "pointer",
+        },
+      }
+    }}
+  >
+    <TableHead>
+      <TableRow>
+        <TableCell 
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "15%" // Set explicit width for this column
+          }}
+        >
+          Trigger Name
+        </TableCell>
+        <TableCell
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "10%" 
+          }}
+        >
+          Severity
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "35%" // Give more space to expression column
+          }}
+        >
+          Expression
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "20%" 
+          }}
+        >
+          OK event generation
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "10%" 
+          }}
+        >
+          Status
+        </TableCell>
+        <TableCell
+          align="center"
+          sx={{ 
+            fontSize: "1rem", 
+            fontWeight: "medium",
+            width: "10%" 
+          }}
+        >
+          ⚙️
+        </TableCell>
+      </TableRow>
+    </TableHead>
 
                     <TableBody>
                       {group.triggers.map((trigger, index) => (
