@@ -500,7 +500,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       expression: !expression,
       ok_eventGen: !ok_eventGen,
       recoveryExpression:
-        ok_eventGen === "recovery expression" && !recoveryExpression,
+        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
     setErrorsFieldTrigger(newErrors);
@@ -1373,7 +1373,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                   >
                     {[
                       { level: "Expression", color: "#808080" },
-                      { level: "Recovery expression", color: "#808080" },
+                      { level: "Resolved expression", color: "#808080" },
                       { level: "None", color: "#808080" },
                     ].map(({ level, color }) => (
                       <Button
@@ -1417,7 +1417,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                 </Box>
 
                 {/* Recovery Expression field */}
-                {ok_eventGen === "recovery expression" && (
+                {ok_eventGen === "resolved expression" && (
                   <Box
                     sx={{
                       display: "flex",
@@ -1447,7 +1447,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           mb: 1,
                         }}
                       >
-                        + Recovery Expression
+                        + Resolved Expression
                       </Button>
                     </Box>
                     {recoveryParts.map((part, index) => (
@@ -1760,7 +1760,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           variant="subtitle1"
                           sx={{ fontWeight: "bold", mb: 1 }}
                         >
-                          Recovery Expression:
+                          Resolved Expression:
                         </Typography>
                         <Paper
                           elevation={0}
@@ -1768,7 +1768,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         >
                           <code>
                             {trigger.recovery_expression === ""
-                              ? "No recovery expression"
+                              ? "No resolved expression"
                               : trigger.recovery_expression}
                           </code>
                         </Paper>
