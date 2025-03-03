@@ -125,16 +125,6 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
       isValid = false;
     }
 
-    // For number type, check if it's a valid number and greater than 0
-    // if (
-    //   typeof editForm.interval !== "number" ||
-    //   isNaN(editForm.interval) ||
-    //   editForm.interval <= 0
-    // ) {
-    //   errors.interval = "Interval must be a number greater than 0";
-    //   isValid = false;
-    // }
-
     setFormErrors(errors);
     return isValid;
   };
@@ -357,7 +347,8 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                       display: "flex",
                       justifyContent: "flex-end",
                       alignItems: "center",
-                      width: "10%%",
+                      width: "100%",
+                      mt: -1,
                     }}
                   >
                     <IconButton
@@ -369,7 +360,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                       sx={{
                         borderRadius: "50%",
                         width: "5",
-                       
+
                         "&:hover": {
                           backgroundColor: "rgba(239, 239, 255, 0.1)",
                         },
@@ -445,21 +436,21 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                     </Menu>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1,width: "100%",mt:-2.5 }}>
+                  <Box sx={{ flexGrow: 1, width: "100%", mt: -1.5 }}>
                     {/* This box will grow to fill available space */}
                     <Typography
                       variant="subtitle1"
                       fontWeight={600}
                       sx={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        lineHeight: 1.2,
-                        maxHeight: "3.6em", // 3 lines * 1.2em line-height
+                        display: "block", // Change from -webkit-box to block for better line break support
+                        wordBreak: "break-word", // Allow words to break if needed
+                        hyphens: "auto", // Enable hyphenation for better word breaks
+                        lineHeight: 1,
+                        maxHeight: "3.9em", // 3 lines * 1.3em line-height
                         mb: 1,
-                        width:"90%"
+                        width: "90%",
                       }}
                     >
                       {item.item_name}

@@ -16,13 +16,21 @@ const DeviceDetailComponent = ({ deviceData }: { deviceData: IDevice }) => {
       }}
     >
       {/* Basic Information Section */}
-      <Grid item xs={12} md={6} width={"40%"} sx={{ ml: 2 }}>
+      <Grid item xs={12} md={6} width={"50%"} sx={{ ml: 2 }}>
         {/* <Typography variant="h6" fontWeight={600} gutterBottom>
           Basic Information
         </Typography> */}
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Typography fontWeight={600}>Device's name:</Typography>
-          <Typography>{deviceData.hostname}</Typography>
+        <Box sx={{ display: "flex",flexDirection:"row", gap: 1 }}>
+          <Typography sx={{width: "42%"}} fontWeight={600}>Device's name:</Typography>
+          <Typography
+            sx={{
+              display: "block", // Change from -webkit-box to block for better line break support
+              wordBreak: "break-word", // Allow words to break if needed
+              hyphens: "auto",
+            }}
+          >
+            {deviceData.hostname}
+          </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
           <Typography fontWeight={600}>IP Address:</Typography>

@@ -149,22 +149,7 @@ const ActivityComponent: React.FC = () => {
 
   return (
     <Container maxWidth={false}>
-      {/* <Box
-        sx={{
-          mb: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold">
-          Activity Logs
-        </Typography>
-        <Button variant="contained" onClick={fetchLogs} disabled={loading}>
-          Refresh
-        </Button>
-      </Box> */}
-
+    
       {/* Error message */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -188,15 +173,17 @@ const ActivityComponent: React.FC = () => {
             // </Paper>
             <>
               <TableContainer
+              
                 component={Paper}
                 elevation={0}
                 sx={{
                   backgroundColor: "transparent",
+                  width: 1,
                 }}
               >
                 <Table
                   sx={{
-                    width: 1,
+                    
                     "& .MuiTableCell-root": {
                       borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
                       padding: "16px",
@@ -204,27 +191,26 @@ const ActivityComponent: React.FC = () => {
                     "& .MuiTableRow-body:hover": {
                       backgroundColor: "rgba(0, 0, 0, 0.04)",
                     },
-
                   }}
                 >
                   <TableHead sx={{ backgroundColor: "#ffffff" }}>
                     <TableRow>
-                      <TableCell sx={{ color: "black" }}>
+                      <TableCell sx={{ color: "black", width: "5%" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Timestamp
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black" }}>
+                      <TableCell sx={{ color: "black", width: "15%" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           User
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black" }}>
+                      <TableCell sx={{ color: "black", width: "5%" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Role
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black" }}>
+                      <TableCell sx={{ color: "black", width: "40%" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Activity
                         </Typography>
@@ -240,7 +226,7 @@ const ActivityComponent: React.FC = () => {
                       : logs
                     ).map((log) => (
                       <TableRow key={log._id} hover>
-                        <TableCell>
+                        <TableCell sx={{}}>
                           <Typography variant="body2">
                             {formatDate(log.createdAt || log.createAt)}
                           </Typography>
@@ -262,7 +248,9 @@ const ActivityComponent: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
+                          <Typography variant="body2" sx={{display: "block", // Change from -webkit-box to block for better line break support
+                        wordBreak: "break-word", // Allow words to break if needed
+                        hyphens: "auto",}}>
                             {log.activity}
                           </Typography>
                         </TableCell>
@@ -272,7 +260,8 @@ const ActivityComponent: React.FC = () => {
                 </Table>
               </TableContainer>
 
-              <TablePagination rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 component="div"
                 count={logs.length}
                 rowsPerPage={rowsPerPage}

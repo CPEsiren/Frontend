@@ -142,7 +142,9 @@ const EventComponent = () => {
               backgroundColor: "white",
               borderRadius: 3,
               // mt: 2,
-              mx: -3,
+              display: "block", // Change from -webkit-box to block for better line break support
+              wordBreak: "break-word", // Allow words to break if needed
+              hyphens: "auto",
             }}
           >
             <Table
@@ -162,20 +164,13 @@ const EventComponent = () => {
                 },
               }}
             >
-              <TableHead
-              // sx={{
-              //   backgroundColor: "#242D5D",
-              //   "& .MuiTableCell-root": {
-              //     color: "white",
-              //   },
-              // }}
-              >
+              <TableHead>
                 <TableRow>
                   <TableCell
                     align="center"
                     sx={{
-                      width: "100px",
                       flexBasis: "100px",
+                      width: "7%",
                     }}
                   >
                     <Typography variant="subtitle1" fontWeight="medium">
@@ -185,7 +180,7 @@ const EventComponent = () => {
                   <TableCell
                     align="center"
                     sx={{
-                      width: "100px",
+                      width: "7%",
                       flexBasis: "100px",
                     }}
                   >
@@ -196,7 +191,7 @@ const EventComponent = () => {
                   <TableCell
                     align="center"
                     sx={{
-                      width: "180px",
+                      width: "10%",
                       flexBasis: "180px",
                     }}
                   >
@@ -204,17 +199,17 @@ const EventComponent = () => {
                       Device's name
                     </Typography>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ width: "5%" }}>
                     <Typography variant="subtitle1" fontWeight="medium">
                       Severity
                     </Typography>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ width: "13%" }}>
                     <Typography variant="subtitle1" fontWeight="medium">
                       Description
                     </Typography>
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ width: "1%" }}>
                     <Typography variant="subtitle1" fontWeight="medium">
                       Status
                     </Typography>

@@ -71,9 +71,9 @@ const Triggers = () => {
     }
   };
 
-  useEffect(() => {
-    fetchTriggerData();
-  }, []);
+  // useEffect(() => {
+  //   fetchTriggerData();
+  // }, []);
 
   const handleTriggerAddSuccess = (message: string) => {
     // Always fetch trigger data after successful operation
