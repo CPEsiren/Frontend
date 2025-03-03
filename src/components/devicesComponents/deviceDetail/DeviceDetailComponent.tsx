@@ -20,8 +20,10 @@ const DeviceDetailComponent = ({ deviceData }: { deviceData: IDevice }) => {
         {/* <Typography variant="h6" fontWeight={600} gutterBottom>
           Basic Information
         </Typography> */}
-        <Box sx={{ display: "flex",flexDirection:"row", gap: 1 }}>
-          <Typography sx={{width: "42%"}} fontWeight={600}>Device's name:</Typography>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: 1 }}>
+          <Typography sx={{}} fontWeight={600}>
+            Device's name:
+          </Typography>
           <Typography
             sx={{
               display: "block", // Change from -webkit-box to block for better line break support

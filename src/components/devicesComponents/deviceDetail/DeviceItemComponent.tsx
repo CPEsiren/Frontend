@@ -317,7 +317,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "row" }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       {items.length == 0 ? (
         <Typography
           sx={{ textAlign: "center", width: 1, fontSize: "1.2rem", py: 3 }}
