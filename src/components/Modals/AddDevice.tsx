@@ -14,6 +14,9 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Snackbar,
+  Alert,
+  Autocomplete,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -30,44 +33,17 @@ import TableRow from "@mui/material/TableRow";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { createTheme } from "@mui/material/styles";
 import { Pagination, Fade } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
-import RouterIcon from "@mui/icons-material/Router";
 import { Router, Package } from "lucide-react";
 import SearchIcon from "@mui/icons-material/Search";
 
-const theme = createTheme({
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        "*": {
-          outline: "none !important", // Remove the focus ring for all elements
-          "&:focus": {
-            outline: "none !important", // Specific to focus state
-          },
-        },
-      },
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          "&:focus": {
-            outline: "none", // Remove focus ring from IconButtons
-          },
-          "&:focus-visible": {
-            outline: "none", // Remove focus ring from keyboard navigation
-          },
-        },
-      },
-    },
-  },
-});
-
+// First, update the AddDeviceProps interface to accept hostGroups
 interface AddDeviceProps {
   onClose: () => void;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void;
+  hostGroups?: string[]; // Add this new prop
 }
-
 interface DeviceDetails {
   location: string;
   description: string;
@@ -80,8 +56,6 @@ interface DeviceItems {
   type: string;
   unit: string;
   interval: number;
-  // history: string;
-  // trend: string;
 }
 
 interface TemplateItem {
@@ -99,7 +73,12 @@ interface Template {
   items: TemplateItem[];
   description: string;
 }
-const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
+const AddDevice: React.FC<AddDeviceProps> = ({
+  onClose,
+  onSuccess,
+  hostGroups = [],
+}) => {
+  // const AddDevice: React.FC<AddDeviceProps> = ({ onClose, onSuccess }) => {
   const windowSize = useWindowSize();
   const [hostname, sethostname] = useState<string>("");
   const [ip_address, setip_address] = useState<string>("");
@@ -119,6 +98,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   const [authenPass, setAuthenPass] = useState<string>("");
   const [privacyProtocol, setPrivacyProtocol] = useState<string>("");
   const [privacyPass, setPrivacyPass] = useState<string>("");
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
 
   // const [currentTab, setCurrentTab] = useState("host");
 
@@ -311,7 +296,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           privacyPass: privacyPass,
         },
         userRole: localStorage.getItem("userRole"),
-        userName: localStorage.getItem("username")
+        userName: localStorage.getItem("username"),
       };
 
       // Only add items to request if they have data
@@ -346,9 +331,9 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
       hostgroup,
       templates,
       details
-      // itemRows
     );
     if (success) {
+      // Reset form fields
       sethostname("");
       setip_address("");
       setsnmp_port("");
@@ -368,10 +353,17 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
           interval: 0,
         },
       ]);
-      alert("Device added successfully!");
-      onClose();
+      // Trigger the success callback in the parent component
+      if (onSuccess) {
+        onSuccess(`Device "${hostname}" successfully added. REFRESH`, () => {
+          window.location.reload();
+        });
+      }
     } else {
-      alert("Failed to add device. Please try again.");
+      // Show error alert
+      setSnackbarMessage("Please fill in all required fields.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -393,7 +385,12 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
   // Add new function to handle interface scanning
   const handleScanInterface = async () => {
     if (!ip_address || !snmp_port || !snmp_version || !snmp_community) {
-      alert("Please fill in all SNMP interface details before scanning");
+      // alert("Please fill in all SNMP interface details before scanning");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      setSnackbarMessage(
+        "Please fill in all SNMP interface details before scanning"
+      );
       setTabvalue("host"); // Switch back to host tab if details are missing
       return;
     }
@@ -458,6 +455,16 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
         "Failed to scan interfaces. Please check your SNMP details and try again."
       );
     }
+  };
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -660,7 +667,42 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 </MenuItem>
                               ))}
                             </TextField>
-                            <TextField
+                            <Autocomplete
+                              freeSolo
+                              id="hostgroup-autocomplete"
+                              disableClearable
+                              options={hostGroups}
+                              value={hostgroup}
+                              onInputChange={(event, newValue) => {
+                                sethostgroup(newValue);
+                              }}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  size="small"
+                                  sx={{
+                                    mb: 2,
+                                    width: 1,
+                                    "& .MuiInputBase-input": {
+                                      fontSize: 14,
+                                    },
+                                    backgroundColor: "white",
+                                  }}
+                                  placeholder={
+                                    hostGroups.length > 0
+                                      ? "Select or enter host group"
+                                      : "Enter host group"
+                                  }
+                                  slotProps={{
+                                    input: {
+                                      ...params.InputProps,
+                                      type: "search",
+                                    },
+                                  }}
+                                />
+                              )}
+                            />
+                            {/* <TextField
                               {...textFieldProps}
                               value={hostgroup}
                               onChange={(e) => sethostgroup(e.target.value)}
@@ -671,7 +713,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                   fontSize: 14,
                                 },
                               }}
-                            />
+                            /> */}
                             <TextField
                               multiline
                               rows={3}
@@ -821,7 +863,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 ,mt:0.3 }}>
+                                <Typography sx={{ fontSize: 14, mt: 0.3 }}>
                                   Security Level
                                 </Typography>
                               </Box>
@@ -841,7 +883,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 ,mt:0.1}}>
+                                <Typography sx={{ fontSize: 14, mt: 0.1 }}>
                                   Authen Protocol
                                 </Typography>
                               </Box>
@@ -878,7 +920,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 ,mt:0.2}}>
+                                <Typography sx={{ fontSize: 14, mt: 0.2 }}>
                                   Privacy Protocol
                                 </Typography>
                               </Box>
@@ -898,7 +940,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                 >
                                   *
                                 </Typography>
-                                <Typography sx={{ fontSize: 14 ,mt:0.3}}>
+                                <Typography sx={{ fontSize: 14, mt: 0.3 }}>
                                   Privacy Passphrase
                                 </Typography>
                               </Box>
@@ -923,21 +965,35 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                   flexDirection: "column",
                                 }}
                               >
-                       {/* SNMP Version */}
-                              <FormControl component="fieldset" sx={{ minWidth: 200 ,mb:2 }}>
-                                {/* <FormLabel component="legend" sx={{ fontSize: 14 }}>SNMP Version</FormLabel> */}
-                                <RadioGroup
-                                  value={snmp_version}
-                                  onChange={handleVersionChange}
-                                  row
+                                {/* SNMP Version */}
+                                <FormControl
+                                  component="fieldset"
+                                  sx={{ minWidth: 200, mb: 2 }}
                                 >
-                                  <FormControlLabel value="SNMPv1" control={<Radio size="small" />} label="SNMPv1" />
-                                  <FormControlLabel value="SNMPv2" control={<Radio size="small" />} label="SNMPv2" />
-                                  <FormControlLabel value="SNMPv3" control={<Radio size="small" />} label="SNMPv3" />
-                                </RadioGroup>
-                              </FormControl>
+                                  {/* <FormLabel component="legend" sx={{ fontSize: 14 }}>SNMP Version</FormLabel> */}
+                                  <RadioGroup
+                                    value={snmp_version}
+                                    onChange={handleVersionChange}
+                                    row
+                                  >
+                                    <FormControlLabel
+                                      value="SNMPv1"
+                                      control={<Radio size="small" />}
+                                      label="SNMPv1"
+                                    />
+                                    <FormControlLabel
+                                      value="SNMPv2"
+                                      control={<Radio size="small" />}
+                                      label="SNMPv2"
+                                    />
+                                    <FormControlLabel
+                                      value="SNMPv3"
+                                      control={<Radio size="small" />}
+                                      label="SNMPv3"
+                                    />
+                                  </RadioGroup>
+                                </FormControl>
 
-                              
                                 <TextField
                                   {...textFieldProps}
                                   value={snmp_community}
@@ -972,50 +1028,83 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     mb: 2.5,
                                   }}
                                 />
-                                <FormControl sx={{ minWidth: 200 }} size="small">
-                                <RadioGroup
-                                  value={SecurLevel}
-                                  onChange={(e) => {
-                                    setSecurLevel(e.target.value);
-                                    if (e.target.value === "noAuthNoPriv") {
-                                      setAuthenProtocol("");
-                                      setAuthenPass("");
-                                    } else if (e.target.value === "authNoPriv") {
-                                      setPrivacyProtocol("");
-                                      setPrivacyPass("");
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <RadioGroup
+                                    value={SecurLevel}
+                                    onChange={(e) => {
+                                      setSecurLevel(e.target.value);
+                                      if (e.target.value === "noAuthNoPriv") {
+                                        setAuthenProtocol("");
+                                        setAuthenPass("");
+                                      } else if (
+                                        e.target.value === "authNoPriv"
+                                      ) {
+                                        setPrivacyProtocol("");
+                                        setPrivacyPass("");
+                                      }
+                                    }}
+                                    row
+                                    sx={{
+                                      display:
+                                        snmp_version === "SNMPv3" ? "" : "none",
+                                      mb: 2,
+                                      mt: -0.5,
+                                      fontSize: 14,
+                                    }}
+                                  >
+                                    <FormControlLabel
+                                      value="noAuthNoPriv"
+                                      control={<Radio size="small" />}
+                                      label="noAuthNoPriv"
+                                    />
+                                    <FormControlLabel
+                                      value="authNoPriv"
+                                      control={<Radio size="small" />}
+                                      label="authNoPriv"
+                                    />
+                                    <FormControlLabel
+                                      value="authPriv"
+                                      control={<Radio size="small" />}
+                                      label="authPriv"
+                                    />
+                                  </RadioGroup>
+                                </FormControl>
+
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
+                                  <RadioGroup
+                                    value={authenProtocol}
+                                    onChange={(e) =>
+                                      setAuthenProtocol(e.target.value)
                                     }
-                                  }}
-                                  row 
-                                  sx={{
-                                    display: snmp_version === "SNMPv3" ? "" : "none",
-                                    mb: 2,
-                                    mt: -0.5,
-                                    fontSize: 14,
-                                  }}
-                                >
-                                  <FormControlLabel value="noAuthNoPriv" control={<Radio size="small" />} label="noAuthNoPriv" />
-                                  <FormControlLabel value="authNoPriv" control={<Radio size="small" />} label="authNoPriv" />
-                                  <FormControlLabel value="authPriv" control={<Radio size="small" />} label="authPriv" />
-                                </RadioGroup>
-                              </FormControl>
-
-                              <FormControl sx={{ minWidth: 200 }} size="small">
-                                <RadioGroup
-                                  value={authenProtocol}
-                                  onChange={(e) => setAuthenProtocol(e.target.value)}
-                                  row // This makes the radio buttons appear horizontally
-                                  sx={{
-                                    display:
-                                      SecurLevel === "authNoPriv" || SecurLevel === "authPriv" ? "" : "none",
-                                    mb: 2,
-                                    fontSize: 14,
-                                  }}
-                                >
-                                  <FormControlLabel value="MD5" control={<Radio size="small" />} label="MD5" />
-                                  <FormControlLabel value="SHA" control={<Radio size="small" />} label="SHA" />
-                                </RadioGroup>
-                              </FormControl>
-
+                                    row // This makes the radio buttons appear horizontally
+                                    sx={{
+                                      display:
+                                        SecurLevel === "authNoPriv" ||
+                                        SecurLevel === "authPriv"
+                                          ? ""
+                                          : "none",
+                                      mb: 2,
+                                      fontSize: 14,
+                                    }}
+                                  >
+                                    <FormControlLabel
+                                      value="MD5"
+                                      control={<Radio size="small" />}
+                                      label="MD5"
+                                    />
+                                    <FormControlLabel
+                                      value="SHA"
+                                      control={<Radio size="small" />}
+                                      label="SHA"
+                                    />
+                                  </RadioGroup>
+                                </FormControl>
 
                                 <TextField
                                   {...textFieldProps}
@@ -1036,7 +1125,10 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     mb: 2,
                                   }}
                                 />
-                                <FormControl sx={{ minWidth: 200 }} size="small">
+                                <FormControl
+                                  sx={{ minWidth: 200 }}
+                                  size="small"
+                                >
                                   <RadioGroup
                                     value={privacyProtocol}
                                     onChange={(e) => {
@@ -1047,17 +1139,29 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     }}
                                     row // This makes the radio buttons appear horizontally
                                     sx={{
-                                      display: SecurLevel === "authPriv" ? "" : "none",
+                                      display:
+                                        SecurLevel === "authPriv" ? "" : "none",
                                       mb: 2,
                                       fontSize: 14,
                                     }}
                                   >
-                                    <FormControlLabel value="NONE" control={<Radio size="small" />} label="NONE" />
-                                    <FormControlLabel value="DES" control={<Radio size="small" />} label="DES" />
-                                    <FormControlLabel value="AES" control={<Radio size="small" />} label="AES" />
+                                    <FormControlLabel
+                                      value="NONE"
+                                      control={<Radio size="small" />}
+                                      label="NONE"
+                                    />
+                                    <FormControlLabel
+                                      value="DES"
+                                      control={<Radio size="small" />}
+                                      label="DES"
+                                    />
+                                    <FormControlLabel
+                                      value="AES"
+                                      control={<Radio size="small" />}
+                                      label="AES"
+                                    />
                                   </RadioGroup>
                                 </FormControl>
-
 
                                 <TextField
                                   {...textFieldProps}
@@ -1074,7 +1178,6 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                                     width: 1,
                                     "& .MuiInputBase-input": {
                                       fontSize: 14,
-                                  
                                     },
                                     mb: 2,
                                     mt: 0.3,
@@ -1248,9 +1351,7 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
                               },
                             }}
                           />
-                          <Typography fontSize={14}>
-                            Another item
-                          </Typography>
+                          <Typography fontSize={14}>Another item</Typography>
                         </Button>
                       </Box>
                       <TableContainer>
@@ -1445,6 +1546,27 @@ const AddDevice: React.FC<AddDeviceProps> = ({ onClose }) => {
         </Box>
         {/* </form> */}
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

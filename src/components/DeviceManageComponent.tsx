@@ -172,14 +172,14 @@ const ManageComponent = () => {
         },
       });
       if (!response.ok) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
       const result: ApiResponse = await response.json();
 
       if (result.status !== "success" || !result.data.length) {
-        console.log("No devices found");
+        // console.log("No devices found");
         return;
       }
 
@@ -424,126 +424,127 @@ const ManageComponent = () => {
 
   return (
     <Container maxWidth={false}>
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          backgroundColor: "transparent",
-          // mt: 2,
-        }}
-      >
-        <Table
+      {devices.length === 0 ? (
+        <Paper sx={{ p: 3, textAlign: "center" }}>
+          <Typography variant="body1">No devices found</Typography>
+        </Paper>
+      ) : (
+        <TableContainer
+          component={Paper}
+          elevation={0}
           sx={{
-            // minWidth: 650,
-            width: 1,
-            "& .MuiTableCell-root": {
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-              padding: "16px",
-            },
-            "& .MuiTableRow-root:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-            "& .MuiTableCell-head": {
-              borderBottom: "1px solid #dbdbdb",
-            },
+            backgroundColor: "transparent",
+            // mt: 2,
           }}
         >
-          {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
-          <TableHead sx={{ backgroundColor: "#ffffff" }}>
-            <TableRow>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Device's name
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  IP Address
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  SNMP Version
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Group
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Status
-                </Typography>
-              </TableCell>
-              <TableCell width={120} align="center" sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Actions
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {devices.map((device) => (
-              <TableRow key={device._id} hover>
-                <TableCell>
-                  <Typography variant="body2">{device.hostname}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{device.ip_address}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{device.snmp_version}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{device.hostgroup}</Typography>
-                </TableCell>
-                {/* <TableCell>
-                  <Typography variant="body2">
-                    {device.details?.Location ||
-                      device.details?.Location ||
-                      "N/A"}
+          <Table
+            sx={{
+              // minWidth: 650,
+              width: 1,
+              "& .MuiTableCell-root": {
+                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                padding: "16px",
+              },
+              "& .MuiTableCell-head": {
+                borderBottom: "1px solid #dbdbdb",
+              },
+              "& .MuiTableRow-body:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+              },
+            }}
+          >
+            {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
+            <TableHead sx={{ backgroundColor: "#ffffff" }}>
+              <TableRow>
+                <TableCell sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Device's name
                   </Typography>
-                </TableCell> */}
-                <TableCell>
-                  <Chip
-                    label={getStatusLabel(device.status)}
-                    color={getStatusColor(device.status)}
-                    size="small"
-                    sx={{ minWidth: "80px" }}
-                  />
                 </TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    size="small"
-                    sx={{
-                      mr: 1,
-                      "&:hover": {
-                        backgroundColor: "warning.light",
-                      },
-                    }}
-                    onClick={() => handleEditClick(device)}
-                  >
-                    <EditNoteIcon sx={{ color: "warning.main" }} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "error.light",
-                      },
-                    }}
-                    onClick={() => handleDeleteClick(device)}
-                  >
-                    <DeleteIcon sx={{ color: "error.main" }} />
-                  </IconButton>
+                <TableCell sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    IP Address
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    SNMP Version
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Group
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Status
+                  </Typography>
+                </TableCell>
+                <TableCell width={120} align="center" sx={{ color: "black" }}>
+                  <Typography variant="subtitle1" fontWeight="medium">
+                    Actions
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {devices.map((device) => (
+                <TableRow key={device._id} hover>
+                  <TableCell>
+                    <Typography variant="body2">{device.hostname}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{device.ip_address}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {device.snmp_version}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">{device.hostgroup}</Typography>
+                  </TableCell>
 
+                  <TableCell>
+                    <Chip
+                      label={getStatusLabel(device.status)}
+                      color={getStatusColor(device.status)}
+                      size="small"
+                      sx={{ minWidth: "80px" }}
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      size="small"
+                      sx={{
+                        mr: 1,
+                        "&:hover": {
+                          backgroundColor: "warning.light",
+                        },
+                      }}
+                      onClick={() => handleEditClick(device)}
+                    >
+                      <EditNoteIcon sx={{ color: "warning.main" }} />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "error.light",
+                        },
+                      }}
+                      onClick={() => handleDeleteClick(device)}
+                    >
+                      <DeleteIcon sx={{ color: "error.main" }} />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
@@ -1204,7 +1205,7 @@ const ManageComponent = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >

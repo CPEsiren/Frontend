@@ -7,7 +7,7 @@ const API_URL = "http://localhost:3000/event";
 export const getEventData = async (): Promise<IEvent[]> => {
     try {
       const response = await axios.get(API_URL);
-      console.log('Fetched Event Data:', response.data);  
+      // console.log('Fetched Event Data:', response.data);  
   
       const eventData = response.data.data;
   

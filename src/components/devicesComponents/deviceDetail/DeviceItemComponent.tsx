@@ -15,10 +15,14 @@ import {
   Snackbar,
   Alert,
   Container,
+  Fade,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { IDevice, Item } from "../../../interface/InterfaceCollection";
-import EditIcon from "@mui/icons-material/Edit";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 interface EditFormData {
   item_name: string;
@@ -70,7 +74,21 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     unit: "",
     interval: 60,
   });
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
+  const handleMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    item: Item
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedItem(item);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const handleTextFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({
@@ -133,41 +151,6 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
     setFormErrors({});
     setEditDialogOpen(true);
   };
-
-  // const fetchUpdatedDeviceData = async () => {
-  //   try {
-  //     setLoading(true);
-  //     // const response = await fetch(`http://localhost:3000/host/${deviceData._id}`);
-  //     const response = await fetch(
-  //       `${import.meta.env.VITE_API_URL}/host/${deviceData._id}`,
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //         body: JSON.stringify({
-  //           userRole: localStorage.getItem("userRole"),
-  //           userName: localStorage.getItem("username"),
-  //         }),
-  //       }
-  //     );
-  //     if (!response.ok) {
-  //       throw new Error("Failed to fetch updated device data");
-  //     }
-  //     const result = await response.json();
-  //     if (result.status === "success") {
-  //       setItems(result.data.items || []);
-  //     }
-  //   } catch (err) {
-  //     const errorMessage =
-  //       err instanceof Error ? err.message : "Failed to fetch items";
-  //     setError(errorMessage);
-  //     console.error("Error fetching items:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   // Add this effect to listen for updates
   useEffect(() => {
@@ -344,71 +327,153 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
   };
 
   return (
-    <Box>
-      <Grid container spacing={2}>
-        {items
-          .slice((page - 1) * itemsPerPage, page * itemsPerPage)
-          .map((item, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Box
-                sx={{
-                  padding: 2,
-                  border: "1px solid #ddd",
-                  borderRadius: 2,
-                  height: "80%",
-                  backgroundColor: "#f9f9f9",
-                  transition: "opacity 0.3s ease-in-out",
-                  opacity: 1,
-                }}
-              >
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      mr: 0,
-                      "&:hover": {
-                        backgroundColor: "warning.light",
-                      },
-                    }}
-                    onClick={() => handleEditClick(item)}
-                  >
-                    <EditIcon sx={{ color: "warning.main" }} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "error.light",
-                      },
-                    }}
-                    onClick={() => handleDeleteClick(item)}
-                  >
-                    <DeleteIcon sx={{ color: "error.main" }} />
-                  </IconButton>
-                </Box>
-                <Typography
-                  variant="subtitle1"
-                  fontWeight={600}
+    <Box sx={{ display: "flex", flexDirection: "row" }}>
+      {items.length == 0 ? (
+        <Typography
+          sx={{ textAlign: "center", width: 1, fontSize: "1.2rem", py: 3 }}
+        >
+          No items found
+        </Typography>
+      ) : (
+        <Grid container spacing={2}>
+          {items
+            .slice((page - 1) * itemsPerPage, page * itemsPerPage)
+            .map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Box
                   sx={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    lineHeight: 1.2,
-                    maxHeight: "3.6em", // 3 lines * 1.2em line-height
+                    padding: 2,
+                    border: "1px solid #ddd",
+                    borderRadius: 2,
+                    // height: "80%",
+                    backgroundColor: "#f9f9f9",
+                    transition: "opacity 0.3s ease-in-out",
+                    opacity: 1,
                   }}
                 >
-                  {item.item_name}
-                </Typography>
-                <Typography>OID: {item.oid}</Typography>
-                <Typography>Type: {item.type}</Typography>
-                <Typography>Unit: {item.unit}</Typography>
-                <Typography>Interval: {item.interval}</Typography>
-              </Box>
-            </Grid>
-          ))}
-      </Grid>
+                  {/* Manage */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      width: "10%%",
+                    }}
+                  >
+                    <IconButton
+                      id="fade-button"
+                      aria-controls={open ? "fade-menu" : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={open ? "true" : undefined}
+                      onClick={(event) => handleMenuClick(event, item)}
+                      sx={{
+                        borderRadius: "50%",
+                        width: "5",
+                       
+                        "&:hover": {
+                          backgroundColor: "rgba(239, 239, 255, 0.1)",
+                        },
+                      }}
+                    >
+                      <MoreVertIcon sx={{ fontSize: 24, color: "#242d5d" }} />
+                    </IconButton>
+
+                    {/* Menu */}
+                    <Menu
+                      id="fade-menu"
+                      MenuListProps={{
+                        "aria-labelledby": "fade-button",
+                      }}
+                      anchorEl={anchorEl}
+                      open={open}
+                      onClose={handleClose}
+                      TransitionComponent={Fade}
+                      sx={{
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                        "& .MuiMenu-paper": {
+                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                        },
+                      }}
+                    >
+                      {/* Edit */}
+                      <MenuItem
+                        onClick={() => {
+                          if (selectedItem) {
+                            handleEditClick(selectedItem);
+                          }
+                          handleClose();
+                        }}
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <EditNoteIcon
+                          sx={{ color: "warning.main", fontSize: 20 }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: 14,
+                            color: "black",
+                            marginLeft: 1,
+                          }}
+                        >
+                          Edit
+                        </Typography>
+                      </MenuItem>
+
+                      {/* Delete */}
+                      <MenuItem
+                        onClick={() => {
+                          if (selectedItem) {
+                            handleDeleteClick(selectedItem);
+                          }
+                          handleClose();
+                        }}
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        <DeleteIcon
+                          sx={{ color: "error.main", fontSize: 20 }}
+                        />
+                        <Typography
+                          sx={{
+                            fontSize: 14,
+                            color: "black",
+                            marginLeft: 1,
+                          }}
+                        >
+                          Delete
+                        </Typography>
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+
+                  <Box sx={{ flexGrow: 1,width: "100%",mt:-2.5 }}>
+                    {/* This box will grow to fill available space */}
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={600}
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        lineHeight: 1.2,
+                        maxHeight: "3.6em", // 3 lines * 1.2em line-height
+                        mb: 1,
+                        width:"90%"
+                      }}
+                    >
+                      {item.item_name}
+                    </Typography>
+                    <Typography>OID: {item.oid}</Typography>
+                    <Typography>Type: {item.type}</Typography>
+                    <Typography>Unit: {item.unit}</Typography>
+                    <Typography>Interval: {item.interval}</Typography>
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+        </Grid>
+      )}
       {pageCount > 1 && (
         <Box
           sx={{
@@ -543,7 +608,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
       {/* Add Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >

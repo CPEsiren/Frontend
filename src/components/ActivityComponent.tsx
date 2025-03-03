@@ -54,7 +54,7 @@ const ActivityComponent: React.FC = () => {
         },
       });
       if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+        // throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
 
       const result: ApiResponse = await response.json();
@@ -65,16 +65,19 @@ const ActivityComponent: React.FC = () => {
       }
 
       // Process logs to handle the "createAt" field (instead of "createdAt")
-      const processedLogs = result.logs.map(log => {
+      const processedLogs = result.logs.map((log) => {
         // Clean up the ISODate string if needed
         let dateStr = log.createAt || log.createdAt;
-        if (typeof dateStr === 'string' && dateStr.startsWith('ISODate(')) {
-          dateStr = dateStr.replace('ISODate(', '').replace(')', '').replace(/"/g, '');
+        if (typeof dateStr === "string" && dateStr.startsWith("ISODate(")) {
+          dateStr = dateStr
+            .replace("ISODate(", "")
+            .replace(")", "")
+            .replace(/"/g, "");
         }
-        
+
         return {
           ...log,
-          createdAt: dateStr // Ensure we have a createdAt field for consistency
+          createdAt: dateStr, // Ensure we have a createdAt field for consistency
         };
       });
 
@@ -111,14 +114,18 @@ const ActivityComponent: React.FC = () => {
   // Function to format date - updated to handle both formats
   const formatDate = (dateInput: string | Date | undefined): string => {
     if (!dateInput) return "N/A";
-    
+
     try {
       // If it's a string in the ISODate format, clean it up
-      if (typeof dateInput === 'string' && dateInput.startsWith('ISODate(')) {
-        dateInput = dateInput.replace('ISODate(', '').replace(')', '').replace(/"/g, '');
+      if (typeof dateInput === "string" && dateInput.startsWith("ISODate(")) {
+        dateInput = dateInput
+          .replace("ISODate(", "")
+          .replace(")", "")
+          .replace(/"/g, "");
       }
-      
-      const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+
+      const date =
+        typeof dateInput === "string" ? new Date(dateInput) : dateInput;
       return format(date, "MMM d, yyyy HH:mm:ss");
     } catch (err) {
       console.error("Date formatting error:", err);
@@ -173,10 +180,12 @@ const ActivityComponent: React.FC = () => {
       ) : (
         <>
           {logs.length === 0 ? (
-            <Paper sx={{ p: 3, textAlign: "center" }}>
-              <Typography variant="body1">No activity logs found</Typography>
-            </Paper>
+            // <Paper sx={{ p: 3, textAlign: "center" }}>
+            <Typography variant="body1" sx={{ textAlign: "center" }}>
+              No activity found
+            </Typography>
           ) : (
+            // </Paper>
             <>
               <TableContainer
                 component={Paper}
@@ -192,9 +201,10 @@ const ActivityComponent: React.FC = () => {
                       borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
                       padding: "16px",
                     },
-                    "& .MuiTableRow-root:hover": {
+                    "& .MuiTableRow-body:hover": {
                       backgroundColor: "rgba(0, 0, 0, 0.04)",
                     },
+
                   }}
                 >
                   <TableHead sx={{ backgroundColor: "#ffffff" }}>
@@ -206,7 +216,7 @@ const ActivityComponent: React.FC = () => {
                       </TableCell>
                       <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
-                          Username
+                          User
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ color: "black" }}>
@@ -262,8 +272,7 @@ const ActivityComponent: React.FC = () => {
                 </Table>
               </TableContainer>
 
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+              <TablePagination rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                 component="div"
                 count={logs.length}
                 rowsPerPage={rowsPerPage}
@@ -279,7 +288,7 @@ const ActivityComponent: React.FC = () => {
       {/* Snackbar for notifications */}
       <Snackbar
         open={error !== null}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={() => setError(null)}
       >
         <Alert

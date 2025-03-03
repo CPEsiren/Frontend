@@ -74,22 +74,6 @@ const EventBlock = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100%"
-        width="100%"
-      >
-        <Typography color="error" variant="h6">
-          {`Error: ${error}`}
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -97,20 +81,20 @@ const EventBlock = () => {
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       {/* Header with filter chips */}
       <Box
-        sx={{ 
-          display: "flex", 
-          flexDirection: "row", 
+        sx={{
+          display: "flex",
+          flexDirection: "row",
           alignItems: "center",
-          px: 1, 
+          px: 1,
           pt: 1,
           pb: 1,
           flexShrink: 0, // Prevent header from shrinking
-          pl:2
+          pl: 2,
         }}
       >
         <Typography variant="h6" sx={{ mr: 2, fontWeight: "medium" }}>
@@ -119,33 +103,49 @@ const EventBlock = () => {
         <Chip
           label="ALL"
           size="small"
-          sx={{ 
-            px: 2, 
-            m: 0.5, 
-            color: "white", 
-            backgroundColor: filter === "ALL" ? "blue" : "gray" 
+          sx={{
+            px: 2,
+            m: 0.5,
+            color: "white",
+            backgroundColor: filter === "ALL" ? "blue" : "gray",
+            "&:hover": { backgroundColor: "blue" },
           }}
           onClick={() => setFilter("ALL")}
         />
         <Chip
           label="PROBLEM"
           size="small"
-          sx={{ 
-            m: 0.5, 
-            color: "white", 
-            backgroundColor: filter === "PROBLEM" ? "red" : "gray" 
+          sx={{
+            m: 0.5,
+            color: "white",
+            backgroundColor: filter === "PROBLEM" ? "red" : "gray",
+            "&:hover": { backgroundColor: "red" },
           }}
           onClick={() => setFilter("PROBLEM")}
         />
         <Chip
           label="RESOLVED"
           size="small"
-          sx={{ 
-            m: 0.5, 
-            color: "white", 
-            backgroundColor: filter === "RESOLVED" ? "#2E7D32" : "gray" 
+          sx={{
+            m: 0.5,
+            color: "white",
+            backgroundColor: filter === "RESOLVED" ? "#2E7D32" : "gray",
+            "&:hover": { backgroundColor: "#2E7D32" },
           }}
           onClick={() => setFilter("RESOLVED")}
+        />
+        <Chip
+          label="EVENT"
+          size="small"
+          sx={{
+            m: 0.5,
+            px: 1,
+            color: "white",
+            backgroundColor: filter === "EVENT" ? "#0288D1" : "gray",
+            "&:hover": { backgroundColor: "#0288D1" },
+
+          }}
+          onClick={() => setFilter("EVENT")}
         />
       </Box>
 
@@ -157,7 +157,7 @@ const EventBlock = () => {
           px: 1,
           pb: 1,
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
         }}
       >
         {getFilteredEvents().length === 0 ? (
@@ -175,21 +175,27 @@ const EventBlock = () => {
           </Box>
         ) : (
           getFilteredEvents().map((event, index) => (
-            <Card 
-              key={event._id} 
-              sx={{ 
+            <Card
+              key={event._id}
+              sx={{
                 mb: index < getFilteredEvents().length - 1 ? 1 : 0,
-                flexShrink: 0 // Prevent card from shrinking
+                flexShrink: 0, // Prevent card from shrinking
               }}
             >
               <CardContent
                 sx={{
                   backgroundColor:
-                    event.status === "RESOLVED" ? "#2E7D32" : "red",
+                    event.status === "EVENT"
+                      ? "#0288D1"
+                      : event.status === "RESOLVED"
+                      ? "#2E7D32"
+                      : event.status === "PROBLEM"
+                      ? "red"
+                      : "inherit", // default fallback color
                   padding: "8px 16px", // Slightly reduced padding
                   "&:last-child": {
-                    paddingBottom: "8px" // Override MUI's default padding
-                  }
+                    paddingBottom: "8px", // Override MUI's default padding
+                  },
                 }}
               >
                 <Typography variant="body2" sx={{ color: "white" }}>

@@ -32,22 +32,22 @@ const Event = () => {
           width: 1,
           marginTop: 2,
           height: "auto",
-          // display: "flex",
+          display: "flex",
        
         }}
       >
         <Box
           sx={{
-            // backgroundColor: "#FFFFFB",
+            backgroundColor: "#FFFFFB",
             flex: 1,
             display: "flex",
+            borderRadius: 3,
             flexDirection: "column",
-            justifyContent: windowSize.width >= 1100 ? "center" : "start",
-            alignItems: "center",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
             minHeight: "fit-content",
-            marginBottom: 5,
-             pb: 4,
-            // px: 1,
+            py: 3,
+            px: 3,
           }}
         >
           {windowSize.width < 1100 && (

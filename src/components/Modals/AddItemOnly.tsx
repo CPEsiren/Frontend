@@ -6,6 +6,9 @@ import {
   TextField,
   Paper,
   MenuItem,
+  Snackbar,
+  Alert,
+  Link,
 } from "@mui/material";
 import useWindowSize from "../../hooks/useWindowSize";
 import axios from "axios";
@@ -22,33 +25,6 @@ import { createTheme } from "@mui/material/styles";
 import { Pagination, Fade } from "@mui/material";
 import { TransitionGroup } from "react-transition-group";
 
-const theme = createTheme({
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        "*": {
-          outline: "none !important", // Remove the focus ring for all elements
-          "&:focus": {
-            outline: "none !important", // Specific to focus state
-          },
-        },
-      },
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          "&:focus": {
-            outline: "none", // Remove focus ring from IconButtons
-          },
-          "&:focus-visible": {
-            outline: "none", // Remove focus ring from keyboard navigation
-          },
-        },
-      },
-    },
-  },
-});
-
 interface DeviceItems {
   id: number;
   item_name: string;
@@ -56,18 +32,21 @@ interface DeviceItems {
   type: string;
   unit: string;
   interval: number;
-  // history: string;
-  // trend: string;
 }
 
 interface AddDeviceProps {
   onClose: () => void;
   deviceId: string;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void;
 }
 
-const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
+const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId, onSuccess }) => {
   const windowSize = useWindowSize();
   const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+  const [refreshCallback, setRefreshCallback] = useState<(() => void) | null>(null);
 
   //Scan interfacs
   const [ScanInterfacepage, setScanInterfacepage] = useState(1);
@@ -90,8 +69,6 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
       type: "",
       unit: "",
       interval: 10,
-      // history: "",
-      // trend: "",
     },
   ]);
 
@@ -108,8 +85,6 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
       type: "",
       unit: "",
       interval: 10,
-      // history: "",
-      // trend: "",
     };
     setItemRows([...itemRows, newRow]);
   };
@@ -163,8 +138,33 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const success = await StoreNewItem(itemRows);
+    
+    // Check if there are items to submit
+    if (itemRows.length === 0) {
+      setSnackbarMessage("No items to add");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+    
+    // Filter out empty rows
+    const validItems = itemRows.filter(item => 
+      item.item_name.trim() !== "" || 
+      item.oid.trim() !== "" || 
+      item.type !== ""
+    );
+    
+    if (validItems.length === 0) {
+      setSnackbarMessage("Please fill in at least one item's details");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      return;
+    }
+    
+    const success = await StoreNewItem(validItems);
+    
     if (success) {
+      // Reset the form
       setItemRows([
         {
           id: 1,
@@ -172,14 +172,46 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
           oid: "",
           type: "",
           unit: "",
-          interval: 0,
+          interval: 10,
         },
       ]);
-      alert("Item added successfully!");
+      
+      // Close the modal
       onClose();
+      
+      // Get item names for the success message
+      const itemNames = validItems.map(item => item.item_name).join(", ");
+      const itemCount = validItems.length;
+      const successMessage = itemCount > 1 
+        ? `Successfully added ${itemCount} items`
+        : `Successfully added item: ${itemNames}`;
+      
+      // Call the onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess(`${successMessage} REFRESH`, () => {
+          window.location.reload();
+        });
+      } else {
+        // Show success message in the snackbar
+        setSnackbarMessage(successMessage);
+        setSnackbarSeverity("success");
+        setRefreshCallback(() => window.location.reload);
+        setSnackbarOpen(true);
+      }
     } else {
-      alert("Failed to add item. Please try again.");
+      // Show error in the snackbar
+      setSnackbarMessage("Failed to add items. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleChangeScanInterfacepage = (
+    event: React.ChangeEvent<unknown>,
+    newScanInterfacepage: number
+  ) => {
+    setIsTransitioning(true);
+    setScanInterfacepage(newScanInterfacepage);
   };
 
   const textFieldProps = {
@@ -192,6 +224,42 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
       },
     },
   };
+  
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  // Custom snackbar content with refresh link
+  const snackbarContent = (
+    <span>
+      {snackbarMessage}{' '}
+      {refreshCallback && (
+        <Link
+          component="button"
+          onClick={() => {
+            if (refreshCallback) refreshCallback();
+          }}
+          sx={{ 
+            color: 'inherit', 
+            textDecoration: 'underline', 
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            '&:hover': {
+              textDecoration: 'none'
+            }
+          }}
+        >
+          REFRESH
+        </Link>
+      )}
+    </span>
+  );
 
   return (
     <Box sx={{ p: 0, width: "100%" }}>
@@ -241,7 +309,6 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
                     sx={{
                       color: "white",
                       mr: 1,
-                      // border: "2px solid",
                       "&.Mui-selected": {},
                       "&:focus": {
                         outline: "none",
@@ -348,6 +415,36 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
                 </TableBody>
               </Table>
             </TableContainer>
+            
+            {Math.ceil(itemRows.length / itemsPerScanInterfacepage) > 1 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 2,
+                }}
+              >
+                <Pagination
+                  count={Math.ceil(
+                    itemRows.length / itemsPerScanInterfacepage
+                  )}
+                  showFirstButton
+                  showLastButton
+                  page={ScanInterfacepage}
+                  onChange={handleChangeScanInterfacepage}
+                  color="primary"
+                  sx={{
+                    "& .MuiPaginationItem-root": {
+                      transition: "all 0.1s ease",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        transform: "scale(1.1)",
+                      },
+                    },
+                  }}
+                />
+              </Box>
+            )}
           </Box>
           {/* Action Buttons */}
           <Box
@@ -393,10 +490,29 @@ const AddItemOnly: React.FC<AddDeviceProps> = ({ onClose, deviceId }) => {
           </Box>
         </Box>
       </Paper>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{
+            width: "100%",
+            fontSize: 14,
+            "& .MuiAlert-icon": {
+              fontSize: 20,
+              mt: 0.5,
+            },
+          }}
+        >
+          {snackbarContent}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
 export default AddItemOnly;
-
-//Pls change to update with item path and post deviceid**************

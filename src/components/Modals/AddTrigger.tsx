@@ -68,15 +68,14 @@ export interface Item {
 
 interface AddTriggerProps {
   onClose: () => void;
+  onSuccess?: (message: string, refreshCallback?: () => void) => void;
 }
 
-const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
+const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
   //Global state
   const typographyProps = {
     fontSize: 14,
   };
-
-  // Add new state for expression parts
   // Expression parts state
   const [expressionParts, setExpressionParts] = useState<ExpressionPart[]>([
     {
@@ -101,6 +100,15 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     },
   ]);
 
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+  const [refreshCallback, setRefreshCallback] = useState<(() => void) | null>(
+    null
+  );
+
   // Update expression when parts change
   const handleExpressionPartChange = (
     index: number,
@@ -108,7 +116,16 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     value: string
   ) => {
     const newParts = [...expressionParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
+
     setExpressionParts(newParts);
 
     // Update the final expression
@@ -118,10 +135,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     const newExpression = validParts
       .map((part, idx) => {
         // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
+        const durationInMinutes =
+          part.functionofItem === "last" ? "" : `${part.duration}`;
+        const functionCall =
+          part.functionofItem !== "last"
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
         const expr = `${functionCall} ${part.operation} ${part.value}`;
         return idx < validParts.length - 1
           ? `${expr} ${part.operator || "and"}`
@@ -137,7 +156,15 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     value: string
   ) => {
     const newParts = [...recoveryParts];
-    newParts[index] = { ...newParts[index], [field]: value };
+    if ("functionofItem" === field && value === "last") {
+      newParts[index] = {
+        ...newParts[index],
+        [field]: value,
+        ["duration"]: "",
+      };
+    } else {
+      newParts[index] = { ...newParts[index], [field]: value };
+    }
     setRecoveryParts(newParts);
 
     // Update the final expression
@@ -147,10 +174,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     const newRecovery = validParts
       .map((part, idx) => {
         // Format: functionofItem(item,duration) operation value
-        const durationInMinutes = part.duration ? `${part.duration}m` : "";
-        const functionCall = part.duration
-          ? `${part.functionofItem}(${part.item},${durationInMinutes})`
-          : `${part.functionofItem}(${part.item})`;
+        const durationInMinutes =
+          part.functionofItem === "last" ? "" : `${part.duration}`;
+        const functionCall =
+          part.functionofItem !== "last"
+            ? `${part.functionofItem}(${part.item},${durationInMinutes})`
+            : `${part.functionofItem}(${part.item})`;
         const expr = `${functionCall} ${part.operation} ${part.value}`;
         return idx < validParts.length - 1
           ? `${expr} ${part.operator || "and"}`
@@ -222,11 +251,15 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
   };
 
   const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      alert("Please fill in all required fields");
+      setSnackbarMessage("Please fill in all required fields");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      // alert("Please fill in all required fields");
       return;
     }
 
@@ -239,7 +272,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       recoveryExpression,
       enabled,
       expressionParts,
-      recoveryParts
+      recoveryParts,
+      ThresholdBreachDuration
     );
 
     if (success) {
@@ -267,10 +301,24 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
           duration: "",
         },
       ]);
-      alert("Trigger added successfully!");
+      const successMessage = `Trigger: ${trigger_name} successfully added`;
+
+      // Call onSuccess with a simple success message (not using REFRESH keyword)
+      if (onSuccess) {
+        onSuccess(successMessage);
+      } else {
+        // Show success message in the snackbar
+        setSnackbarMessage(successMessage);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      }
+
+      // Close the modal after calling onSuccess
       onClose();
     } else {
-      alert("Failed to add trigger. Please try again.");
+      setSnackbarMessage("Failed to add triggers. Please try again.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
   const StoreNewtrigger = async (
@@ -282,7 +330,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
     recovery_expression: string,
     enabled: boolean,
     expressionParts: ExpressionPart[],
-    recoveryParts: RecoveryPart[]
+    recoveryParts: RecoveryPart[],
+    ThresholdBreachDuration: number
   ): Promise<boolean> => {
     try {
       const requestBody = {
@@ -292,6 +341,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
         expression,
         ok_event_generation,
         recovery_expression,
+        thresholdDuration: ThresholdBreachDuration,
         enabled,
         // Store expressionParts as expressionPart in the model
         expressionPart: expressionParts.map((part) => ({
@@ -334,7 +384,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       expression: !expression,
       ok_eventGen: !ok_eventGen,
       recoveryExpression:
-        ok_eventGen === "recovery expression" && !recoveryExpression,
+        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
     setErrors(newErrors);
@@ -411,12 +461,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       );
       if (response.data.status === "success" && response.data.data) {
         const items = response.data.data.items;
-        setItems([
-          { _id: 1, item_name: "Device Status" },
-          { _id: 2, item_name: "Interface Admin Status" },
-          { _id: 3, item_name: "Interface Oper Status" },
-          ...items,
-        ]); // Now we store the complete item objects
+        setItems([...items]); // Now we store the complete item objects
       }
     } catch (error) {
       console.error("Error fetching items:", error);
@@ -425,6 +470,10 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
       setLoading(false);
     }
   };
+
+  //Threshold Breach Duration
+  const [ThresholdBreachDuration, setThresholdBreachDuration] =
+    useState<number>(0);
 
   // Severity
   const [severity, setSeverity] = useState<string>("");
@@ -562,6 +611,47 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               </TextField>
             </Box>
 
+            {/* Threshold Breach Duration selection field */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  minWidth: 150,
+                  width: "14%",
+                }}
+              >
+                <Typography color="error" {...typographyProps}>
+                  *
+                </Typography>
+                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                  Threshold Breach Duration
+                </Typography>
+              </Box>
+              <TextField
+                select
+                value={ThresholdBreachDuration}
+                onChange={(e) =>
+                  setThresholdBreachDuration(parseInt(e.target.value))
+                }
+                disabled={isFormDisabled}
+                size="small"
+                sx={{
+                  backgroundColor: "white",
+                  "&.MuiInputBase-input": {
+                    fontSize: 14,
+                  },
+                }}
+              >
+                <MenuItem value={0}>Real-Time</MenuItem>
+                {[...Array(6)].map((_, index) => (
+                  <MenuItem key={index + 1} value={(index * 5 + 5) * 60 * 1000}>
+                    {index * 5 + 5} minute.
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+
             {/* Severity field */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
               <Box
@@ -677,13 +767,13 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                     <TextField
                       select
                       value={part.functionofItem}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         handleExpressionPartChange(
                           index,
                           "functionofItem",
                           e.target.value
-                        )
-                      }
+                        );
+                      }}
                       disabled={isFormDisabled}
                       label="Function"
                       size="small"
@@ -701,6 +791,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                         </MenuItem>
                       ))}
                     </TextField>
+
                     {/* Duration section */}
                     <TextField
                       value={part.duration}
@@ -711,8 +802,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                           e.target.value
                         )
                       }
-                      disabled={isFormDisabled}
-                      label="Duration"
+                      disabled={
+                        isFormDisabled || part.functionofItem === "last"
+                      }
+                      select
+                      label="Interval"
                       size="small"
                       sx={{
                         width: "10%",
@@ -721,7 +815,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                           fontSize: 14,
                         },
                       }}
-                    />
+                    >
+                      <MenuItem value="15m">15m</MenuItem>
+                      <MenuItem value="30m">30m</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                    </TextField>
 
                     {/* Item Selection */}
                     <TextField
@@ -877,7 +975,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
               >
                 {[
                   { level: "Expression", color: "#808080" },
-                  { level: "Recovery expression", color: "#808080" },
+                  { level: "Resolved expression", color: "#808080" },
                   { level: "None", color: "#808080" },
                 ].map(({ level, color }) => (
                   <Button
@@ -920,7 +1018,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
             </Box>
 
             {/* Recovery Expression field */}
-            {ok_eventGen === "recovery expression" && !isFormDisabled && (
+            {ok_eventGen === "resolved expression" && !isFormDisabled && (
               <Box
                 sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 2 }}
               >
@@ -946,7 +1044,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       mb: 1,
                     }}
                   >
-                    + Recovery Expression
+                    + Resolved Expression
                   </Button>
                 </Box>
                 {recoveryParts.map((part, index) => (
@@ -983,6 +1081,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                       ))}
                     </TextField>
                     <TextField
+                      select
                       value={part.duration}
                       onChange={(e) =>
                         handleRecoveryPartChange(
@@ -991,8 +1090,10 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                           e.target.value
                         )
                       }
-                      disabled={isFormDisabled}
-                      label="Duration"
+                      disabled={
+                        isFormDisabled || part.functionofItem === "last"
+                      }
+                      label="Interval"
                       size="small"
                       sx={{
                         width: "10%",
@@ -1001,7 +1102,11 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose }) => {
                           fontSize: 14,
                         },
                       }}
-                    />
+                    >
+                      <MenuItem value="15m">15m</MenuItem>
+                      <MenuItem value="30m">30m</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                    </TextField>
 
                     {/* Item Selection */}
                     <TextField

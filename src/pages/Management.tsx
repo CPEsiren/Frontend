@@ -30,25 +30,6 @@ const Management: React.FC = () => {
     }
   }, []);
 
-  const handleEdit = (deviceId: string) => {
-    console.log("Edit device:", deviceId);
-    // Add your edit logic here
-  };
-
-  const handleDelete = (deviceId: string) => {
-    console.log("Delete device:", deviceId);
-    // Add your delete logic here
-  };
-
-  // Column headers for the grid
-  const columns = [
-    { field: "hostname", label: "Hostname" },
-    { field: "ip_address", label: "IP Address" },
-    { field: "details.location", label: "Location" },
-    { field: "_id", label: "ID" },
-    { field: "actions", label: "Actions" },
-  ];
-
   return (
     <>
       {windowSize.width > 600 && (

@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { googleLogout } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ const LogoutAuthen = () => {
 
   const onLogoutSuccess = () => {
     localStorage.clear();
-    console.log("Logout Success and LocalStorage Cleared");
+    console.log("Logout Success");
 
     navigate("/login");  
   };
@@ -30,12 +30,12 @@ const LogoutAuthen = () => {
   };
 
   return (
-    <div id="signOutButton">
+    <Box id="signOutButton">
       <Button
         color="secondary"
         sx={{
           m: 0,
-          marginLeft: "10px",
+          marginLeft: 0,
           fontSize: 13,
           fontWeight: 300,
           "&:focus": {
@@ -44,11 +44,12 @@ const LogoutAuthen = () => {
           },
           "&:hover": {
             color: "#F25A28",
+            bgcolor: "transparent",
           },
         }}
         onClick={handleLogout}
       >
-        <ExitToAppIcon sx={{ marginRight: "8px" }} /> 
+        <ExitToAppIcon sx={{ }} /> 
         {/* Sign out */}
       </Button>
 
@@ -93,7 +94,7 @@ const LogoutAuthen = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 

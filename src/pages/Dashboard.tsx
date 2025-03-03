@@ -15,6 +15,7 @@ import {
   Snackbar,
   Alert,
   Select,
+  CircularProgress,
   MenuItem,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
@@ -136,7 +137,6 @@ const Dashboard = () => {
   >([]);
   const [dashboards, setDashboards] = useState<DashboardLayout[]>([]);
   const [currentDashboardId, setCurrentDashboardId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [viewerDashboards, setViewerDashboards] = useState<DashboardLayout[]>(
@@ -144,6 +144,7 @@ const Dashboard = () => {
   );
   const [isViewerDashboard, setIsViewerDashboard] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleDashboardMenuItemClick = (
     dashboard: DashboardLayout,
@@ -204,6 +205,10 @@ const Dashboard = () => {
           if (transformedDashboards.length > 0) {
             setCurrentDashboardId(transformedDashboards[0].id);
             setActiveComponents(transformedDashboards[0].components);
+          } else {
+            // If no dashboards exist, set to empty string explicitly
+            setCurrentDashboardId("");
+            setActiveComponents([]);
           }
         }
       } catch (error) {
@@ -212,7 +217,7 @@ const Dashboard = () => {
           error instanceof Error ? error.message : "Failed to fetch dashboards"
         );
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -230,7 +235,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAllDashboards = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         const userId = localStorage.getItem("user_id");
         if (!userId) {
           throw new Error("No user ID found");
@@ -276,7 +281,6 @@ const Dashboard = () => {
         // Check if user is superadmin before fetching viewer dashboards
         const userRole = localStorage.getItem("userRole");
         if (userRole === "superadmin") {
-          console.log("Fetching viewer dashboards for superadmin"); // Debug log
           const viewerDashboardResponse = await fetch(
             `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
             {
@@ -341,7 +345,7 @@ const Dashboard = () => {
           severity: "error",
         });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -350,6 +354,7 @@ const Dashboard = () => {
 
   const handleDashboardChange = (event: SelectChangeEvent<string>) => {
     const selectedId = event.target.value;
+    if (!selectedId) return;
 
     // If the target is the "New Dashboard" option, handle it separately
     if (selectedId === "new") {
@@ -729,7 +734,7 @@ const Dashboard = () => {
     componentConfig: ComponentConfig
   ) => {
     const Component = componentConfig.component;
-  
+
     const handleTodoUpdate = async (newTodos: TodoItem[]) => {
       try {
         // First update local state
@@ -739,7 +744,7 @@ const Dashboard = () => {
             : comp
         );
         setActiveComponents(updatedComponents);
-  
+
         // Then update in database
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
@@ -760,11 +765,11 @@ const Dashboard = () => {
             }),
           }
         );
-  
+
         if (!response.ok) {
           throw new Error("Failed to update dashboard");
         }
-  
+
         setSnackbar({
           open: true,
           message: "Todo list updated successfully",
@@ -779,7 +784,7 @@ const Dashboard = () => {
         });
       }
     };
-  
+
     return (
       <Box
         sx={{
@@ -806,12 +811,14 @@ const Dashboard = () => {
             <RemoveIcon />
           </IconButton>
         )}
-        <Box sx={{ 
-          flexGrow: 1,
-          height: "100%", 
-          width: "100%",
-          overflow: "hidden",
-        }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            height: "100%",
+            width: "100%",
+            overflow: "hidden",
+          }}
+        >
           <Component
             graphSelection={activeComp.graphSelection}
             todoItems={activeComp.todoItems}
@@ -821,6 +828,19 @@ const Dashboard = () => {
       </Box>
     );
   };
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -882,23 +902,19 @@ const Dashboard = () => {
                   {(dashboards.length > 0 ||
                     (isSuperAdmin && viewerDashboards.length > 0)) && (
                     <Select
-                      value={currentDashboardId}
+                    value={currentDashboardId || ""}
                       onChange={handleDashboardChange}
                       open={selectOpen}
                       onOpen={() => setSelectOpen(true)}
                       onClose={() => setSelectOpen(false)}
                       displayEmpty
                       renderValue={(value) => {
-                        const selectedUserDash = dashboards.find(
-                          (d) => d.id === value
-                        );
-                        const selectedViewerDash = viewerDashboards.find(
-                          (d) => d.id === value
-                        );
-                        return (
-                          (selectedUserDash || selectedViewerDash)?.name ||
-                          "Select Dashboard"
-                        );
+                        if (!value) return "Select Dashboard";
+                        
+                        const selectedUserDash = dashboards.find((d) => d.id === value);
+                        const selectedViewerDash = viewerDashboards.find((d) => d.id === value);
+                        
+                        return (selectedUserDash || selectedViewerDash)?.name || "Select Dashboard";
                       }}
                       sx={{
                         backgroundColor: "white",

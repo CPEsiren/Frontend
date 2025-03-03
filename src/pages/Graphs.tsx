@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
@@ -11,6 +12,7 @@ import {
   IconButton,
   InputAdornment,
   InputLabel,
+  keyframes,
   MenuItem,
   Pagination,
   Paper,
@@ -26,6 +28,7 @@ import React, { useEffect, useState } from "react";
 import MetricGraph, { Items } from "../components/graphComponent/MetricGraph";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { SearchIcon } from "lucide-react";
+import AutoModeIcon from "@mui/icons-material/AutoMode";
 
 interface IItem {
   item_name: string;
@@ -97,7 +100,7 @@ const Graphs: React.FC = () => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "An unknown error occurred";
-      console.log(errorMessage);
+      // console.log(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -105,22 +108,6 @@ const Graphs: React.FC = () => {
   useEffect(() => {
     fetchHosts();
   }, []);
-
-  const [startTime1, setStartTime1] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.setMinutes(now.getMinutes() - 16));
-  });
-
-  const [selectedDateTimeStart1, setSelectedDateTimeStart1] = useState<Date>(
-    () => {
-      const now = new Date();
-      return new Date(now.setMinutes(now.getMinutes() - 15));
-    }
-  );
-
-  const [selectedDateTimeEnd1, setSelectedDateTimeEnd1] = useState<Date>(
-    new Date()
-  );
 
   // Update the useEffect for host changes
   useEffect(() => {
@@ -157,7 +144,7 @@ const Graphs: React.FC = () => {
         items: [],
       });
     }
-  }, [selectedHost, startTime1, selectedDateTimeEnd1]);
+  }, [selectedHost]);
 
   // Update handleHostChange to trigger a data refresh
   const handleHostChange = (event: SelectChangeEvent<string>) => {
@@ -334,7 +321,7 @@ const Graphs: React.FC = () => {
       `${
         import.meta.env.VITE_API_URL
       }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
-        hosts[0].host_id
+        hostNow.host_id
       }`
     );
     setIsAuto(false);
@@ -391,12 +378,12 @@ const Graphs: React.FC = () => {
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
-          const host: IHost = hosts[0];
+          const host = hosts.find((host) => host.hostname === selectedHost);
           setUrl(
             `${
               import.meta.env.VITE_API_URL
             }/data/between?startTime=${pastforStartTime.toISOString()}&endTime=${now.toISOString()}&host_id=${
-              host.host_id
+              host?.host_id
             }`
           );
         } else {
@@ -408,7 +395,7 @@ const Graphs: React.FC = () => {
     updateUrlAndFetch();
     const interval = setInterval(updateUrlAndFetch, 10000);
     return () => clearInterval(interval);
-  }, [isAuto, hosts]);
+  }, [isAuto, hosts, selectedHost]);
 
   const fetchData = async () => {
     try {
@@ -539,6 +526,15 @@ const Graphs: React.FC = () => {
   const handleColumnsPerRowChange = (event: SelectChangeEvent<number>) => {
     setColumnsPerRow(event.target.value as number);
   };
+
+  const rotateAnimation = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
 
   //Loading State
   if (isLoading) {
@@ -727,7 +723,10 @@ const Graphs: React.FC = () => {
               ampm={false}
               value={selectedDateTimeStart}
               onChange={(newValue) => {
-                if (newValue) setSelectedDateTimeStart(newValue);
+                if (newValue) {
+                  setSelectedDateTimeStart(newValue);
+                  setIsAuto(false);
+                }
               }}
             ></DateTimePicker>
             <DateTimePicker
@@ -737,21 +736,25 @@ const Graphs: React.FC = () => {
               ampm={false}
               value={selectedDateTimeEnd}
               onChange={(newValue) => {
-                if (newValue) setSelectedDateTimeEnd(newValue);
+                if (newValue) {
+                  setSelectedDateTimeEnd(newValue);
+                  setIsAuto(false);
+                }
               }}
             ></DateTimePicker>
             {/* Cheack Box For Auto */}
-            {/* <FormControlLabel
-              sx={{ ml: 1 }}
-              control={
-                <Checkbox
-                  checked={isAuto}
-                  onChange={(e) => setIsAuto(e.target.checked)}
-                  color="secondary"
+            <Box sx={{ ml: 1 }}>
+              <Badge color={isAuto ? "success" : "error"} variant="dot">
+                <AutoModeIcon
+                  sx={{
+                    animation: isAuto
+                      ? `${rotateAnimation} 2s linear infinite`
+                      : "none",
+                    mr: 0.5,
+                  }}
                 />
-              }
-              label="Auto"
-            /> */}
+              </Badge>
+            </Box>
           </Box>
 
           <Box
