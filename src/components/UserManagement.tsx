@@ -212,6 +212,9 @@ const UserManagement = () => {
   };
 
   const availableRoles = getAvailableRoles(currentUserRole || "");
+  
+  // Check if current user can swap roles
+  const canSwapRoles = currentUserRole === "superadmin";
 
   return (
     <Box>
@@ -294,24 +297,16 @@ const UserManagement = () => {
                       <Typography variant="body2" color="textSecondary">
                         (You)
                       </Typography>
+                    ) : !canSwapRoles ? (
+                      <Typography variant="body2" color="textSecondary">
+                        (No permissions)
+                      </Typography>
                     ) : (
                       <IconButton
                         onClick={() => handleSwapRoleClick(user)}
-                        disabled={
-                          loading ||
-                          (currentUserRole !== "superadmin" &&
-                            user.role === "superadmin")
-                        }
+                        disabled={loading}
                       >
-                        <SwapHorizIcon
-                          sx={{
-                            color:
-                              currentUserRole !== "superadmin" &&
-                              user.role === "superadmin"
-                                ? "gray"
-                                : "black",
-                          }}
-                        />
+                        <SwapHorizIcon />
                       </IconButton>
                     )}
                   </TableCell>
@@ -328,42 +323,31 @@ const UserManagement = () => {
         aria-labelledby="swap-role-dialog-title"
       >
         <DialogTitle id="swap-role-dialog-title">
-          {currentUserRole === "superadmin"
-            ? "Change User Role"
-            : "Confirm Switch Role"}
+          Change User Role
         </DialogTitle>
         <DialogContent>
-          {currentUserRole === "superadmin" ? (
-            <>
-              <Typography sx={{ mb: 2 }}>
-                Change role for user "{selectedUser?.username}":
-              </Typography>
-              <FormControl fullWidth>
-                <InputLabel id="role-select-label">Role</InputLabel>
-                <Select
-                  labelId="role-select-label"
-                  value={newRole}
-                  label="Role"
-                  onChange={(e) =>
-                    setNewRole(
-                      e.target.value as "admin" | "viewer" | "superadmin"
-                    )
-                  }
-                >
-                  {availableRoles.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </>
-          ) : (
-            <Typography>
-              Are you sure you want to switch role of "{selectedUser?.username}"
-              to {newRole}?
-            </Typography>
-          )}
+          <Typography sx={{ mb: 2 }}>
+            Change role for user "{selectedUser?.username}":
+          </Typography>
+          <FormControl fullWidth>
+            <InputLabel id="role-select-label">Role</InputLabel>
+            <Select
+              labelId="role-select-label"
+              value={newRole}
+              label="Role"
+              onChange={(e) =>
+                setNewRole(
+                  e.target.value as "admin" | "viewer" | "superadmin"
+                )
+              }
+            >
+              {availableRoles.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button

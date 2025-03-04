@@ -21,12 +21,12 @@ const Management: React.FC = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperadmin, setIsuperadmin] = useState(false);
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
-    if (role === "admin" || role === "superadmin") {
-      setIsAdmin(true);
+    if (role === "superadmin") {
+      setIsuperadmin(true);
     }
   }, []);
 
@@ -79,7 +79,7 @@ const Management: React.FC = () => {
         </Box>
       </Box>
 
-      {isAdmin ? (
+      {isSuperadmin ? (
         <Box>
           <Box
             sx={{

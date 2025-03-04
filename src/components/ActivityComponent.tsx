@@ -241,6 +241,7 @@ const ActivityComponent: React.FC = () => {
                               backgroundColor: getRoleColor(log.role),
                               color: "white",
                               fontWeight: "medium",
+                              width:"7rem"
                             }}
                           />
                         </TableCell>
