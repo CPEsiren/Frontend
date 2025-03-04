@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   ExpressionPart,
+  ITrigger,
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
 
@@ -69,9 +70,14 @@ export interface Item {
 interface AddTriggerProps {
   onClose: () => void;
   onSuccess?: (message: string, refreshCallback?: () => void) => void;
+  Trigger: ITrigger | null;
 }
 
-const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
+const AddTrigger: React.FC<AddTriggerProps> = ({
+  onClose,
+  onSuccess,
+  Trigger,
+}) => {
   //Global state
   const typographyProps = {
     fontSize: 14,
@@ -496,6 +502,18 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
   };
   useEffect(() => {
     fetchHosts();
+    if (Trigger) {
+      fetchItems(Trigger.host_id);
+      setTrigger_name(Trigger.trigger_name);
+      setEnabled(Trigger.enabled);
+      setSeverity(Trigger.severity);
+      setHost_id(Trigger.host_id);
+      setExpression(Trigger.expression);
+      setRecoveryExpression(Trigger.recovery_expression);
+      setExpressionParts(Trigger.expressionPart);
+      setRecoveryParts(Trigger.expressionRecoveryPart);
+      setOk_eventGen(Trigger.ok_event_generation);
+    }
   }, []);
   const isFormDisabled = !host_id;
   const handleHostChange = (event: React.ChangeEvent<HTMLInputElement>) => {

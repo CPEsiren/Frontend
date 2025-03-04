@@ -91,22 +91,8 @@ export interface ITrigger {
   isRecoveryExpressionValid: boolean;
   enabled: boolean;
   createdAt: string;
-  expressionPart: {
-    item: string;
-    operation: string;
-    value: string;
-    operator: string;
-    functionofItem: string;
-    duration: number;
-  }[];
-  expressionRecoveryPart: {
-    item: string;
-    operation: string;
-    value: string;
-    operator: string;
-    functionofItem: string;
-    duration: number;
-  }[];
+  expressionPart: ExpressionPart[];
+  expressionRecoveryPart: RecoveryPart[];
   thresholdDuration: number;
 }
 
