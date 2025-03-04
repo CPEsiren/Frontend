@@ -610,7 +610,7 @@ const ManageComponent = () => {
 
   return (
     <Container maxWidth={false}>
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3,mt:3 }}>
         {hostGroups.map((groupKey) => {
           const group = groupedDevices[groupKey];
           return (

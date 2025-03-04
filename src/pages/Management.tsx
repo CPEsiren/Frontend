@@ -64,15 +64,16 @@ const Management: React.FC = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#FFFFFB",
-            flex: 1,
-            display: "flex",
-            borderRadius: 3,
-            flexDirection: "column",
-            justifyContent: windowSize.width >= 1100 ? "center" : "start",
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            justifyContent: "center",
             alignItems: "center",
-            minHeight: "fit-content",
+            width: "100%",
+            overflowY: "auto",
+            backgroundColor: "#FFFFFB",
+            borderRadius: 3,
             py: 2,
+            px: 3,
           }}
         >
           <ManageComponent />
