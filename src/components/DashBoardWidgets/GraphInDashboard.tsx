@@ -114,7 +114,7 @@ const GraphInDashboard: React.FC<GraphInDashboardProps> = ({
 
     fetchGraphData();
 
-    const interval = setInterval(fetchGraphData, 10000);
+    const interval = setInterval(fetchGraphData, 60000);
     return () => clearInterval(interval);
   }, [graphSelection?.itemId, graphSelection?.hostId]);
 

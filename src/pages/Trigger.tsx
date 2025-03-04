@@ -53,6 +53,8 @@ const Triggers = () => {
         },
       });
       if (!response.ok) {
+        setTriggerData([]);
+        setTriggerKey(0);
         throw new Error("Failed to fetch triggers");
       }
       const result = await response.json();
@@ -61,6 +63,7 @@ const Triggers = () => {
       setTriggerKey((prevKey) => prevKey + 1);
     } catch (error) {
       console.error("Error fetching triggers:", error);
+
       // setSnackbar({
       //   open: true,
       //   message: "Failed to fetch triggers",
