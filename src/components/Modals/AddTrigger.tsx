@@ -10,6 +10,7 @@ import {
   List,
   ListItemButton,
   ListItemText,
+  ListSubheader,
   MenuItem,
   Paper,
   Switch,
@@ -49,8 +50,13 @@ const operations = [
 interface Host {
   _id: string;
   hostname: string;
+  hostgroup: string;
   ip_address: string;
   items: Item[];
+}
+
+interface IGroupHost {
+  [key: string]: Host[];
 }
 
 // Update the Item interface to match your API response
@@ -476,6 +482,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
 
   //Hosts
   const [host_id, setHost_id] = useState<string>("");
+  const [hostgroupHosts, setHostgroupHosts] = useState<IGroupHost>({});
   const [hosts, setHosts] = useState<Host[]>([]);
   const fetchHosts = async () => {
     try {
@@ -500,8 +507,23 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Group hosts by hostgroup
+    const groupHosts: IGroupHost = {};
+    hosts.forEach((host: Host) => {
+      if (!groupHosts[host.hostgroup]) {
+        groupHosts[host.hostgroup] = [];
+      }
+      groupHosts[host.hostgroup].push(host);
+    });
+
+    setHostgroupHosts(groupHosts);
+  }, [hosts]);
+
   useEffect(() => {
     fetchHosts();
+
     if (Trigger) {
       fetchItems(Trigger.host_id);
       setTrigger_name(Trigger.trigger_name);
@@ -736,15 +758,46 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                 error={errors.host_id}
                 helperText={errors.host_id ? "Host is required" : ""}
                 {...textFieldProps}
+                sx={{
+                  minWidth: 200,
+                  backgroundColor: "white",
+                  "& .MuiSelect-select": {
+                    fontSize: 14,
+                  },
+                }}
               >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {hosts.map((host) => (
-                  <MenuItem key={host._id} value={host._id}>
-                    {host.hostname}
-                  </MenuItem>
-                ))}
+                {Object.entries(hostgroupHosts).map(([category, hosts]) => [
+                  <ListSubheader
+                    key={category}
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      color: "text.secondary",
+                      backgroundColor: "background.paper",
+                      lineHeight: "36px",
+                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                    }}
+                  >
+                    {category}
+                  </ListSubheader>,
+                  ...hosts.map((host: Host) => (
+                    <MenuItem
+                      key={host._id}
+                      value={host._id}
+                      sx={{
+                        fontSize: 14,
+                        pl: 4,
+                        py: 1,
+                        "&.Mui-selected": {
+                          backgroundColor: "action.selected",
+                          "&:hover": { backgroundColor: "action.hover" },
+                        },
+                      }}
+                    >
+                      {host.hostname}
+                    </MenuItem>
+                  )),
+                ])}
               </TextField>
             </Box>
 
