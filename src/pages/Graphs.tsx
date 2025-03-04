@@ -121,7 +121,7 @@ const Graphs: React.FC = () => {
         // Set the URL and fetch data immediately after setting the host
         const initialUrl = `${
           import.meta.env.VITE_API_URL
-        }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+        }/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
           sortedHosts[0].host_id
         }`;
         setUrl(initialUrl);
@@ -148,7 +148,7 @@ const Graphs: React.FC = () => {
       setUrl(
         `${
           import.meta.env.VITE_API_URL
-        }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+        }/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
           host.host_id
         }`
       );
@@ -188,10 +188,6 @@ const Graphs: React.FC = () => {
   });
 
   //DateTime Range
-  const [startTime, setStartTime] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.setMinutes(now.getMinutes() - 15));
-  });
   const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
     () => {
       const now = new Date();
@@ -270,70 +266,57 @@ const Graphs: React.FC = () => {
     const setLastTime = () => {
       const dateTimeStart = new Date(selectedDateTimeEnd);
       const dateTimeEnd = new Date(selectedDateTimeEnd);
-      const forStartTime = new Date(selectedDateTimeEnd);
 
       switch (selectedLastTime) {
         case "Last 15 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 15);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 15);
           break;
         case "Last 30 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 30);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 1 Hour":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 1);
-          forStartTime.setHours(dateTimeEnd.getHours() - 1);
           break;
         case "Last 3 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 3);
-          forStartTime.setHours(dateTimeEnd.getHours() - 3);
           break;
         case "Last 6 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 6);
-          forStartTime.setHours(dateTimeEnd.getHours() - 6);
           break;
         case "Last 12 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 12);
-          forStartTime.setHours(dateTimeEnd.getHours() - 12);
           break;
         case "Last 1 Day":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 1);
-          forStartTime.setDate(dateTimeEnd.getDate() - 1);
           break;
         case "Last 3 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 3);
-          forStartTime.setDate(dateTimeEnd.getDate() - 3);
           break;
         case "Last 7 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 7);
-          forStartTime.setDate(dateTimeEnd.getDate() - 7);
           break;
         case "Last 1 Month":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 1);
-          forStartTime.setMonth(dateTimeEnd.getMonth() - 1);
           break;
         case "Last 6 Months":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 6);
-          forStartTime.setMonth(dateTimeEnd.getMonth() - 6);
           break;
         default:
           // If no match, don't change the date
           return;
       }
-      setStartTime(forStartTime);
       setSelectedDateTimeStart(dateTimeStart);
     };
 
     setLastTime();
-  }, [selectedLastTime, selectedDateTimeEnd]);
+  }, [selectedLastTime]);
 
   //Apply Button
   const handleApplyClick = () => {
     setUrl(
       `${
         import.meta.env.VITE_API_URL
-      }/data/between?startTime=${startTime.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
+      }/data/between?startTime=${selectedDateTimeStart.toISOString()}&endTime=${selectedDateTimeEnd.toISOString()}&host_id=${
         hostNow.host_id
       }`
     );
@@ -359,10 +342,6 @@ const Graphs: React.FC = () => {
       const now = new Date();
       return new Date(now.setMinutes(now.getMinutes() - 15));
     });
-    setStartTime(() => {
-      const now = new Date();
-      return new Date(now.setMinutes(now.getMinutes() - 15));
-    });
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
@@ -380,10 +359,8 @@ const Graphs: React.FC = () => {
         const now = new Date();
         setSelectedDateTimeEnd(now);
         const past = new Date(now.getTime() - 15 * 60000);
-        const pastforStartTime = new Date(now.getTime() - 16 * 60000);
 
         setSelectedDateTimeStart(past); // 15 minutes ago
-        setStartTime(pastforStartTime); // 15 minutes ago
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
@@ -391,7 +368,7 @@ const Graphs: React.FC = () => {
           setUrl(
             `${
               import.meta.env.VITE_API_URL
-            }/data/between?startTime=${pastforStartTime.toISOString()}&endTime=${now.toISOString()}&host_id=${
+            }/data/between?startTime=${past.toISOString()}&endTime=${now.toISOString()}&host_id=${
               host?.host_id
             }`
           );
@@ -566,7 +543,6 @@ const Graphs: React.FC = () => {
               mb: 4,
               justifyContent: "space-between",
               alignItems: "center",
-              
             }}
           >
             {/* Select Host */}
