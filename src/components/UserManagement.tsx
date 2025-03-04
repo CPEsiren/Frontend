@@ -24,17 +24,31 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { IUser } from "../interface/InterfaceCollection";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 interface ApiResponse {
   message: string;
   users: IUser[];
 }
 
+// Interface for grouping users by role
+interface GroupedUsers {
+  [key: string]: {
+    normalizedName: string;
+    originalName: string;
+    users: IUser[];
+  };
+}
+
 const UserManagement = () => {
   const [users, setUsers] = useState<IUser[]>([]);
+  const [groupedUsers, setGroupedUsers] = useState<GroupedUsers>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -47,12 +61,40 @@ const UserManagement = () => {
     severity: "success" as "success" | "error",
   });
   const [swapRoleDialogOpen, setSwapRoleDialogOpen] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState<string | false>(false);
   const currentUserRole = localStorage.getItem("userRole");
 
   const roleColors = {
     admin: "red",
     superadmin: "orange",
     viewer: "blue",
+  };
+
+  // Function to normalize a role name (convert to uppercase)
+  const normalizeRoleName = (name: string): string => {
+    return name ? name.toUpperCase() : "UNKNOWN";
+  };
+
+  // Function to group users by role
+  const groupUsersByRole = (users: IUser[]) => {
+    const grouped: GroupedUsers = {};
+
+    users.forEach((user) => {
+      const originalName = user.role || "Unknown";
+      const normalizedName = normalizeRoleName(originalName);
+
+      if (!grouped[normalizedName]) {
+        grouped[normalizedName] = {
+          normalizedName,
+          originalName,
+          users: [],
+        };
+      }
+
+      grouped[normalizedName].users.push(user);
+    });
+
+    return grouped;
   };
 
   const fetchUsers = async () => {
@@ -69,6 +111,17 @@ const UserManagement = () => {
       }
       const result: ApiResponse = await response.json();
       setUsers(result.users);
+
+      // Group users by role
+      const grouped = groupUsersByRole(result.users);
+      setGroupedUsers(grouped);
+
+      // Set the first group as expanded by default if there are groups
+      const groups = Object.keys(grouped);
+      if (groups.length > 0) {
+        setExpandedGroup(groups[0]);
+      }
+
       setError(null);
     } catch (error) {
       const errorMessage =
@@ -120,11 +173,14 @@ const UserManagement = () => {
       }
 
       // Update the local state
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u._id === selectedUser._id ? { ...u, role: newRole } : u
-        )
+      const updatedUsers = users.map((u) =>
+        u._id === selectedUser._id ? { ...u, role: newRole } : u
       );
+      setUsers(updatedUsers);
+
+      // Regroup users after update
+      const regrouped = groupUsersByRole(updatedUsers);
+      setGroupedUsers(regrouped);
 
       setSnackbar({
         open: true,
@@ -148,6 +204,13 @@ const UserManagement = () => {
       setSelectedUser(null);
     }
   };
+
+  // Handle accordion state
+  const handleAccordionChange =
+    (groupName: string) =>
+    (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedGroup(isExpanded ? groupName : false);
+    };
 
   useEffect(() => {
     fetchUsers();
@@ -212,119 +275,153 @@ const UserManagement = () => {
   };
 
   const availableRoles = getAvailableRoles(currentUserRole || "");
-  
+
   // Check if current user can swap roles
   const canSwapRoles = currentUserRole === "superadmin";
 
-  return (
-    <Box>
-      {users.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: "center" }}>
-          <Typography variant="body1">No users found</Typography>
-        </Paper>
-      ) : (
-        <TableContainer
-          component={Paper}
-          elevation={0}
+  // Function to render a table for a specific role group
+  const renderUserTable = (users: IUser[]) => {
+    return (
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          backgroundColor: "transparent",
+        }}
+      >
+        <Table
           sx={{
-            backgroundColor: "transparent",
+            minWidth: 650,
+            "& .MuiTableCell-root": {
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              padding: "16px",
+            },
+            "& .MuiTableRow-body:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+            },
+            "& .MuiTableCell-head": {
+              borderBottom: "1px solid #dbdbdb",
+            },
           }}
         >
-          <Table
-            sx={{
-              minWidth: 650,
-              "& .MuiTableCell-root": {
-                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-                padding: "16px",
-              },
-              "& .MuiTableRow-body:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-              "& .MuiTableCell-head": {
-                borderBottom: "1px solid #dbdbdb",
-              },
-            }}
-          >
-            <TableHead>
-              <TableRow>
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
+            <TableRow>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Username
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Email
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Role
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Action
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user._id} hover>
                 <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Username
-                  </Typography>
+                  <Typography variant="body2">{user.username}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Email
-                  </Typography>
+                  <Typography variant="body2">{user.email}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Role
-                  </Typography>
+                  <Chip
+                    label={user.role}
+                    size="small"
+                    sx={{
+                      width: "8rem",
+                      p: 2,
+                      m: 0,
+                      color: "white",
+                      backgroundColor:
+                        roleColors[user.role] || roleColors.viewer,
+                    }}
+                  />
                 </TableCell>
-                <TableCell>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Action
-                  </Typography>
+                <TableCell sx={{ textAlign: "left" }}>
+                  {user.username === localStorage.getItem("username") ? (
+                    <Typography variant="body2" color="textSecondary">
+                      (You)
+                    </Typography>
+                  ) : !canSwapRoles ? (
+                    <Typography variant="body2" color="textSecondary">
+                      (No permissions)
+                    </Typography>
+                  ) : (
+                    <IconButton
+                      onClick={() => handleSwapRoleClick(user)}
+                      disabled={loading}
+                    >
+                      <SwapHorizIcon />
+                    </IconButton>
+                  )}
                 </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user._id} hover>
-                  <TableCell>
-                    <Typography variant="body2">{user.username}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{user.email}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.role}
-                      size="small"
-                      sx={{
-                        width: "55%",
-                        p: 2,
-                        m: 0,
-                        color: "white",
-                        backgroundColor:
-                          roleColors[user.role] || roleColors.viewer,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ textAlign: "left" }}>
-                    {user.username === localStorage.getItem("username") ? (
-                      <Typography variant="body2" color="textSecondary">
-                        (You)
-                      </Typography>
-                    ) : !canSwapRoles ? (
-                      <Typography variant="body2" color="textSecondary">
-                        (No permissions)
-                      </Typography>
-                    ) : (
-                      <IconButton
-                        onClick={() => handleSwapRoleClick(user)}
-                        disabled={loading}
-                      >
-                        <SwapHorizIcon />
-                      </IconButton>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
+  const roleGroups = Object.keys(groupedUsers);
+
+  return (
+    <Container maxWidth={false}>
+      <Box sx={{ mb: 3 }}>
+        {roleGroups.map((groupKey) => {
+          const group = groupedUsers[groupKey];
+          return (
+            <Accordion
+              key={groupKey}
+              // expanded={expandedGroup === groupKey}
+              onChange={handleAccordionChange(groupKey)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{ backgroundColor: "#f5f5f5" }}
+              >
+                <Typography fontWeight="medium">
+                  {group.originalName.toUpperCase()} ({group.users.length}{" "}
+                  {group.users.length === 1 ? "user" : "users"})
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {group.users.length === 0 ? (
+                  <Paper sx={{ p: 3, textAlign: "center" }}>
+                    <Typography variant="body1">
+                      No users in this role
+                    </Typography>
+                  </Paper>
+                ) : (
+                  renderUserTable(group.users)
+                )}
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+      </Box>
 
       <Dialog
         open={swapRoleDialogOpen}
         onClose={() => setSwapRoleDialogOpen(false)}
         aria-labelledby="swap-role-dialog-title"
       >
-        <DialogTitle id="swap-role-dialog-title">
-          Change User Role
-        </DialogTitle>
+        <DialogTitle id="swap-role-dialog-title">Change User Role</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
             Change role for user "{selectedUser?.username}":
@@ -336,9 +433,7 @@ const UserManagement = () => {
               value={newRole}
               label="Role"
               onChange={(e) =>
-                setNewRole(
-                  e.target.value as "admin" | "viewer" | "superadmin"
-                )
+                setNewRole(e.target.value as "admin" | "viewer" | "superadmin")
               }
             >
               {availableRoles.map((role) => (
@@ -380,7 +475,7 @@ const UserManagement = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Container>
   );
 };
 
