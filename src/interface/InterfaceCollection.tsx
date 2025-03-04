@@ -28,6 +28,7 @@ export interface Item {
   type: string;
   unit: string;
   interval: number;
+  isOverview: boolean;
 }
 
 export interface IInterface {

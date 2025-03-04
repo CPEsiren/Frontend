@@ -18,6 +18,7 @@ import {
   Fade,
   Menu,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import { IDevice, Item } from "../../../interface/InterfaceCollection";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -251,7 +252,13 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
       );
 
       if (!response.ok) {
-        throw new Error(`Failed to delete item: ${response.statusText}`);
+        throw new Error(
+          `${
+            response.status === 400
+              ? `Item [${itemToDelete.item_name}] is used in trigger`
+              : response.statusText
+          }`
+        );
       }
 
       // Remove the item from the local state
@@ -265,10 +272,9 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error deleting item:", error);
       setSnackbar({
         open: true,
-        message: "Failed to delete item",
+        message: `${error}`,
         severity: "error",
       });
     } finally {
@@ -363,6 +369,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                   >
                     <IconButton
                       id="fade-button"
+                      disabled={item.isOverview}
                       aria-controls={open ? "fade-menu" : undefined}
                       aria-haspopup="true"
                       aria-expanded={open ? "true" : undefined}
@@ -370,13 +377,32 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                       sx={{
                         borderRadius: "50%",
                         width: "5",
-                       
                         "&:hover": {
-                          backgroundColor: "rgba(239, 239, 255, 0.1)",
+                          backgroundColor: item.isOverview
+                            ? "transparent"
+                            : "rgba(239, 239, 255, 0.1)",
                         },
                       }}
                     >
-                      <MoreVertIcon sx={{ fontSize: 24, color: "#242d5d" }} />
+                      <Tooltip
+                        title={
+                          item.isOverview
+                            ? "This overview item cannot be deleted"
+                            : ""
+                        }
+                      >
+                        <span>
+                          <MoreVertIcon
+                            sx={{
+                              fontSize: 24,
+                              color: item.isOverview ? "#a0a0a0" : "#242d5d",
+                              cursor: item.isOverview
+                                ? "not-allowed"
+                                : "pointer",
+                            }}
+                          />
+                        </span>
+                      </Tooltip>
                     </IconButton>
 
                     {/* Menu */}
@@ -446,7 +472,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                     </Menu>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1,width: "100%",mt:-2.5 }}>
+                  <Box sx={{ flexGrow: 1, width: "100%", mt: -2.5 }}>
                     {/* This box will grow to fill available space */}
                     <Typography
                       variant="subtitle1"
@@ -460,7 +486,7 @@ const DeviceItemComponent = ({ deviceData }: { deviceData: IDevice }) => {
                         lineHeight: 1.2,
                         maxHeight: "3.6em", // 3 lines * 1.2em line-height
                         mb: 1,
-                        width:"90%"
+                        width: "90%",
                       }}
                     >
                       {item.item_name}
