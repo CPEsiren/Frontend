@@ -31,6 +31,7 @@ import {
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import React from "react";
 interface GroupedTriggers {
   triggers: ITrigger[];
@@ -60,6 +61,7 @@ interface RecoveryPart {
 
 interface TriggerComponentProps {
   refreshTriggers?: () => void;
+  onDuplicateTrigger?: (trigger: ITrigger) => void;
 }
 
 const functionofItem = [
@@ -82,7 +84,10 @@ const operations = [
   { value: "<=", label: "<=" },
 ];
 
-const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
+const TriggerComponent = ({
+  refreshTriggers,
+  onDuplicateTrigger,
+}: TriggerComponentProps) => {
   //Global State
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
@@ -537,7 +542,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
             <Typography variant="body1">No triggers found</Typography>
           </Box>
         ) : (
-          <Box sx={{ width: 1 }}>
+          <Box sx={{ width: 1, justifyContent: "center" }}>
             {DataGroupByHost.map((group, index) => (
               <Box key={index} sx={{ mb: 4, mt: 4 }}>
                 <Box sx={{ mb: 3 }}>
@@ -552,7 +557,7 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       fontWeight: "semi-bold",
                       minWidth: "100px",
                       textAlign: "center",
-                      p: 1.5,
+                      py: 1.5,
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                       width: "100%",
                       display: "block", // Change from -webkit-box to block for better line break support
@@ -574,15 +579,22 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                     border: "2px solid white",
                     borderRadius: "8px",
                     overflow: "hidden",
+                    width: "100%", // Ensure the container takes full width
                   }}
                 >
                   <Table
                     sx={{
+                      width: "100%", // Make sure table takes 100% of container width
+                      tableLayout: "fixed", // Fixed layout helps with column distribution
                       "& .MuiTable-root": {
                         borderCollapse: "separate",
                         borderSpacing: 0,
                       },
-                      "& .MuiTableCell-root": { borderBottom: "none" },
+                      "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        whiteSpace: "normal", // Allow text to wrap
+                        wordBreak: "break-word",
+                      },
                       "& .MuiTableBody-root .MuiTableRow-root": {
                         "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
                         "&:hover": {
@@ -591,44 +603,65 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                           cursor: "pointer",
                         },
                       },
-                      display: "block", // Change from -webkit-box to block for better line break support
-                        wordBreak: "break-word", // Allow words to break if needed
-                        hyphens: "auto",
                     }}
                   >
-                    <TableHead >
+                    <TableHead>
                       <TableRow>
-                        <TableCell 
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"30%" }}
+                        <TableCell
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "15%", // Set explicit width for this column
+                          }}
                         >
                           Trigger Name
                         </TableCell>
                         <TableCell
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "10%",
+                          }}
                         >
                           Severity
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"35%" }}
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "35%", // Give more space to expression column
+                          }}
                         >
                           Expression
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "20%",
+                          }}
                         >
                           OK event generation
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"10%" }}
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "10%",
+                          }}
                         >
                           Status
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ fontSize: "1rem", fontWeight: "medium",width:"5%" }}
+                          sx={{
+                            fontSize: "1rem",
+                            fontWeight: "medium",
+                            width: "10%",
+                          }}
                         >
                           ⚙️
                         </TableCell>
@@ -833,6 +866,29 @@ const TriggerComponent = ({ refreshTriggers }: TriggerComponentProps) => {
                       }}
                     >
                       Edit
+                    </Typography>
+                  </MenuItem>
+
+                  <MenuItem
+                    onClick={() => {
+                      if (selectedTrigger && onDuplicateTrigger) {
+                        onDuplicateTrigger(selectedTrigger);
+                      }
+                      handleClose();
+                    }}
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <ContentCopyIcon
+                      sx={{ color: "warning.main", fontSize: 20 }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        color: "black",
+                        marginLeft: 1,
+                      }}
+                    >
+                      Duplicate
                     </Typography>
                   </MenuItem>
 

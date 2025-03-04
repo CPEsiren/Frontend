@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -493,7 +493,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     }
   };
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const newErrors = {
       trigger_name: !trigger_name,
       severity: !severity,
@@ -502,10 +502,15 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       recoveryExpression:
         ok_eventGen === "resolved expression" && !recoveryExpression,
     };
+    const isTemplateNameValid = template_name.trim() !== "";
 
     setErrorsFieldTrigger(newErrors);
-    return !Object.values(newErrors).some((error) => error);
-  };
+    return isTemplateNameValid;
+  }, [template_name]);
+
+  useEffect(() => {
+    setIsFormValid(validateForm());
+  }, [template_name, validateForm]);
 
   const handleAddTrigger = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -582,6 +587,8 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     newTriggers.splice(index, 1);
     setTriggers(newTriggers);
   };
+
+  const [isFormValid, setIsFormValid] = useState(false);
 
   return (
     <Box sx={{ p: 0, width: "100%" }}>
@@ -1816,15 +1823,16 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="outlined"
+              disabled={!isFormValid}
               sx={{
                 fontSize: 14,
                 color: "white",
-                bgcolor: "#0281F2",
+                bgcolor: isFormValid ? "#0281F2" : "#cccccc",
                 borderColor: "white",
                 borderRadius: 2,
                 "&:hover": {
                   color: "white",
-                  bgcolor: "#0274d9",
+                  bgcolor: isFormValid ? "#0274d9" : "#cccccc",
                   borderColor: "white",
                 },
               }}

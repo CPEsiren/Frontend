@@ -3,6 +3,7 @@ export interface DashboardLayout {
   id: string;
   name: string;
   components: ActiveComponentWithGraph[];
+  isDefault: boolean;
 }
 export interface APIComponent {
   id: string;

@@ -11,8 +11,9 @@ import {
   Alert,
   Link,
 } from "@mui/material";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AddTrigger from "../components/Modals/AddTrigger";
+import { ITrigger } from "../interface/InterfaceCollection";
 
 const Triggers = () => {
   const windowSize = useWindowSize();
@@ -88,6 +89,15 @@ const Triggers = () => {
 
     // Close the modal
     handleClose();
+  };
+
+  const [triggerDuplicate, setTriggerDuplicate] = useState<ITrigger | null>(
+    null
+  );
+
+  const handleDuplicateTrigger = (trigger: ITrigger) => {
+    setTriggerDuplicate(trigger);
+    toggleModal();
   };
 
   // Custom message with clickable refresh link if refresh callback exists
@@ -192,6 +202,7 @@ const Triggers = () => {
           <TriggerComponent
             key={triggerKey}
             refreshTriggers={fetchTriggerData}
+            onDuplicateTrigger={handleDuplicateTrigger}
           />
         </Box>
       </Box>
@@ -213,6 +224,7 @@ const Triggers = () => {
           <AddTrigger
             onClose={handleClose}
             onSuccess={handleTriggerAddSuccess}
+            Trigger={triggerDuplicate}
           />
         </DialogContent>
       </Dialog>

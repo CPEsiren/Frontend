@@ -146,7 +146,7 @@ const Dashboard = () => {
   const [selectOpen, setSelectOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const handleDashboardMenuItemClick = (
+  const handleDashboardMenuItemClick = async (
     dashboard: DashboardLayout,
     isViewer: boolean
   ) => {
@@ -154,75 +154,144 @@ const Dashboard = () => {
     setActiveComponents(dashboard.components);
     setIsViewerDashboard(isViewer);
     setSelectOpen(false);
-  };
-
-  useEffect(() => {
-    const fetchDashboards = async () => {
+    
+    // Set this dashboard as the default dashboard (only for user dashboards, not viewer dashboards)
+    if (!isViewer) {
       try {
-        const userId = localStorage.getItem("user_id");
-        if (!userId) {
-          throw new Error("No user ID found");
-        }
-
+        // Update selected dashboard to be default
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+          `${import.meta.env.VITE_API_URL}/dashboard/${dashboard.id}`,
           {
-            method: "GET",
+            method: "PUT",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
+            body: JSON.stringify({
+              isDefault: true,
+              components: dashboard.components.map((comp) => ({
+                componentType: comp.id,
+                position: comp.position,
+                graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+                todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+              })),
+            }),
           }
         );
-
+  
         if (!response.ok) {
-          throw new Error("Failed to fetch dashboards");
+          console.error("Failed to set dashboard as default");
         }
-
-        const data = await response.json();
-        if (data.status === "success" && Array.isArray(data.dashboards)) {
-          const transformedDashboards: DashboardLayout[] = data.dashboards.map(
-            (dashboard: any) => ({
-              id: dashboard._id,
-              name: dashboard.dashboard_name,
-              components: dashboard.components.map(
-                (comp: any, index: number) => ({
-                  id: comp.componentType,
-                  position: index,
-                  componentType: comp.componentType,
-                  graphSelection:
-                    comp.componentType === "graph"
-                      ? comp.graphSelection
-                      : undefined,
-                  todoItems:
-                    comp.id === "todolist" ? comp.todoItems : undefined,
-                })
-              ),
-            })
+  
+        // Set all other dashboards to non-default
+        const otherDashboards = dashboards.filter(d => d.id !== dashboard.id);
+        for (const otherDashboard of otherDashboards) {
+          const updateResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/dashboard/${otherDashboard.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                isDefault: false,
+                components: otherDashboard.components.map((comp) => ({
+                  componentType: comp.id,
+                  position: comp.position,
+                  graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+                  todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+                })),
+              }),
+            }
           );
-
-          setDashboards(transformedDashboards);
-          if (transformedDashboards.length > 0) {
-            setCurrentDashboardId(transformedDashboards[0].id);
-            setActiveComponents(transformedDashboards[0].components);
-          } else {
-            // If no dashboards exist, set to empty string explicitly
-            setCurrentDashboardId("");
-            setActiveComponents([]);
+          
+          if (!updateResponse.ok) {
+            console.error(`Failed to update dashboard ${otherDashboard.id}`);
           }
         }
-      } catch (error) {
-        console.error("Error fetching dashboards:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to fetch dashboards"
+        
+        // Update local state to reflect new default status
+        setDashboards(prevDashboards => 
+          prevDashboards.map(dash => ({
+            ...dash,
+            isDefault: dash.id === dashboard.id
+          }))
         );
-      } finally {
-        setLoading(false);
+        
+      } catch (error) {
+        console.error("Error setting default dashboard:", error);
       }
-    };
+    }
+  };
 
-    fetchDashboards();
-  }, []);
+  // useEffect(() => {
+  //   const fetchDashboards = async () => {
+  //     try {
+  //       const userId = localStorage.getItem("user_id");
+  //       if (!userId) {
+  //         throw new Error("No user ID found");
+  //       }
+
+  //       const response = await fetch(
+  //         `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //           },
+  //         }
+  //       );
+
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch dashboards");
+  //       }
+
+  //       const data = await response.json();
+  //       if (data.status === "success" && Array.isArray(data.dashboards)) {
+  //         const transformedDashboards: DashboardLayout[] = data.dashboards.map(
+  //           (dashboard: any) => ({
+  //             id: dashboard._id,
+  //             name: dashboard.dashboard_name,
+  //             components: dashboard.components.map(
+  //               (comp: any, index: number) => ({
+  //                 id: comp.componentType,
+  //                 position: index,
+  //                 componentType: comp.componentType,
+  //                 graphSelection:
+  //                   comp.componentType === "graph"
+  //                     ? comp.graphSelection
+  //                     : undefined,
+  //                 todoItems:
+  //                   comp.id === "todolist" ? comp.todoItems : undefined,
+  //               })
+  //             ),
+  //           })
+  //         );
+
+  //         setDashboards(transformedDashboards);
+  //         if (transformedDashboards.length > 0) {
+  //           setCurrentDashboardId(transformedDashboards[0].id);
+  //           setActiveComponents(transformedDashboards[0].components);
+  //         } else {
+  //           // If no dashboards exist, set to empty string explicitly
+  //           setCurrentDashboardId("");
+  //           setActiveComponents([]);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching dashboards:", error);
+  //       setError(
+  //         error instanceof Error ? error.message : "Failed to fetch dashboards"
+  //       );
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchDashboards();
+  // }, []);
 
   // Check user role
   useEffect(() => {
@@ -231,19 +300,122 @@ const Dashboard = () => {
     setIsSuperAdmin(userRole === "superadmin"); // Add this line
   }, []);
 
-  // Fetch both user and viewer dashboards
-  useEffect(() => {
-    const fetchAllDashboards = async () => {
-      try {
-        setLoading(true);
-        const userId = localStorage.getItem("user_id");
-        if (!userId) {
-          throw new Error("No user ID found");
+useEffect(() => {
+  // Helper function to set the first dashboard as default
+  const setFirstDashboardAsDefault = async (
+    firstDashboard: DashboardLayout, 
+    allDashboards: DashboardLayout[]
+  ) => {
+    // Set first dashboard as default
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/dashboard/${firstDashboard.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          isDefault: true,
+          components: firstDashboard.components.map((comp) => ({
+            componentType: comp.id,
+            position: comp.position,
+            graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+            todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+          })),
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to set initial dashboard as default");
+    }
+    
+    // Set all other dashboards to non-default
+    const otherDashboards = allDashboards.filter(d => d.id !== firstDashboard.id);
+    for (const otherDashboard of otherDashboards) {
+      const updateResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/dashboard/${otherDashboard.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            isDefault: false,
+            components: otherDashboard.components.map((comp) => ({
+              componentType: comp.id,
+              position: comp.position,
+              graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+              todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+            })),
+          }),
         }
+      );
+      
+      if (!updateResponse.ok) {
+        console.error(`Failed to update dashboard ${otherDashboard.id}`);
+      }
+    }
+  };
 
-        // Fetch user dashboards
-        const userDashboardResponse = await fetch(
-          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+  const fetchAllDashboards = async () => {
+    try {
+      // Always start with loading set to true
+      setLoading(true);
+      
+      // Record start time for ensuring 1 second minimum loading
+      const startTime = Date.now();
+      
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        throw new Error("No user ID found");
+      }
+
+      // Fetch user dashboards
+      const userDashboardResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!userDashboardResponse.ok) {
+        throw new Error("Failed to fetch user dashboards");
+      }
+
+      const userDashboardData = await userDashboardResponse.json();
+      let transformedUserDashboards: DashboardLayout[] = [];
+      let viewerDashboardsData: DashboardLayout[] = [];
+
+      if (
+        userDashboardData.status === "success" &&
+        Array.isArray(userDashboardData.dashboards)
+      ) {
+        transformedUserDashboards = userDashboardData.dashboards.map(
+          (dashboard: APIDashboard) => ({
+            id: dashboard._id,
+            name: dashboard.dashboard_name,
+            components: dashboard.components.map((comp: APIComponent) => ({
+              id: comp.componentType,
+              position: comp.position,
+              graphSelection: comp.graphSelection,
+              todoItems: comp.todoItems,
+            })),
+            isDefault: dashboard.isDefault || false,
+          })
+        );
+      }
+
+      // Check if user is superadmin before fetching viewer dashboards
+      const userRole = localStorage.getItem("userRole");
+      if (userRole === "superadmin") {
+        const viewerDashboardResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
           {
             method: "GET",
             headers: {
@@ -252,124 +424,134 @@ const Dashboard = () => {
             },
           }
         );
-        if (!userDashboardResponse.ok) {
-          throw new Error("Failed to fetch user dashboards");
-        }
 
-        const userDashboardData = await userDashboardResponse.json();
-        let transformedUserDashboards: DashboardLayout[] = [];
+        if (viewerDashboardResponse.ok) {
+          const viewerDashboardData = await viewerDashboardResponse.json();
 
-        if (
-          userDashboardData.status === "success" &&
-          Array.isArray(userDashboardData.dashboards)
-        ) {
-          transformedUserDashboards = userDashboardData.dashboards.map(
-            (dashboard: APIDashboard) => ({
-              id: dashboard._id,
-              name: dashboard.dashboard_name,
-              components: dashboard.components.map((comp: APIComponent) => ({
-                id: comp.componentType,
-                position: comp.position,
-                graphSelection: comp.graphSelection,
-                todoItems: comp.todoItems,
-              })),
-            })
-          );
-          setDashboards(transformedUserDashboards);
-        }
-
-        // Check if user is superadmin before fetching viewer dashboards
-        const userRole = localStorage.getItem("userRole");
-        if (userRole === "superadmin") {
-          const viewerDashboardResponse = await fetch(
-            `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-
-          if (viewerDashboardResponse.ok) {
-            const viewerDashboardData = await viewerDashboardResponse.json();
-
-            if (
-              viewerDashboardData.status === "success" &&
-              Array.isArray(viewerDashboardData.dashboards)
-            ) {
-              const transformedViewerDashboards =
-                viewerDashboardData.dashboards.map(
-                  (dashboard: APIDashboard) => ({
-                    id: dashboard._id,
-                    name: `${dashboard.dashboard_name} (Viewer)`, // Add (Viewer) suffix for clarity
-                    components: dashboard.components.map(
-                      (comp: APIComponent) => ({
-                        id: comp.componentType,
-                        position: comp.position,
-                        graphSelection: comp.graphSelection,
-                        todoItems: comp.todoItems,
-                      })
-                    ),
+          if (
+            viewerDashboardData.status === "success" &&
+            Array.isArray(viewerDashboardData.dashboards)
+          ) {
+            viewerDashboardsData = viewerDashboardData.dashboards.map(
+              (dashboard: APIDashboard) => ({
+                id: dashboard._id,
+                name: `${dashboard.dashboard_name} (Viewer)`, // Add (Viewer) suffix for clarity
+                components: dashboard.components.map(
+                  (comp: APIComponent) => ({
+                    id: comp.componentType,
+                    position: comp.position,
+                    graphSelection: comp.graphSelection,
+                    todoItems: comp.todoItems,
                   })
-                );
-              setViewerDashboards(transformedViewerDashboards);
-            }
-          } else {
-            console.error("Failed to fetch viewer dashboards");
+                ),
+              })
+            );
           }
+        } else {
+          console.error("Failed to fetch viewer dashboards");
         }
-
-        // Set initial dashboard and components
-        const allDashboards = [
-          ...transformedUserDashboards,
-          ...(userRole === "superadmin" ? viewerDashboards : []),
-        ];
-        if (allDashboards.length > 0) {
-          const firstDashboard = allDashboards[0];
-          setCurrentDashboardId(firstDashboard.id);
-          setActiveComponents(firstDashboard.components);
-          setIsViewerDashboard(
-            viewerDashboards.some((d) => d.id === firstDashboard.id)
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching dashboards:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch dashboards"
-        );
-        setSnackbar({
-          open: true,
-          message: "Failed to load dashboards",
-          severity: "error",
-        });
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchAllDashboards();
-  }, [isSuperAdmin]);
+      // Find default dashboard or set first dashboard as default
+      const defaultDashboard = transformedUserDashboards.find(dash => dash.isDefault);
+      
+      // Determine which dashboard to show initially and set all states in a batch
+      let initialDashboard: DashboardLayout | undefined;
+      let isViewer = false;
+      
+      if (defaultDashboard) {
+        // We have a default dashboard
+        initialDashboard = defaultDashboard;
+      } 
+      else if (transformedUserDashboards.length > 0) {
+        // No default, but we have user dashboards - use the first one
+        initialDashboard = transformedUserDashboards[0];
+        
+        // Set the first dashboard as default and others as non-default
+        try {
+          const firstDashboard = transformedUserDashboards[0];
+          await setFirstDashboardAsDefault(firstDashboard, transformedUserDashboards);
+          
+          // Update isDefault in our local state
+          transformedUserDashboards = transformedUserDashboards.map(dash => ({
+            ...dash,
+            isDefault: dash.id === firstDashboard.id
+          }));
+        } catch (error) {
+          console.error("Error setting default dashboard:", error);
+        }
+      }
+      else if (userRole === "superadmin" && viewerDashboardsData.length > 0) {
+        // Only viewer dashboards available for superadmin
+        initialDashboard = viewerDashboardsData[0];
+        isViewer = true;
+      }
+      
+      // Calculate time elapsed for ensuring minimum 1 second loading
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, 1000 - elapsedTime);
+      
+      // Use setTimeout to ensure minimum loading time
+      setTimeout(() => {
+        // Only update all the states after the loading time
+        // This prevents any dashboard from showing before the default one is determined
+        if (initialDashboard) {
+          setDashboards(transformedUserDashboards);
+          setViewerDashboards(viewerDashboardsData);
+          setCurrentDashboardId(initialDashboard.id);
+          setActiveComponents(initialDashboard.components);
+          setIsViewerDashboard(isViewer);
+        } else {
+          setDashboards(transformedUserDashboards);
+          setViewerDashboards(viewerDashboardsData);
+          setCurrentDashboardId("");
+          setActiveComponents([]);
+        }
+        
+        // Finally set loading to false to show the dashboard
+        setLoading(false);
+      }, remainingTime);
+      
+    } catch (err) {
+      console.error("Error fetching dashboards:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch dashboards"
+      );
+      setSnackbar({
+        open: true,
+        message: "Failed to load dashboards",
+        severity: "error",
+      });
+      
+      // Ensure minimum 1 second loading even on error
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+  };
 
-  const handleDashboardChange = (event: SelectChangeEvent<string>) => {
+  // Remove previous useEffect with the empty dependency array
+  // and just call this one
+  fetchAllDashboards();
+}, [isSuperAdmin]);
+  const handleDashboardChange = async (event: SelectChangeEvent<string>) => {
     const selectedId = event.target.value;
     if (!selectedId) return;
-
+  
     // If the target is the "New Dashboard" option, handle it separately
     if (selectedId === "new") {
       handleAddDashboard();
       setSelectOpen(false);
       return;
     }
-
+  
     // Find the selected dashboard from either user or viewer dashboards
     const selectedViewerDashboard = viewerDashboards.find(
       (d) => d.id === selectedId
     );
     const selectedUserDashboard = dashboards.find((d) => d.id === selectedId);
     const selectedDashboard = selectedViewerDashboard || selectedUserDashboard;
-
+  
     if (selectedDashboard) {
       setCurrentDashboardId(selectedId);
       // Filter out event components if switching to viewer dashboard
@@ -378,11 +560,80 @@ const Dashboard = () => {
             (comp) => comp.id !== "eventblock" || "todolist"
           )
         : selectedDashboard.components;
-
+  
       setActiveComponents(filteredComponents);
       setIsViewerDashboard(!!selectedViewerDashboard);
       setIsEditing(false);
       setSelectOpen(false);
+      
+      // Set this dashboard as the default dashboard and others as non-default
+      if (!selectedViewerDashboard) {
+        try {
+          // Update selected dashboard to be default
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/dashboard/${selectedId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                isDefault: true,
+                components: selectedDashboard.components.map((comp) => ({
+                  componentType: comp.id,
+                  position: comp.position,
+                  graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+                  todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+                })),
+              }),
+            }
+          );
+  
+          if (!response.ok) {
+            console.error("Failed to set dashboard as default");
+          }
+  
+          // Set all other dashboards to non-default
+          const otherDashboards = dashboards.filter(d => d.id !== selectedId);
+          for (const dashboard of otherDashboards) {
+            const updateResponse = await fetch(
+              `${import.meta.env.VITE_API_URL}/dashboard/${dashboard.id}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                  isDefault: false,
+                  components: dashboard.components.map((comp) => ({
+                    componentType: comp.id,
+                    position: comp.position,
+                    graphSelection: comp.id === "graph" ? comp.graphSelection : undefined,
+                    todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+                  })),
+                }),
+              }
+            );
+            
+            if (!updateResponse.ok) {
+              console.error(`Failed to update dashboard ${dashboard.id}`);
+            }
+          }
+          
+          // Update local state to reflect new default status
+          setDashboards(prevDashboards => 
+            prevDashboards.map(dash => ({
+              ...dash,
+              isDefault: dash.id === selectedId
+            }))
+          );
+          
+        } catch (error) {
+          console.error("Error setting default dashboard:", error);
+        }
+      }
     }
   };
 
@@ -501,42 +752,133 @@ const Dashboard = () => {
     }
   };
 
-  // Update dashboard components
-  useEffect(() => {
-    const updateDashboard = async () => {
-      if (!currentDashboardId || !isEditing) return;
+useEffect(() => {
+  const updateDashboard = async () => {
+    if (!currentDashboardId || !isEditing) return;
 
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/dashboard/${currentDashboardId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            components: activeComponents.map((comp) => ({
+              componentType: comp.id,
+              position: comp.position,
+              graphSelection:
+                comp.id === "graph" ? comp.graphSelection : undefined,
+              todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
+            })),
+            isDefault: true, // Set this dashboard as default
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update dashboard");
+      }
+      
+      // After successful update, fetch all dashboards again
+      const userId = localStorage.getItem("user_id");
+      if (userId) {
+        // Fetch user dashboards
+        const userDashboardResponse = await fetch(
+          `${import.meta.env.VITE_API_URL}/dashboard/user/${userId}`,
           {
-            method: "PUT",
+            method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({
-              components: activeComponents.map((comp) => ({
-                componentType: comp.id,
-                position: comp.position,
-                graphSelection:
-                  comp.id === "graph" ? comp.graphSelection : undefined,
-                todoItems: comp.id === "todolist" ? comp.todoItems : undefined,
-              })),
-            }),
           }
         );
-
-        if (!response.ok) {
-          throw new Error("Failed to update dashboard");
+        
+        if (!userDashboardResponse.ok) {
+          throw new Error("Failed to refresh dashboards");
         }
-      } catch (error) {
-        console.error("Error updating dashboard:", error);
-      }
-    };
 
-    updateDashboard();
-  }, [activeComponents, currentDashboardId, isEditing]);
+        const userDashboardData = await userDashboardResponse.json();
+        let transformedUserDashboards: DashboardLayout[] = [];
+
+        if (
+          userDashboardData.status === "success" &&
+          Array.isArray(userDashboardData.dashboards)
+        ) {
+          transformedUserDashboards = userDashboardData.dashboards.map(
+            (dashboard: APIDashboard) => ({
+              id: dashboard._id,
+              name: dashboard.dashboard_name,
+              components: dashboard.components.map((comp: APIComponent) => ({
+                id: comp.componentType,
+                position: comp.position,
+                graphSelection: comp.graphSelection,
+                todoItems: comp.todoItems,
+              })),
+            })
+          );
+          setDashboards(transformedUserDashboards);
+        }
+
+        // Check if user is superadmin before fetching viewer dashboards
+        const userRole = localStorage.getItem("userRole");
+        if (userRole === "superadmin") {
+          const viewerDashboardResponse = await fetch(
+            `${import.meta.env.VITE_API_URL}/dashboard/viewer`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (viewerDashboardResponse.ok) {
+            const viewerDashboardData = await viewerDashboardResponse.json();
+
+            if (
+              viewerDashboardData.status === "success" &&
+              Array.isArray(viewerDashboardData.dashboards)
+            ) {
+              const transformedViewerDashboards =
+                viewerDashboardData.dashboards.map(
+                  (dashboard: APIDashboard) => ({
+                    id: dashboard._id,
+                    name: `${dashboard.dashboard_name} (Viewer)`,
+                    components: dashboard.components.map(
+                      (comp: APIComponent) => ({
+                        id: comp.componentType,
+                        position: comp.position,
+                        graphSelection: comp.graphSelection,
+                        todoItems: comp.todoItems,
+                      })
+                    ),
+                  })
+                );
+              setViewerDashboards(transformedViewerDashboards);
+            }
+          } else {
+            console.error("Failed to fetch viewer dashboards");
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error("Error updating dashboard:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to update dashboard",
+        severity: "error",
+      });
+    }
+  };
+
+  updateDashboard();
+}, [activeComponents, currentDashboardId, isEditing]);
   const handleAddComponent = (componentId: string) => {
     if (componentId === "graph") {
       setPendingGraphAdd(true);
@@ -902,7 +1244,7 @@ const Dashboard = () => {
                   {(dashboards.length > 0 ||
                     (isSuperAdmin && viewerDashboards.length > 0)) && (
                     <Select
-                    value={currentDashboardId || ""}
+                      value={currentDashboardId || ""}
                       onChange={handleDashboardChange}
                       open={selectOpen}
                       onOpen={() => setSelectOpen(true)}
@@ -910,11 +1252,18 @@ const Dashboard = () => {
                       displayEmpty
                       renderValue={(value) => {
                         if (!value) return "Select Dashboard";
-                        
-                        const selectedUserDash = dashboards.find((d) => d.id === value);
-                        const selectedViewerDash = viewerDashboards.find((d) => d.id === value);
-                        
-                        return (selectedUserDash || selectedViewerDash)?.name || "Select Dashboard";
+
+                        const selectedUserDash = dashboards.find(
+                          (d) => d.id === value
+                        );
+                        const selectedViewerDash = viewerDashboards.find(
+                          (d) => d.id === value
+                        );
+
+                        return (
+                          (selectedUserDash || selectedViewerDash)?.name ||
+                          "Select Dashboard"
+                        );
                       }}
                       sx={{
                         backgroundColor: "white",

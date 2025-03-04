@@ -18,10 +18,11 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   ExpressionPart,
+  ITrigger,
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
 
@@ -69,9 +70,14 @@ export interface Item {
 interface AddTriggerProps {
   onClose: () => void;
   onSuccess?: (message: string, refreshCallback?: () => void) => void;
+  Trigger: ITrigger | null;
 }
 
-const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
+const AddTrigger: React.FC<AddTriggerProps> = ({
+  onClose,
+  onSuccess,
+  Trigger,
+}) => {
   //Global state
   const typographyProps = {
     fontSize: 14,
@@ -256,10 +262,40 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     e.preventDefault();
 
     if (!validateForm()) {
-      setSnackbarMessage("Please fill in all required fields");
+      // Check which validation failed and show appropriate message
+      const expressionMissing = expressionParts.some(
+        (part) =>
+          !part.item ||
+          !part.operation ||
+          !part.value ||
+          !part.functionofItem ||
+          (part.functionofItem !== "last" && !part.duration)
+      );
+
+      const recoveryMissing =
+        ok_eventGen === "resolved expression" &&
+        recoveryParts.some(
+          (part) =>
+            !part.item ||
+            !part.operation ||
+            !part.value ||
+            !part.functionofItem ||
+            (part.functionofItem !== "last" && !part.duration)
+        );
+
+      let errorMessage = "Please fill in all required fields";
+
+      if (expressionMissing) {
+        errorMessage =
+          "All expression fields are required. Please complete all expression fields.";
+      } else if (recoveryMissing) {
+        errorMessage =
+          "All recovery expression fields are required. Please complete all recovery expression fields.";
+      }
+
+      setSnackbarMessage(errorMessage);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      // alert("Please fill in all required fields");
       return;
     }
 
@@ -377,18 +413,52 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
     }
   };
   const validateForm = () => {
-    const newErrors = {
+    // First check the basic form fields
+    const basicFieldsValid = {
       trigger_name: !trigger_name,
       host_id: !host_id,
       severity: !severity,
-      expression: !expression,
       ok_eventGen: !ok_eventGen,
-      recoveryExpression:
-        ok_eventGen === "resolved expression" && !recoveryExpression,
     };
 
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error);
+    // Check if all expression parts have the required fields
+    const expressionPartsValid = expressionParts.every((part) => {
+      return (
+        part.item &&
+        part.operation &&
+        part.value &&
+        part.functionofItem &&
+        (part.functionofItem === "last" || part.duration)
+      );
+    });
+
+    // Check if all recovery expression parts have the required fields (when ok_eventGen is "resolved expression")
+    const recoveryPartsValid =
+      ok_eventGen !== "resolved expression" ||
+      recoveryParts.every((part) => {
+        return (
+          part.item &&
+          part.operation &&
+          part.value &&
+          part.functionofItem &&
+          (part.functionofItem === "last" || part.duration)
+        );
+      });
+
+    // Update the errors state
+    setErrors({
+      ...basicFieldsValid,
+      expression: !expressionPartsValid,
+      recoveryExpression:
+        ok_eventGen === "resolved expression" && !recoveryPartsValid,
+    });
+
+    // Form is valid only if all basic fields and all expression parts are valid
+    return (
+      !Object.values(basicFieldsValid).some((error) => error) &&
+      expressionPartsValid &&
+      recoveryPartsValid
+    );
   };
 
   // Add error states for form validation
@@ -432,6 +502,18 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
   };
   useEffect(() => {
     fetchHosts();
+    if (Trigger) {
+      fetchItems(Trigger.host_id);
+      setTrigger_name(Trigger.trigger_name);
+      setEnabled(Trigger.enabled);
+      setSeverity(Trigger.severity);
+      setHost_id(Trigger.host_id);
+      setExpression(Trigger.expression);
+      setRecoveryExpression(Trigger.recovery_expression);
+      setExpressionParts(Trigger.expressionPart);
+      setRecoveryParts(Trigger.expressionRecoveryPart);
+      setOk_eventGen(Trigger.ok_event_generation);
+    }
   }, []);
   const isFormDisabled = !host_id;
   const handleHostChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -524,6 +606,61 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
 
   //Enabled
   const [enabled, setEnabled] = useState<boolean>(true);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Create a validation function to check all required fields
+  const validateFormSubmit = useCallback(() => {
+    // Check all required fields
+    const isBasicInfoValid =
+      trigger_name.trim() !== "" &&
+      host_id.trim() !== "" &&
+      severity !== "" &&
+      ok_eventGen !== "";
+
+    // Check if all expression parts are filled out properly
+    const areExpressionPartsValid = expressionParts.every(
+      (part) =>
+        part.item &&
+        part.operation &&
+        part.value &&
+        part.functionofItem &&
+        (part.functionofItem === "last" || part.duration)
+    );
+
+    // If OK event generation is "resolved expression", check recovery parts too
+    const areRecoveryPartsValid =
+      ok_eventGen !== "resolved expression" ||
+      recoveryParts.every(
+        (part) =>
+          part.item &&
+          part.operation &&
+          part.value &&
+          part.functionofItem &&
+          (part.functionofItem === "last" || part.duration)
+      );
+
+    return isBasicInfoValid && areExpressionPartsValid && areRecoveryPartsValid;
+  }, [
+    trigger_name,
+    host_id,
+    severity,
+    ok_eventGen,
+    expressionParts,
+    recoveryParts,
+  ]);
+
+  // Update form validity whenever relevant fields change
+  useEffect(() => {
+    setIsFormValid(validateFormSubmit());
+  }, [
+    trigger_name,
+    host_id,
+    severity,
+    ok_eventGen,
+    expressionParts,
+    recoveryParts,
+    validateFormSubmit,
+  ]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -777,6 +914,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                       disabled={isFormDisabled}
                       label="Function"
                       size="small"
+                      error={errors.expression && !part.functionofItem}
+                      required
                       sx={{
                         width: "10%",
                         backgroundColor: "white",
@@ -804,6 +943,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                       }
                       disabled={
                         isFormDisabled || part.functionofItem === "last"
+                      }
+                      required={part.functionofItem !== "last"}
+                      error={
+                        errors.expression &&
+                        part.functionofItem !== "last" &&
+                        !part.duration
                       }
                       select
                       label="Interval"
@@ -833,7 +978,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         )
                       }
                       disabled={isFormDisabled}
-                      error={errors.expression}
+                      error={errors.expression && !part.item}
+                      required
                       size="small"
                       label="Item"
                       sx={{
@@ -863,6 +1009,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         )
                       }
                       disabled={isFormDisabled}
+                      error={errors.expression && !part.operation}
+                      required
                       label="Operation"
                       size="small"
                       sx={{
@@ -890,6 +1038,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         )
                       }
                       disabled={isFormDisabled}
+                      error={errors.expression && !part.value}
+                      required
                       label="Value"
                       size="small"
                       sx={{
@@ -914,6 +1064,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           )
                         }
                         disabled={isFormDisabled}
+                        error={errors.expression && !part.operator}
+                        required
                         label="Operator"
                         size="small"
                         sx={{
@@ -1064,6 +1216,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         )
                       }
                       disabled={isFormDisabled}
+                      error={errors.recoveryExpression && !part.functionofItem}
+                      required
                       label="Function"
                       size="small"
                       sx={{
@@ -1080,6 +1234,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         </MenuItem>
                       ))}
                     </TextField>
+
                     <TextField
                       select
                       value={part.duration}
@@ -1092,6 +1247,12 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                       }
                       disabled={
                         isFormDisabled || part.functionofItem === "last"
+                      }
+                      required={part.functionofItem !== "last"}
+                      error={
+                        errors.recoveryExpression &&
+                        part.functionofItem !== "last" &&
+                        !part.duration
                       }
                       label="Interval"
                       size="small"
@@ -1116,7 +1277,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         handleRecoveryPartChange(index, "item", e.target.value)
                       }
                       disabled={isFormDisabled}
-                      error={errors.expression}
+                      error={errors.recoveryExpression && !part.item}
+                      required
                       size="small"
                       label="Item"
                       sx={{
@@ -1146,6 +1308,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         )
                       }
                       disabled={isFormDisabled}
+                      error={errors.recoveryExpression && !part.operation}
+                      required
                       label="Operation"
                       size="small"
                       sx={{
@@ -1169,6 +1333,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                         handleRecoveryPartChange(index, "value", e.target.value)
                       }
                       disabled={isFormDisabled}
+                      error={errors.recoveryExpression && !part.value}
+                      required
                       label="Value"
                       size="small"
                       sx={{
@@ -1193,6 +1359,8 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
                           )
                         }
                         disabled={isFormDisabled}
+                        error={errors.recoveryExpression && !part.operator}
+                        required
                         label="Operator"
                         size="small"
                         sx={{
@@ -1309,16 +1477,17 @@ const AddTrigger: React.FC<AddTriggerProps> = ({ onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="outlined"
-              disabled={isFormDisabled}
+              disabled={isFormDisabled || !isFormValid}
               sx={{
                 fontSize: 14,
                 color: "white",
-                bgcolor: "#0281F2",
+                bgcolor: isFormDisabled || !isFormValid ? "#cccccc" : "#0281F2",
                 borderColor: "white",
                 borderRadius: 2,
                 "&:hover": {
                   color: "white",
-                  bgcolor: "#0274d9",
+                  bgcolor:
+                    isFormDisabled || !isFormValid ? "#cccccc" : "#0274d9",
                   borderColor: "white",
                 },
               }}

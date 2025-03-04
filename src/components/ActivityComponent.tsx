@@ -149,7 +149,6 @@ const ActivityComponent: React.FC = () => {
 
   return (
     <Container maxWidth={false}>
-    
       {/* Error message */}
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -173,7 +172,6 @@ const ActivityComponent: React.FC = () => {
             // </Paper>
             <>
               <TableContainer
-              
                 component={Paper}
                 elevation={0}
                 sx={{
@@ -183,7 +181,6 @@ const ActivityComponent: React.FC = () => {
               >
                 <Table
                   sx={{
-                    
                     "& .MuiTableCell-root": {
                       borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
                       padding: "16px",
@@ -195,22 +192,22 @@ const ActivityComponent: React.FC = () => {
                 >
                   <TableHead sx={{ backgroundColor: "#ffffff" }}>
                     <TableRow>
-                      <TableCell sx={{ color: "black", width: "5%" }}>
+                      <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Timestamp
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "15%" }}>
+                      <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           User
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "5%" }}>
+                      <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Role
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ color: "black", width: "40%" }}>
+                      <TableCell sx={{ color: "black" }}>
                         <Typography variant="subtitle1" fontWeight="medium">
                           Activity
                         </Typography>
@@ -244,14 +241,26 @@ const ActivityComponent: React.FC = () => {
                               backgroundColor: getRoleColor(log.role),
                               color: "white",
                               fontWeight: "medium",
+                              width:"7rem"
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" sx={{display: "block", // Change from -webkit-box to block for better line break support
-                        wordBreak: "break-word", // Allow words to break if needed
-                        hyphens: "auto",}}>
-                            {log.activity}
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              display: "block", // Change from -webkit-box to block for better line break support
+                              wordBreak: "break-word", // Allow words to break if needed
+                              hyphens: "auto",
+                            }}
+                          >
+                            {log.activity.split("\n").map((line, index) => (
+                              <React.Fragment key={index}>
+                                {line}
+                                {index <
+                                  log.activity.split("\n").length - 1 && <br />}
+                              </React.Fragment>
+                            ))}
                           </Typography>
                         </TableCell>
                       </TableRow>

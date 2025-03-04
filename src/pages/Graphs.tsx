@@ -13,6 +13,7 @@ import {
   InputAdornment,
   InputLabel,
   keyframes,
+  ListSubheader,
   MenuItem,
   Pagination,
   Paper,
@@ -37,7 +38,12 @@ interface IItem {
 interface IHost {
   host_id: string;
   hostname: string;
+  hostgroup: string;
   items: IItem[];
+}
+
+interface IGroupHost {
+  [key: string]: IHost[];
 }
 
 interface SelectedItems {
@@ -51,6 +57,7 @@ const Graphs: React.FC = () => {
   //Select Host
   const [hosts, setHosts] = useState<IHost[]>([]);
   const [selectedHost, setSelectedHost] = useState("");
+  const [hostgroupHosts, setHostgroupHosts] = useState<IGroupHost>({});
 
   const fetchHosts = async () => {
     try {
@@ -63,7 +70,12 @@ const Graphs: React.FC = () => {
 
       if (res.status === 404) {
         setHosts([
-          { host_id: "not-found", hostname: "Host Not Found", items: [] },
+          {
+            host_id: "not-found",
+            hostname: "Host Not Found",
+            hostgroup: "Host Not Found",
+            items: [],
+          },
         ]);
         setSelectedHost("not-found");
         return;
@@ -72,10 +84,16 @@ const Graphs: React.FC = () => {
       const result = await res.json();
       if (result.status === "success" && Array.isArray(result.data)) {
         const listHost = result.data.map(
-          (host: { _id: string; hostname: string; items: IItem[] }) => {
+          (host: {
+            _id: string;
+            hostname: string;
+            hostgroup: string;
+            items: IItem[];
+          }) => {
             return {
               host_id: host._id,
               hostname: host.hostname,
+              hostgroup: host.hostgroup,
               items: [...host.items].sort((a: IItem, b: IItem) =>
                 a.item_name.localeCompare(b.item_name)
               ),
@@ -88,6 +106,17 @@ const Graphs: React.FC = () => {
         );
         setHosts(sortedHosts);
         setSelectedHost(sortedHosts[0].hostname);
+
+        // Group hosts by hostgroup
+        const groupHosts: IGroupHost = {};
+        sortedHosts.forEach((host: IHost) => {
+          if (!groupHosts[host.hostgroup]) {
+            groupHosts[host.hostgroup] = [];
+          }
+          groupHosts[host.hostgroup].push(host);
+        });
+
+        setHostgroupHosts(groupHosts);
 
         // Set the URL and fetch data immediately after setting the host
         const initialUrl = `${
@@ -141,6 +170,7 @@ const Graphs: React.FC = () => {
       setHostNow({
         host_id: "",
         hostname: "",
+        hostgroup: "",
         items: [],
       });
     }
@@ -156,6 +186,7 @@ const Graphs: React.FC = () => {
   const [hostNow, setHostNow] = useState<IHost>({
     host_id: "",
     hostname: "",
+    hostgroup: "",
     items: [],
   });
 
@@ -311,7 +342,7 @@ const Graphs: React.FC = () => {
     };
 
     setLastTime();
-  }, [selectedLastTime]);
+  }, [selectedLastTime, selectedDateTimeEnd]);
 
   //Apply Button
   const handleApplyClick = () => {
@@ -572,15 +603,39 @@ const Graphs: React.FC = () => {
                   },
                 }}
               >
-                {hosts.map((host: IHost) => (
-                  <MenuItem
-                    key={host.host_id}
-                    value={host.hostname}
-                    disabled={host.host_id === "not-found"}
+                {Object.entries(hostgroupHosts).map(([category, hosts]) => [
+                  <ListSubheader
+                    key={category}
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: "bold",
+                      color: "text.secondary",
+                      backgroundColor: "background.paper",
+                      lineHeight: "36px",
+                      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                    }}
                   >
-                    {host.hostname}
-                  </MenuItem>
-                ))}
+                    {category}
+                  </ListSubheader>,
+                  ...hosts.map((host: IHost) => (
+                    <MenuItem
+                      key={host.host_id}
+                      value={host.hostname}
+                      disabled={host.host_id === "not-found"}
+                      sx={{
+                        fontSize: 14,
+                        pl: 4,
+                        py: 1,
+                        "&.Mui-selected": {
+                          backgroundColor: "action.selected",
+                          "&:hover": { backgroundColor: "action.hover" },
+                        },
+                      }}
+                    >
+                      {host.hostname}
+                    </MenuItem>
+                  )),
+                ])}
               </Select>
             </FormControl>
             {/* Filter */}
@@ -728,6 +783,8 @@ const Graphs: React.FC = () => {
                   setIsAuto(false);
                 }
               }}
+              disableFuture
+              maxDateTime={selectedDateTimeEnd}
             ></DateTimePicker>
             <DateTimePicker
               label="End"
@@ -741,6 +798,7 @@ const Graphs: React.FC = () => {
                   setIsAuto(false);
                 }
               }}
+              disableFuture
             ></DateTimePicker>
             {/* Cheack Box For Auto */}
             <Box sx={{ ml: 1 }}>

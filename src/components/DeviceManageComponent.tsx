@@ -26,9 +26,13 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { IDevice } from "../interface/InterfaceCollection";
 
 // Add these interfaces at the top of your file
@@ -67,6 +71,15 @@ interface EditFormData {
   };
 }
 
+// New interface for grouping devices
+interface GroupedDevices {
+  [key: string]: {
+    normalizedName: string;
+    originalName: string;
+    devices: IDevice[];
+  };
+}
+
 const textFieldProps = {
   size: "small" as const,
   fullWidth: true,
@@ -84,6 +97,7 @@ const typographyProps = {
 
 const ManageComponent = () => {
   const [devices, setDevices] = useState<IDevice[]>([]);
+  const [groupedDevices, setGroupedDevices] = useState<GroupedDevices>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -91,6 +105,7 @@ const ManageComponent = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<IDevice | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState<string | false>(false);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -162,6 +177,36 @@ const ManageComponent = () => {
     },
   });
 
+  // Function to normalize a hostgroup name (convert to uppercase)
+  const normalizeGroupName = (name: string): string => {
+    return name ? name.toUpperCase() : "UNCATEGORIZED";
+  };
+
+  // Function to group devices by normalized hostgroup name
+  const groupDevicesByHostgroup = (devices: IDevice[]) => {
+    const grouped: GroupedDevices = {};
+
+    devices.forEach((device) => {
+      const originalName = device.hostgroup || "Uncategorized";
+      const normalizedName = normalizeGroupName(originalName);
+
+      if (!grouped[normalizedName]) {
+        grouped[normalizedName] = {
+          normalizedName,
+          originalName,
+          devices: [],
+        };
+      }
+
+      grouped[normalizedName].devices.push(device);
+
+      // Use the most recent name format we've seen for display
+      grouped[normalizedName].originalName = originalName;
+    });
+
+    return grouped;
+  };
+
   const fetchDevices = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/host`, {
@@ -172,18 +217,26 @@ const ManageComponent = () => {
         },
       });
       if (!response.ok) {
-        // console.log("No devices found");
         return;
       }
 
       const result: ApiResponse = await response.json();
 
       if (result.status !== "success" || !result.data.length) {
-        // console.log("No devices found");
         return;
       }
 
       setDevices(result.data);
+
+      // Group devices by normalized hostgroup names
+      const grouped = groupDevicesByHostgroup(result.data);
+      setGroupedDevices(grouped);
+
+      // Set the first group as expanded by default if there are groups
+      const groups = Object.keys(grouped);
+      if (groups.length > 0) {
+        setExpandedGroup(groups[0]);
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch devices";
@@ -267,11 +320,16 @@ const ManageComponent = () => {
         throw new Error(`Failed to update device: ${response.statusText}`);
       }
 
-      setDevices(
-        devices.map((device) =>
-          device._id === editingDevice._id ? { ...device, ...editForm } : device
-        )
+      // Update devices state
+      const updatedDevices = devices.map((device) =>
+        device._id === editingDevice._id ? { ...device, ...editForm } : device
       );
+
+      setDevices(updatedDevices);
+
+      // Regroup devices after update
+      const regrouped = groupDevicesByHostgroup(updatedDevices);
+      setGroupedDevices(regrouped);
 
       setSnackbar({
         open: true,
@@ -296,7 +354,6 @@ const ManageComponent = () => {
 
     try {
       const response = await fetch(
-        // `http://localhost:3000/host/${deviceToDelete._id}`,
         `${import.meta.env.VITE_API_URL}/host/${deviceToDelete._id}`,
         {
           method: "DELETE",
@@ -317,7 +374,14 @@ const ManageComponent = () => {
       }
 
       // Remove the device from the local state
-      setDevices(devices.filter((device) => device._id !== deviceToDelete._id));
+      const updatedDevices = devices.filter(
+        (device) => device._id !== deviceToDelete._id
+      );
+      setDevices(updatedDevices);
+
+      // Regroup devices after deletion
+      const regrouped = groupDevicesByHostgroup(updatedDevices);
+      setGroupedDevices(regrouped);
 
       setSnackbar({
         open: true,
@@ -336,6 +400,13 @@ const ManageComponent = () => {
       setDeviceToDelete(null);
     }
   };
+
+  // Handle accordion state
+  const handleAccordionChange =
+    (groupName: string) =>
+    (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedGroup(isExpanded ? groupName : false);
+    };
 
   // Modify the dialog close handler
   const handleCloseDialog = () => {
@@ -405,7 +476,9 @@ const ManageComponent = () => {
     );
   }
 
-  if (devices.length === 0) {
+  const hostGroups = Object.keys(groupedDevices);
+
+  if (hostGroups.length === 0) {
     return (
       <Container>
         <Box
@@ -422,139 +495,160 @@ const ManageComponent = () => {
     );
   }
 
-  return (
-    <Container maxWidth={false}>
-      {devices.length === 0 ? (
-        <Paper sx={{ p: 3, textAlign: "center" }}>
-          <Typography variant="body1">No devices found</Typography>
-        </Paper>
-      ) : (
-        <TableContainer
-          component={Paper}
-          elevation={0}
+  // Function to render a table for a specific group
+  const renderDeviceTable = (devices: IDevice[]) => {
+    return (
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          backgroundColor: "transparent",
+        }}
+      >
+        <Table
           sx={{
-            backgroundColor: "transparent",
-            // mt: 2,
+            width: 1,
+            "& .MuiTableCell-root": {
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              padding: "16px",
+            },
+            "& .MuiTableCell-head": {
+              borderBottom: "1px solid #dbdbdb",
+            },
+            "& .MuiTableRow-body:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+            },
           }}
         >
-          <Table
-            sx={{
-              // minWidth: 650,
-              width: 1,
-              "& .MuiTableCell-root": {
-                borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-                padding: "16px",
-              },
-              "& .MuiTableCell-head": {
-                borderBottom: "1px solid #dbdbdb",
-              },
-              "& .MuiTableRow-body:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            {/* <TableHead sx={{ backgroundColor: "#242d5d",  }}> */}
-            <TableHead sx={{ backgroundColor: "#ffffff" }}>
-              <TableRow>
-                <TableCell sx={{ color: "black",width:"35%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Device's name
-                  </Typography>
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
+            <TableRow>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Device's name
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  IP Address
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  SNMP Version
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Status
+                </Typography>
+              </TableCell>
+              <TableCell width={120} align="center" sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Actions
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {devices.map((device) => (
+              <TableRow key={device._id} hover>
+                <TableCell
+                  sx={{
+                    display: "block",
+                    wordBreak: "break-word",
+                    hyphens: "auto",
+                  }}
+                >
+                  <Typography variant="body2">{device.hostname}</Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    IP Address
-                  </Typography>
+                <TableCell>
+                  <Typography variant="body2">{device.ip_address}</Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"15%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    SNMP Version
-                  </Typography>
+                <TableCell>
+                  <Typography variant="body2">{device.snmp_version}</Typography>
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Group
-                  </Typography>
+                <TableCell>
+                  <Chip
+                    label={getStatusLabel(device.status)}
+                    color={getStatusColor(device.status)}
+                    size="small"
+                    sx={{ minWidth: "80px", py: 2 }}
+                  />
                 </TableCell>
-                <TableCell sx={{ color: "black",width:"10%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Status
-                  </Typography>
-                </TableCell>
-                <TableCell width={120} align="center" sx={{ color: "black",width:"10%" }}>
-                  <Typography variant="subtitle1" fontWeight="medium">
-                    Actions
-                  </Typography>
+                <TableCell align="center">
+                  <IconButton
+                    size="small"
+                    sx={{
+                      mr: 1,
+                      "&:hover": {
+                        backgroundColor: "warning.light",
+                      },
+                    }}
+                    onClick={() => handleEditClick(device)}
+                  >
+                    <EditNoteIcon sx={{ color: "warning.main" }} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "error.light",
+                      },
+                    }}
+                    onClick={() => handleDeleteClick(device)}
+                  >
+                    <DeleteIcon sx={{ color: "error.main" }} />
+                  </IconButton>
                 </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {devices.map((device) => (
-                <TableRow key={device._id} hover>
-                  <TableCell
-                    sx={{
-                      display: "block", // Change from -webkit-box to block for better line break support
-                      wordBreak: "break-word", // Allow words to break if needed
-                      hyphens: "auto",
-                    }}
-                  >
-                    <Typography variant="body2">{device.hostname}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{device.ip_address}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {device.snmp_version}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{device.hostgroup}</Typography>
-                  </TableCell>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
 
-                  <TableCell>
-                    <Chip
-                      label={getStatusLabel(device.status)}
-                      color={getStatusColor(device.status)}
-                      size="small"
-                      sx={{ minWidth: "80px" }}
-                    />
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      size="small"
-                      sx={{
-                        mr: 1,
-                        "&:hover": {
-                          backgroundColor: "warning.light",
-                        },
-                      }}
-                      onClick={() => handleEditClick(device)}
-                    >
-                      <EditNoteIcon sx={{ color: "warning.main" }} />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      sx={{
-                        "&:hover": {
-                          backgroundColor: "error.light",
-                        },
-                      }}
-                      onClick={() => handleDeleteClick(device)}
-                    >
-                      <DeleteIcon sx={{ color: "error.main" }} />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+  return (
+    <Container maxWidth={false}>
+      <Box sx={{ mb: 3 }}>
+        {hostGroups.map((groupKey) => {
+          const group = groupedDevices[groupKey];
+          return (
+            <Accordion
+              key={groupKey}
+              // expanded={expandedGroup === groupKey}
+              onChange={handleAccordionChange(groupKey)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{ backgroundColor: "#f5f5f5" }}
+              >
+                <Typography fontWeight="medium">
+                  {group.originalName.toUpperCase()} ({group.devices.length}{" "}
+                  {group.devices.length === 1 ? "device" : "devices"})
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {group.devices.length === 0 ? (
+                  <Paper sx={{ p: 3, textAlign: "center" }}>
+                    <Typography variant="body1">
+                      No devices in this group
+                    </Typography>
+                  </Paper>
+                ) : (
+                  renderDeviceTable(group.devices)
+                )}
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+      </Box>
+
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
-        onClose={handleCloseDialog} // Use the new handler here
+        onClose={handleCloseDialog}
         maxWidth="lg"
         fullWidth
       >
@@ -595,9 +689,7 @@ const ManageComponent = () => {
                     </Typography>
                     <Typography sx={{ fontSize: 14 }}>Device's name</Typography>
                   </Box>
-                  <Typography sx={{ fontSize: 14, mt: 4 }}>
-                    Templates
-                  </Typography>
+
                   <Box
                     sx={{
                       display: "flex",
@@ -620,20 +712,6 @@ const ManageComponent = () => {
                     value={editForm.hostname}
                     onChange={(e) =>
                       setEditForm({ ...editForm, hostname: e.target.value })
-                    }
-                    sx={{
-                      mb: 2,
-                      width: 1,
-                      "& .MuiInputBase-input": {
-                        fontSize: 14,
-                      },
-                    }}
-                  />
-                  <TextField
-                    {...textFieldProps}
-                    value={editForm.template}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, template: e.target.value })
                     }
                     sx={{
                       mb: 2,
@@ -896,7 +974,6 @@ const ManageComponent = () => {
                         component="fieldset"
                         sx={{ minWidth: 200, mb: 2 }}
                       >
-                        {/* <FormLabel component="legend" sx={{ fontSize: 14 }}>SNMP Version</FormLabel> */}
                         <RadioGroup
                           value={editForm.snmp_version}
                           onChange={handleVersionChange}
