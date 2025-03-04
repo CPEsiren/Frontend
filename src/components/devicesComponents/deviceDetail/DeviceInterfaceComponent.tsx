@@ -19,7 +19,7 @@ const DeviceInterfaceComponent = ({
   };
 
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       {interfaces.length == 0 ? (
         <Typography
           sx={{ textAlign: "center", width: 1, fontSize: "1.2rem", py: 3 }}
@@ -35,39 +35,46 @@ const DeviceInterfaceComponent = ({
                 <Box
                   sx={{
                     padding: 2,
+                    transition: "opacity 0.3s ease-in-out",
+                    opacity: 1,
                     border: "3px solid #5b71a5",
                     borderRadius: 2,
                     height: "80%",
                     backgroundColor: "#FBFDFF",
-                    transition: "opacity 0.3s ease-in-out",
-                    opacity: 1,
+                  
                   }}
                 >
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
-                    sx={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      lineHeight: 1.2,
-                      maxHeight: "3.6em", 
-                       mb: 1,
-                        width:"90%"
-                    }}
-                  >
-                    {item.interface_name}
-                  </Typography>
-                  <Typography sx={{mb:0.5}}>Type: {item.interface_type}</Typography>
-                  <Typography sx={{mb:0.5}}>Speed: {item.interface_speed} bps</Typography>
-                  <Typography sx={{mb:0.5}}>
-                    Adminstatus: {item.interface_Adminstatus}
-                  </Typography>
-                  <Typography sx={{mb:0.5}}>
-                    Operstatus: {item.interface_Operstatus}
-                  </Typography>
+                  <Box sx={{ flexGrow: 1, width: "100%" }}>
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight={600}
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        lineHeight: 1.2,
+                        maxHeight: "3.6em",
+                        mb: 1,
+                        width: "90%",
+                      }}
+                    >
+                      {item.interface_name}
+                    </Typography>
+                    <Typography sx={{ mb: 0.5 }}>
+                      Type: {item.interface_type}
+                    </Typography>
+                    <Typography sx={{ mb: 0.5 }}>
+                      Speed: {item.interface_speed} bps
+                    </Typography>
+                    <Typography sx={{ mb: 0.5 }}>
+                      Adminstatus: {item.interface_Adminstatus}
+                    </Typography>
+                    <Typography sx={{ mb: 0.5 }}>
+                      Operstatus: {item.interface_Operstatus}
+                    </Typography>
+                  </Box>
                 </Box>
               </Grid>
             ))}

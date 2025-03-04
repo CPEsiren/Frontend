@@ -566,6 +566,7 @@ const Graphs: React.FC = () => {
               mb: 4,
               justifyContent: "space-between",
               alignItems: "center",
+              
             }}
           >
             {/* Select Host */}
