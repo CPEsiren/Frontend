@@ -175,6 +175,7 @@ const Triggers = () => {
           marginTop: 2,
           height: "auto",
           display: "flex",
+          
         }}
       >
         <Box
