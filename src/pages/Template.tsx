@@ -27,7 +27,6 @@ import {
   TablePagination,
   MenuItem,
   Chip,
-  Link,
   Menu,
   Fade,
 } from "@mui/material";
@@ -43,10 +42,10 @@ import {
   ITemplate,
   RecoveryPart,
 } from "../interface/InterfaceCollection";
-import TemplateIcon from "../assets/template.svg";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const functionofItem = [
   { value: "avg", label: "avg()" },
@@ -545,6 +544,23 @@ const Templates: React.FC = () => {
 
   const handleAddTrigger = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    // Check if the combination of trigger_name and severity is unique
+    const isUnique = !editingTemplate.triggers.some(
+      (trigger) =>
+        trigger.trigger_name === trigger_name && trigger.severity === severity
+    );
+
+    if (!isUnique) {
+      setSnackbar({
+        open: true,
+        message: "Trigger with the same name and severity already exists",
+        severity: "error",
+        refreshCallback: null,
+      });
+      return;
+    }
+
     handleSubmitTrigger(e as unknown as React.FormEvent<HTMLFormElement>);
   };
 
@@ -668,6 +684,22 @@ const Templates: React.FC = () => {
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedItem(item);
+  };
+
+  const handleDuplicateTrigger = (index: number) => {
+    const newTriggers = [...editingTemplate.triggers];
+    const duplicatedTrigger = {
+      ...newTriggers[index],
+      trigger_name: `${newTriggers[index].trigger_name}`,
+    };
+    setTrigger_name(duplicatedTrigger.trigger_name);
+    setSeverity(duplicatedTrigger.severity);
+    setExpression(duplicatedTrigger.expression);
+    setRecoveryExpression(duplicatedTrigger.recovery_expression);
+    setOk_eventGen(duplicatedTrigger.ok_event_generation);
+    setThresholdBreachDuration(duplicatedTrigger.thresholdDuration);
+    setExpressionParts(duplicatedTrigger.expressionPart);
+    setRecoveryParts(duplicatedTrigger.expressionRecoveryPart);
   };
 
   return (
@@ -2156,10 +2188,10 @@ const Templates: React.FC = () => {
                               />
                               <Chip
                                 label={
-                                  ThresholdBreachDuration === 0
+                                  trigger.thresholdDuration === 0
                                     ? `Threshold Breach Duration : Real-Time.`
                                     : `Threshold Breach Duration : ${
-                                        ThresholdBreachDuration / 60000
+                                        trigger.thresholdDuration / 60000
                                       } minute.`
                                 }
                               />
@@ -2210,16 +2242,34 @@ const Templates: React.FC = () => {
                             </Box>
 
                             {/* Delete button */}
-                            <IconButton
-                              onClick={() => handleDeleteTrigger(index)}
-                              sx={{
-                                width: 30,
-                                color: "error.main",
-                                backgroundColor: "transparent",
-                              }}
+                            <Box
+                              sx={{ display: "flex", flexDirection: "column" }}
                             >
-                              <DeleteIcon />
-                            </IconButton>
+                              {/* Duplicate button */}
+                              <IconButton
+                                onClick={() => handleDuplicateTrigger(index)}
+                                sx={{
+                                  width: 30,
+                                  color: "primary.main",
+                                  backgroundColor: "transparent",
+                                  mr: 1,
+                                }}
+                              >
+                                <ContentCopyIcon />
+                              </IconButton>
+
+                              {/* Delete button */}
+                              <IconButton
+                                onClick={() => handleDeleteTrigger(index)}
+                                sx={{
+                                  width: 30,
+                                  color: "error.main",
+                                  backgroundColor: "transparent",
+                                }}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </Box>
                           </Box>
                         ))
                       )}
