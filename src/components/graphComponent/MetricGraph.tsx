@@ -15,8 +15,6 @@ export interface Items {
 interface MetricGraphProps {
   item: Items;
   selectedLastTime: string;
-  startTimeForScale: Date;
-  endTimeForScale: Date;
   hideLegendLabel?: boolean;
   isSmall?: boolean; // Add new prop for size
 }
@@ -24,8 +22,6 @@ interface MetricGraphProps {
 const MetricGraph: React.FC<MetricGraphProps> = ({
   item,
   selectedLastTime,
-  startTimeForScale,
-  endTimeForScale,
   hideLegendLabel = false,
   isSmall = false, // Default to normal size
 }) => {
@@ -203,8 +199,6 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
               scaleType: "time",
               data: xAxis,
               label: "Date\nTime",
-              min: startTimeForScale.getTime(),
-              max: endTimeForScale.getTime(),
               labelStyle: {
                 fontSize: isSmall ? 10 : 12,
                 lineHeight: isSmall ? 1 : 1.2,
@@ -217,7 +211,8 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 transform: `translateY(${isSmall ? 1 : 2}px)`, // Move label down
               },
               valueFormatter: (value) => formatDateTime(new Date(value)),
-              tickNumber: isSmall ? 5 : 7,
+              min: xAxis[0],
+              max: xAxis[xAxis.length - 1],
             },
           ]}
           yAxis={[
@@ -235,7 +230,6 @@ const MetricGraph: React.FC<MetricGraphProps> = ({
                 fill: "#666",
               },
               valueFormatter: formatYAxisLabel,
-              tickNumber: isSmall ? 5 : 7,
             },
           ]}
           sx={{

@@ -127,8 +127,8 @@ const Graphs: React.FC = () => {
         setUrl(initialUrl);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
+      // const errorMessage =
+      //   error instanceof Error ? error.message : "An unknown error occurred";
       // console.log(errorMessage);
     } finally {
       setIsLoading(false);
@@ -163,9 +163,6 @@ const Graphs: React.FC = () => {
         "graphFilters",
         JSON.stringify(initialSelectedItems)
       );
-
-      setStartTimeForScale(selectedDateTimeStart);
-      setEndTimeForScale(selectedDateTimeEnd);
     } else {
       setHostNow({
         host_id: "",
@@ -193,7 +190,7 @@ const Graphs: React.FC = () => {
   //DateTime Range
   const [startTime, setStartTime] = useState<Date>(() => {
     const now = new Date();
-    return new Date(now.setMinutes(now.getMinutes() - 16));
+    return new Date(now.setMinutes(now.getMinutes() - 15));
   });
   const [selectedDateTimeStart, setSelectedDateTimeStart] = useState<Date>(
     () => {
@@ -201,14 +198,10 @@ const Graphs: React.FC = () => {
       return new Date(now.setMinutes(now.getMinutes() - 15));
     }
   );
-  const [startTimeForScale, setStartTimeForScale] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.setMinutes(now.getMinutes() - 15));
-  });
+
   const [selectedDateTimeEnd, setSelectedDateTimeEnd] = useState<Date>(
     new Date()
   );
-  const [endTimeForScale, setEndTimeForScale] = useState<Date>(new Date());
 
   //Now Range Data
   const [rangeTime, setRangeTime] = useState<string>("15 m");
@@ -282,56 +275,47 @@ const Graphs: React.FC = () => {
       switch (selectedLastTime) {
         case "Last 15 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 15);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 16);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 15);
           break;
         case "Last 30 Minutes":
           dateTimeStart.setMinutes(dateTimeEnd.getMinutes() - 30);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 31);
+          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 30);
           break;
         case "Last 1 Hour":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 1);
           forStartTime.setHours(dateTimeEnd.getHours() - 1);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 3 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 3);
           forStartTime.setHours(dateTimeEnd.getHours() - 3);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 6 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 6);
           forStartTime.setHours(dateTimeEnd.getHours() - 6);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 12 Hours":
           dateTimeStart.setHours(dateTimeEnd.getHours() - 12);
           forStartTime.setHours(dateTimeEnd.getHours() - 12);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 1 Day":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 1);
           forStartTime.setDate(dateTimeEnd.getDate() - 1);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 3 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 3);
           forStartTime.setDate(dateTimeEnd.getDate() - 3);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 7 Days":
           dateTimeStart.setDate(dateTimeEnd.getDate() - 7);
           forStartTime.setDate(dateTimeEnd.getDate() - 7);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 1 Month":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 1);
           forStartTime.setMonth(dateTimeEnd.getMonth() - 1);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         case "Last 6 Months":
           dateTimeStart.setMonth(dateTimeEnd.getMonth() - 6);
           forStartTime.setMonth(dateTimeEnd.getMonth() - 6);
-          forStartTime.setMinutes(dateTimeEnd.getMinutes() - 1);
           break;
         default:
           // If no match, don't change the date
@@ -346,8 +330,6 @@ const Graphs: React.FC = () => {
 
   //Apply Button
   const handleApplyClick = () => {
-    setStartTimeForScale(selectedDateTimeStart);
-    setEndTimeForScale(selectedDateTimeEnd);
     setUrl(
       `${
         import.meta.env.VITE_API_URL
@@ -379,10 +361,8 @@ const Graphs: React.FC = () => {
     });
     setStartTime(() => {
       const now = new Date();
-      return new Date(now.setMinutes(now.getMinutes() - 16));
+      return new Date(now.setMinutes(now.getMinutes() - 15));
     });
-    setStartTimeForScale(selectedDateTimeStart);
-    setEndTimeForScale(selectedDateTimeEnd);
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
@@ -404,8 +384,6 @@ const Graphs: React.FC = () => {
 
         setSelectedDateTimeStart(past); // 15 minutes ago
         setStartTime(pastforStartTime); // 15 minutes ago
-        setStartTimeForScale(past);
-        setEndTimeForScale(now);
 
         // Check if hosts array is not empty before accessing the first element
         if (hosts.length > 0) {
@@ -970,12 +948,7 @@ const Graphs: React.FC = () => {
                   </Box>
 
                   <Box sx={{ flexGrow: 1, overflow: "hidden", width: 1, p: 0 }}>
-                    <MetricGraph
-                      item={item}
-                      selectedLastTime={rangeTime}
-                      startTimeForScale={startTimeForScale}
-                      endTimeForScale={endTimeForScale}
-                    />
+                    <MetricGraph item={item} selectedLastTime={rangeTime} />
                   </Box>
                 </Paper>
               </Grid>
