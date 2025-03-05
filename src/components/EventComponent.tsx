@@ -119,6 +119,7 @@ const EventComponent = () => {
         justifyContent="center"
         alignItems="center"
         minHeight="400px"
+    
       >
         <CircularProgress />
       </Box>
@@ -144,6 +145,7 @@ const EventComponent = () => {
               // mt: 2,
               wordBreak: "break-word", // Allow words to break if needed
               hyphens: "auto",
+         
             }}
           >
             <Table
