@@ -28,6 +28,7 @@ import {
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
 import { InfoOutlined } from "@mui/icons-material";
+import NumberFormatTextField from "../NumberFormatTextField";
 
 const functionofItem = [
   { value: "avg", label: "Average" },
@@ -1195,7 +1196,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       ))}
                     </TextField>
 
-                    <TextField
+                    <NumberFormatTextField
                       value={part.value}
                       onChange={(e) =>
                         handleExpressionPartChange(
@@ -1493,7 +1494,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       ))}
                     </TextField>
 
-                    <TextField
+                    <NumberFormatTextField
                       value={part.value}
                       onChange={(e) =>
                         handleRecoveryPartChange(index, "value", e.target.value)
