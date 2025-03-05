@@ -654,16 +654,30 @@ const TriggerComponent = ({
               sx={{ mb: 2}}
             
             >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{color:"white"}}/>}
+             <AccordionSummary
+                expandIcon={<ExpandMoreIcon sx={{ color: "white" }} />}
                 sx={{ backgroundColor: "#1f2b5d" }}
               >
                 <Typography fontWeight="medium" sx={{ color: "white" }}>
-                  {group.host_id.hostname.toUpperCase()} (
-                  {group.triggers.length}{" "}
-                  {group.triggers.length === 1 ? "trigger" : "triggers"})
+                  {group.host_id.hostname.toUpperCase()} 
+                  <Box
+                    component="span"
+                    sx={{
+                      border: "3px solid rgb(79, 93, 155)", 
+                      fontSize: "15px",
+                      borderRadius: "50px", 
+                      padding: "3px 8px", 
+                      color: "white", 
+                      marginLeft:"15px",
+                    }}
+                  >
+                    {group.triggers.length}{" "}
+                    {group.triggers.length === 1 ? "trigger" : "triggers"}
+                  </Box>
+                  
                 </Typography>
               </AccordionSummary>
+
               <AccordionDetails>
                 {group.triggers.length === 0 ? (
                   <Paper sx={{ p: 3, textAlign: "center" }}>
@@ -734,6 +748,7 @@ const TriggerComponent = ({
                           sx={{
                             "&:hover": {
                               backgroundColor: "#EBF5FF"
+                              
                             },
                           }}
                           >
@@ -832,6 +847,7 @@ const TriggerComponent = ({
                                         "0px 4px 10px rgba(0, 0, 0, 0.2)",
                                       maxWidth: "400px",
                                       fontSize: "14px",
+                                      
                                     },
                                   },
                                 }}

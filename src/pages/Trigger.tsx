@@ -133,41 +133,61 @@ const Triggers = () => {
   return (
     <>
       {windowSize.width > 600 && (
-        <Box
-          sx={{
-            width: 1,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 5,
-          }}
-        >
-          <Typography
-            variant="h4"
-            component="h1"
-            fontWeight={600}
-            color={"#242D5D"}
-          >
-            TRIGGER
-          </Typography>
-          <Button
-            onClick={toggleModal}
-            sx={{
-              color: "#FFFFFB",
-              backgroundColor: "#F25A28",
-              fontSize: "1rem",
-              fontWeight: 600,
-              borderRadius: "70px",
-              width: "7rem",
-              height: "2.5rem",
-              "&:hover": {
-                backgroundColor: "#F37E58",
-              },
-            }}
-          >
-            + Trigger
-          </Button>
-        </Box>
+
+<Box
+sx={{
+  width: 1,
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginTop: 5,
+}}
+>
+<Typography
+  variant="h4"
+  component="h1"
+  fontWeight={600}
+  color={"#242D5D"}
+  sx={{ display: "flex", alignItems: "center" }} // Use flexbox to align the badge next to the text
+>
+  TRIGGER
+  {/* Host Group badge placed right next to "TRIGGER" */}
+  {/* <Box
+  sx={{
+    backgroundColor: "transparent", // Make the background transparent (no color inside)
+    color: "black", // White text color
+    borderRadius: "50px", // Oval shape
+    padding: "4px 12px", // Padding for the oval shape
+    fontSize: "0.8rem", // Smaller font size for the badge
+    fontWeight: 600, // Matching font weight
+    marginLeft: "10px", // Adds space between "TRIGGER" and the badge
+    border: "3px solid #F25A28", // Border color and thickness (orange border)
+  }}
+>
+  Host Group
+</Box> */}
+
+</Typography>
+<Button
+  onClick={toggleModal}
+  sx={{
+    color: "#FFFFFB",
+    backgroundColor: "#F25A28",
+    fontSize: "1rem",
+    fontWeight: 600,
+    borderRadius: "70px",
+    width: "7rem",
+    height: "2.5rem",
+    "&:hover": {
+      backgroundColor: "#F37E58",
+    },
+  }}
+>
+  + Trigger
+</Button>
+</Box>
+
+
       )}
       <Box
         sx={{

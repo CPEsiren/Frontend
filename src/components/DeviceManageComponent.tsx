@@ -633,9 +633,23 @@ const  ManageComponent = () => {
                 }}
               >
                 <Typography fontWeight="medium" sx={{ color: "#fff" }}>
-                  {group.originalName.toUpperCase()} ({group.devices.length}{" "}
-                  {group.devices.length === 1 ? "device" : "devices"})
-                </Typography>
+                {group.originalName.toUpperCase()} 
+                <Box
+                  component="span"
+                  sx={{
+                    border: "3px solid rgb(79, 93, 155)", 
+                    fontSize: "15px",
+                    borderRadius: "50px", 
+                    padding: "3px 8px", 
+                    color: "white", 
+                    marginLeft:"15px",
+                  }}
+                >
+                {group.devices.length}{" "}
+                {group.devices.length === 1 ? "device" : "devices"}
+              </Box>
+            </Typography>
+
               </AccordionSummary>
               <AccordionDetails>
                 {group.devices.length === 0 ? (
