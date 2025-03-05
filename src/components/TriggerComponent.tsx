@@ -40,6 +40,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import React from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import NumberFormatTextField from "./NumberFormatTextField";
 
 interface GroupedTriggers {
   triggers: ITrigger[];
@@ -1303,22 +1304,23 @@ const TriggerComponent = ({
                     <Typography color="error" {...typographyProps}>
                       *
                     </Typography>
-                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                    <Typography sx={{ ml: 1,mr:2 }} {...typographyProps}>
                       Expression
                     </Typography>
                     <Button
                       onClick={handleAddExpression}
                       sx={{
-                        ml: 3,
-                        fontSize: 12,
-                        color: "blue",
-                        cursor: "pointer",
-                        "&:hover": {
-                          textDecoration: "underline",
-                        },
+                        color: "white",
+                        textAlign: "center",
+                        bgcolor: "#0281F2",
+                        border: "1px solid #0281F2",
+                        borderRadius: "8px",
+                        gap: 1,
+                        mt: 1,
+                        mb: 1,
                       }}
                     >
-                      Add Expression
+                      + Expression
                     </Button>
                   </Box>
                 </Box>
@@ -1459,7 +1461,7 @@ const TriggerComponent = ({
                         ))}
                       </TextField>
 
-                      <TextField
+                      <NumberFormatTextField
                         value={part.value}
                         onChange={(e) =>
                           handleExpressionPartChange(
@@ -1615,15 +1617,17 @@ const TriggerComponent = ({
                       <Button
                         onClick={handleAddRecovery}
                         sx={{
-                          fontSize: 12,
-                          color: "blue",
-                          cursor: "pointer",
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
+                          color: "white",
+                          textAlign: "center",
+                          bgcolor: "#0281F2",
+                          border: "1px solid #0281F2",
+                          borderRadius: "8px",
+                          gap: 1,
+                          mt: 2,
+                          mb: 1,
                         }}
                       >
-                        Add Resolved Expression
+                        + Resolved Expression
                       </Button>
                     </Box>
                     {recoveryParts.map((part, index) => (
@@ -1745,7 +1749,7 @@ const TriggerComponent = ({
                           ))}
                         </TextField>
 
-                        <TextField
+                        <NumberFormatTextField
                           value={part.value}
                           onChange={(e) =>
                             handleRecoveryPartChange(
