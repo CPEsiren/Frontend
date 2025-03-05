@@ -28,7 +28,7 @@ export interface Item {
   type: string;
   unit: string;
   interval: number;
-  isOverview: boolean;
+  isOverview?: boolean;
 }
 
 export interface IInterface {

@@ -48,10 +48,10 @@ import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 const functionofItem = [
-  { value: "avg", label: "avg()" },
-  { value: "min", label: "min()" },
-  { value: "max", label: "max()" },
-  { value: "last", label: "last()" },
+  { value: "avg", label: "Average" },
+  { value: "min", label: "Minimum" },
+  { value: "max", label: "Maximum" },
+  { value: "last", label: "Latest" },
 ];
 
 const operators = [
@@ -175,13 +175,7 @@ const Templates: React.FC = () => {
       const result = await response.json();
       setTemplates(result.data);
     } catch (error) {
-      // console.error("Error fetching templates:", error);
-      // setSnackbar({
-      //   open: true,
-      //   message: "Failed to fetch templates",
-      //   severity: "error",
-      //   refreshCallback: null,
-      // });
+    
     } finally {
       setLoading(false);
     }

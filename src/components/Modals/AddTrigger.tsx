@@ -119,9 +119,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
-  const [refreshCallback, setRefreshCallback] = useState<(() => void) | null>(
-    null
-  );
 
   // Update expression when parts change
   const handleExpressionPartChange = (
@@ -1128,6 +1125,9 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                         },
                       }}
                     >
+                      <MenuItem value="1m">1m</MenuItem>
+                      <MenuItem value="5m">5m</MenuItem>
+                      <MenuItem value="10m">10m</MenuItem>
                       <MenuItem value="15m">15m</MenuItem>
                       <MenuItem value="30m">30m</MenuItem>
                       <MenuItem value="1h">1h</MenuItem>
