@@ -411,13 +411,11 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     liff.ready
       .then(() => {
         console.log("LIFF initialization successful");
-        if (!liff.isLoggedIn()) {
-          console.log("User not logged in, initiating login");
-          liff.login();
-        } else {
+        if (liff.isLoggedIn()) {
           console.log("User already logged in");
+
+          fetchLineProfile();
         }
-        fetchLineProfile();
       })
       .catch((err) => {
         console.error("LIFF initialization failed", err);
