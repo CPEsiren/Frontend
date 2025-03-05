@@ -438,6 +438,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
         </DialogActions>
       </Dialog>
 
+      {/* Edit Dialog */}
       <Dialog
         open={openDialogEdit}
         onClose={() => setOpenDialogEdit(false)}
@@ -471,13 +472,14 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                     onChange={handleProblemTitleChange}
                     placeholder="Enter alert title"
                     fullWidth
+                    sx={{  mr: 1 }}
                   />
-                  <Button
-                    sx={{ position: "absolute", right: "50%" }}
+                  <IconButton
+                    sx={{ width: "2rem", height: "2rem" }}
                     onClick={() => openPlaceholderProblemDialog("title")}
                   >
                     <AddIcon />
-                  </Button>
+                  </IconButton>
                 </Box>
 
                 <Divider />
@@ -485,8 +487,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: "column",
-                    alignItems: "stretch",
+                    flexDirection: "row",
                   }}
                 >
                   <TextField
@@ -499,13 +500,14 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                     rows={10}
                     maxRows={20}
                     fullWidth
+                    sx={{ mr: 1 }}
                   />
-                  <Button
-                    sx={{ position: "absolute", right: "50%" }}
+                  <IconButton
+                    sx={{ width: "2rem", height: "2rem" }}
                     onClick={() => openPlaceholderProblemDialog("body")}
                   >
                     <AddIcon />
-                  </Button>
+                  </IconButton>
                 </Box>
               </Box>
 
@@ -528,13 +530,14 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                     onChange={handleRecoveryTitleChange}
                     placeholder="Enter alert title"
                     fullWidth
+                    sx={{mr: 1 }}
                   />
-                  <Button
-                    sx={{ position: "absolute", right: "5%" }}
+                  <IconButton
+                    sx={{ width: "2rem", height: "2rem"}}
                     onClick={() => openPlaceholderRecoveryDialog("title")}
                   >
                     <AddIcon />
-                  </Button>
+                  </IconButton>
                 </Box>
 
                 <Divider />
@@ -542,8 +545,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: "column",
-                    alignItems: "stretch",
+                    flexDirection: "row",
                   }}
                 >
                   <TextField
@@ -556,21 +558,24 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({
                     rows={10}
                     maxRows={20}
                     fullWidth
+                    sx={{mr: 1 }}
                   />
-                  <Button
-                    sx={{ position: "absolute", right: "5%" }}
+                  <IconButton
+                    sx={{ width: "2rem", height: "2rem" }}
                     onClick={() => openPlaceholderRecoveryDialog("body")}
                   >
                     <AddIcon />
-                  </Button>
+                  </IconButton>
                 </Box>
               </Box>
             </Box>
+            <Box sx={{display:"flex",flexDirection:"row",alignItems:"center",ml:2}}>
+              <Typography>Enable</Typography>
             <Switch
               checked={enabled}
               onChange={(e) => setEnabled(e.target.checked)}
               inputProps={{ "aria-label": "notification toggle" }}
-            />
+            /></Box>
           </Box>
         </DialogContent>
         <DialogActions>

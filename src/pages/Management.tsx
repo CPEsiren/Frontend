@@ -73,7 +73,7 @@ const Management: React.FC = () => {
             backgroundColor: "#FFFFFB",
             borderRadius: 3,
             py: 2,
-            mb: 5
+            mb: 5,
           }}
         >
           <ManageComponent />
@@ -104,12 +104,10 @@ const Management: React.FC = () => {
 
           <Box
             sx={{
-              width: "100%",
+              width: 1,
               marginTop: 2,
               height: "auto",
               display: "flex",
-              paddingBottom: 5,
-              
             }}
           >
             <Box
@@ -123,10 +121,7 @@ const Management: React.FC = () => {
                 backgroundColor: "#FFFFFB",
                 borderRadius: 3,
                 py: 2,
-                px: 3,
-                
-                // paddingLeft: 3,
-                // paddingRight: 3,
+                mb: 5,
               }}
             >
               <Usermanagemnet />

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Item, ITrigger } from "../interface/InterfaceCollection";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import axios from "axios";
+import { InfoOutlined } from "@mui/icons-material";
+
 import {
   Alert,
   Box,
@@ -71,10 +73,10 @@ interface TriggerComponentProps {
 }
 
 const functionofItem = [
-  { value: "avg", label: "avg()" },
-  { value: "min", label: "min()" },
-  { value: "max", label: "max()" },
-  { value: "last", label: "last()" },
+  { value: "avg", label: "Average" },
+  { value: "min", label: "Minimum" },
+  { value: "max", label: "Maximum" },
+  { value: "last", label: "Latest" },
 ];
 
 const operators = [
@@ -97,7 +99,14 @@ const TriggerComponent = ({
   //Global State
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState({
+    trigger_name: false,
+    severity: false,
+    expression: false,
+    ok_eventGen: false,
+    recoveryExpression: false,
+  });
+
   const [expandedGroup, setExpandedGroup] = useState<string | false>(false);
 
   const typographyProps = {
@@ -417,12 +426,102 @@ const TriggerComponent = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+  const validateForm = () => {
+    // Check basic fields
+    const basicFieldsValid = {
+      trigger_name: !editTriggerName,
+      severity: !editSeverity,
+      ok_eventGen: !editOk_eve,
+    };
 
+    // Check expression parts
+    const expressionPartsValid = expressionParts.every((part) => {
+      return (
+        part.item &&
+        part.operation &&
+        part.value &&
+        part.functionofItem &&
+        (part.functionofItem === "last" || part.duration)
+      );
+    });
+
+    // Check recovery expression parts if needed
+    const recoveryPartsValid =
+      editOk_eve !== "resolved expression" ||
+      recoveryParts.every((part) => {
+        return (
+          part.item &&
+          part.operation &&
+          part.value &&
+          part.functionofItem &&
+          (part.functionofItem === "last" || part.duration)
+        );
+      });
+
+    // Update errors state
+    setErrors({
+      trigger_name: basicFieldsValid.trigger_name,
+      severity: basicFieldsValid.severity,
+      expression: !expressionPartsValid,
+      ok_eventGen: basicFieldsValid.ok_eventGen,
+      recoveryExpression:
+        editOk_eve === "resolved expression" && !recoveryPartsValid,
+    });
+
+    // Return true if all validations pass
+    return (
+      !Object.values(basicFieldsValid).some((error) => error) &&
+      expressionPartsValid &&
+      recoveryPartsValid
+    );
+  };
   const handleEditSubmit = async () => {
     if (!editIdTrigger) {
       console.error("No editIdTrigger found!");
       return;
     }
+
+    // Check if form is valid before submitting
+    if (!validateForm()) {
+      // Check which validation failed and show appropriate message
+      const expressionMissing = expressionParts.some(
+        (part) =>
+          !part.item ||
+          !part.operation ||
+          !part.value ||
+          !part.functionofItem ||
+          (part.functionofItem !== "last" && !part.duration)
+      );
+
+      const recoveryMissing =
+        editOk_eve === "resolved expression" &&
+        recoveryParts.some(
+          (part) =>
+            !part.item ||
+            !part.operation ||
+            !part.value ||
+            !part.functionofItem ||
+            (part.functionofItem !== "last" && !part.duration)
+        );
+
+      let errorMessage = "Please fill in all required fields";
+
+      if (expressionMissing) {
+        errorMessage =
+          "All expression fields are required. Please complete all expression fields.";
+      } else if (recoveryMissing) {
+        errorMessage =
+          "All recovery expression fields are required. Please complete all recovery expression fields.";
+      }
+
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+      return;
+    }
+
     setFormLoading(true);
     try {
       // Format expression parts for submission
@@ -665,10 +764,7 @@ const TriggerComponent = ({
                               Status
                             </Typography>
                           </TableCell>
-                          <TableCell
-                            align="center"
-                            sx={{ color: "black" }}
-                          >
+                          <TableCell align="center" sx={{ color: "black" }}>
                             <Typography variant="subtitle1" fontWeight="medium">
                               Actions
                             </Typography>
@@ -680,7 +776,6 @@ const TriggerComponent = ({
                           <TableRow key={trigger._id} hover>
                             <TableCell
                               sx={{
-                                display: "block",
                                 wordBreak: "break-word",
                                 hyphens: "auto",
                               }}
@@ -779,7 +874,7 @@ const TriggerComponent = ({
                                 }}
                               >
                                 <Typography
-                                  sx={{ cursor: "pointer", fontSize: "16px" }}
+                                  sx={{ cursor: "pointer", fontSize: "14px" }}
                                 >
                                   {trigger.ok_event_generation.toLocaleUpperCase()}
                                 </Typography>
@@ -795,29 +890,30 @@ const TriggerComponent = ({
                               {trigger.enabled ? "Enabled" : "Disabled"}
                             </TableCell>
                             <TableCell align="center">
-                              <IconButton
-                                size="small"
+                              <Button
+                                aria-controls={`fade-menu-${trigger._id}`}
+                                aria-haspopup="true"
+                                onClick={(event) =>
+                                  handleMenuClick(event, trigger)
+                                }
                                 sx={{
-                                  mr: 1,
+                                  justifySelf: "center",
+                                  borderRadius: "50%",
+                                  width: "40px",
+                                  height: "40px",
+                                  minWidth: "unset",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
                                   "&:hover": {
-                                    backgroundColor: "warning.light",
+                                    backgroundColor: "rgba(239, 239, 255, 0.1)",
                                   },
                                 }}
-                                onClick={() => handleEditClick(trigger)}
                               >
-                                <EditNoteIcon sx={{ color: "warning.main" }} />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                sx={{
-                                  "&:hover": {
-                                    backgroundColor: "error.light",
-                                  },
-                                }}
-                                onClick={() => handleDeleteClick(trigger)}
-                              >
-                                <DeleteIcon sx={{ color: "error.main" }} />
-                              </IconButton>
+                                <MoreVertIcon
+                                  sx={{ fontSize: 24, color: "#242d5d" }}
+                                />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -830,7 +926,6 @@ const TriggerComponent = ({
           ))}
         </Box>
 
-        {/* Menu (outside the table) */}
         <Menu
           id="fade-menu"
           MenuListProps={{
@@ -869,6 +964,7 @@ const TriggerComponent = ({
             </Typography>
           </MenuItem>
 
+          {/* Duplicate - if applicable */}
           <MenuItem
             onClick={() => {
               if (selectedTrigger && onDuplicateTrigger) {
@@ -922,15 +1018,29 @@ const TriggerComponent = ({
         >
           <DialogTitle>Edit Trigger</DialogTitle>
           <DialogContent>
-            <Paper elevation={0} sx={{ p: 2, backgroundColor: "#FFFFFB" }}>
+            <Paper elevation={0} sx={{ px: 3, backgroundColor: "#FFFFFB" }}>
               <Box
                 sx={{
                   mt: 2,
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
+                  border: "2px solid rgb(232, 232, 232)",
+                  borderRadius: 3,
+                  p: 3,
                 }}
               >
+                <Typography
+                  sx={{
+                    fontSize: "1.2rem",
+                    color: "black",
+                    fontWeight: "medium",
+                    width: "10%",
+                    mb: 2,
+                  }}
+                >
+                  TRIGGER
+                </Typography>
                 {/* Trigger Name field */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Box
@@ -954,6 +1064,10 @@ const TriggerComponent = ({
                     onChange={(e) => setEditTriggerName(e.target.value)}
                     fullWidth
                     required
+                    error={errors.trigger_name}
+                    helperText={
+                      errors.trigger_name ? "Trigger name is required" : ""
+                    }
                   />
                 </Box>
 
@@ -1015,6 +1129,119 @@ const TriggerComponent = ({
                     <Typography sx={{ ml: 1 }} {...typographyProps}>
                       Severity
                     </Typography>
+                    <Tooltip
+                      title={
+                        <Box sx={{ p: 1 }}>
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#FFA500"
+                            >
+                              Warning
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Moderate - Requires Monitoring
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              There is a potential issue, but it has not yet
+                              directly impacted network operations. Monitoring
+                              is required, and preventive action may be needed
+                              to prevent escalation.
+                            </Typography>
+                          </Box>
+
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#FF0000"
+                            >
+                              Critical
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Severe - Immediate Action Required
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              The issue is affecting network operations,
+                              potentially causing service disruptions or
+                              failures. Immediate action is required to minimize
+                              damage.
+                            </Typography>
+                          </Box>
+
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#8B0000"
+                            >
+                              Disaster
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Catastrophic - Full System Failure
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              The network or system has completely failed,
+                              severely impacting the organization or business.
+                              Emergency disaster recovery measures must be
+                              implemented immediately.
+                            </Typography>
+                          </Box>
+                        </Box>
+                      }
+                      arrow
+                      placement="right"
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: "white",
+                            color: "black",
+                            maxWidth: "350px",
+                            boxShadow: "0px 2px 8px rgba(0,0,0,0.15)",
+                            borderRadius: "8px",
+                            p: 1.5,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton>
+                        <InfoOutlined sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <Box
                     sx={{
@@ -1124,10 +1351,12 @@ const TriggerComponent = ({
                             e.target.value
                           )
                         }
+                        error={errors.expression && !part.functionofItem}
+                        required
                         label="Function"
                         size="small"
                         sx={{
-                          width: "10%",
+                          width: "12%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1152,11 +1381,17 @@ const TriggerComponent = ({
                           )
                         }
                         disabled={part.functionofItem === "last"}
+                        required={part.functionofItem !== "last"}
+                        error={
+                          errors.expression &&
+                          part.functionofItem !== "last" &&
+                          !part.duration
+                        }
                         select
                         label="Interval"
                         size="small"
                         sx={{
-                          width: "10%",
+                          width: "11%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1210,7 +1445,7 @@ const TriggerComponent = ({
                         label="Operation"
                         size="small"
                         sx={{
-                          width: "10%",
+                          width: "13%",
                           backgroundColor: "white",
                           "& .MuiInputBase-input": {
                             fontSize: 14,
@@ -1256,7 +1491,6 @@ const TriggerComponent = ({
                               e.target.value
                             )
                           }
-                          label="Operator"
                           size="small"
                           sx={{
                             width: "8%",
@@ -1276,19 +1510,19 @@ const TriggerComponent = ({
 
                       {/* Remove button (only show for rows after the first) */}
                       {index > 0 && (
-                        <Typography
+                        <IconButton
                           onClick={() => handleRemoveExpression(index)}
                           sx={{
                             fontSize: 12,
                             color: "red",
                             cursor: "pointer",
-                            "&:hover": {
-                              textDecoration: "underline",
-                            },
+                            // "&:hover": {
+                            //   textDecoration: "underline",
+                            // },
                           }}
                         >
-                          Remove
-                        </Typography>
+                          <DeleteIcon />
+                        </IconButton>
                       )}
                     </Box>
                   ))}
@@ -1415,7 +1649,7 @@ const TriggerComponent = ({
                           label="Function"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "12%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1443,7 +1677,7 @@ const TriggerComponent = ({
                           label="Interval"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "11%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1497,7 +1731,7 @@ const TriggerComponent = ({
                           label="Operation"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "13%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1543,7 +1777,6 @@ const TriggerComponent = ({
                                 e.target.value
                               )
                             }
-                            label="Operator"
                             size="small"
                             sx={{
                               width: "8%",
@@ -1563,19 +1796,19 @@ const TriggerComponent = ({
 
                         {/* Remove button (only show for rows after the first) */}
                         {index > 0 && (
-                          <Typography
+                          <IconButton
                             onClick={() => handleRemoveRecovery(index)}
                             sx={{
                               fontSize: 12,
                               color: "red",
                               cursor: "pointer",
-                              "&:hover": {
-                                textDecoration: "underline",
-                              },
+                              // "&:hover": {
+                              //   textDecoration: "underline",
+                              // },
                             }}
                           >
-                            Remove
-                          </Typography>
+                            <DeleteIcon />
+                          </IconButton>
                         )}
                       </Box>
                     ))}

@@ -893,7 +893,6 @@ const Templates: React.FC = () => {
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: "vertical",
                               textOverflow: "ellipsis",
-                              display: "block", // Change from -webkit-box to block for better line break support
                               wordBreak: "break-word", // Allow words to break if needed
                               hyphens: "auto",
                               lineHeight: 1.2,
@@ -905,7 +904,6 @@ const Templates: React.FC = () => {
                           </Typography>
                           <Typography
                             sx={{
-                              display: "block", // Change from -webkit-box to block for better line break support
                               wordBreak: "break-word", // Allow words to break if needed
                               hyphens: "auto",
                             }}

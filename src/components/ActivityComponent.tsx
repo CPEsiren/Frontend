@@ -249,7 +249,6 @@ const ActivityComponent: React.FC = () => {
                           <Typography
                             variant="body2"
                             sx={{
-                              display: "block", // Change from -webkit-box to block for better line break support
                               wordBreak: "break-word", // Allow words to break if needed
                               hyphens: "auto",
                             }}

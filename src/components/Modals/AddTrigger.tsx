@@ -15,6 +15,7 @@ import {
   Paper,
   Switch,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import axios from "axios";
@@ -26,12 +27,13 @@ import {
   ITrigger,
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
+import { InfoOutlined } from "@mui/icons-material";
 
 const functionofItem = [
-  { value: "avg", label: "avg()" },
-  { value: "min", label: "min()" },
-  { value: "max", label: "max()" },
-  { value: "last", label: "last()" },
+  { value: "avg", label: "Average" },
+  { value: "min", label: "Minimum" },
+  { value: "max", label: "Maximum" },
+  { value: "last", label: "Latest" },
 ];
 
 const operators = [
@@ -850,9 +852,121 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                 <Typography color="error" {...typographyProps}>
                   *
                 </Typography>
-                <Typography sx={{ ml: 1 }} {...typographyProps}>
+                <Typography sx={{ ml: 1, mr: 1 }} {...typographyProps}>
                   Severity
                 </Typography>
+                <Tooltip
+                  title={
+                    <Box sx={{ p: 1 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="#FFA500"
+                        >
+                          Warning
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: 1, fontSize: 13 }}
+                        >
+                          Moderate - Requires Monitoring
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            ml: 1,
+                            display: "block",
+                            color: "text.secondary",
+                            mt: 0.5,
+                          }}
+                        >
+                          There is a potential issue, but it has not yet
+                          directly impacted network operations. Monitoring is
+                          required, and preventive action may be needed to
+                          prevent escalation.
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="#FF0000"
+                        >
+                          Critical
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: 1, fontSize: 13 }}
+                        >
+                          Severe - Immediate Action Required
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            ml: 1,
+                            display: "block",
+                            color: "text.secondary",
+                            mt: 0.5,
+                          }}
+                        >
+                          The issue is affecting network operations, potentially
+                          causing service disruptions or failures. Immediate
+                          action is required to minimize damage.
+                        </Typography>
+                      </Box>
+
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="#8B0000"
+                        >
+                          Disaster
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: 1, fontSize: 13 }}
+                        >
+                          Catastrophic - Full System Failure
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            ml: 1,
+                            display: "block",
+                            color: "text.secondary",
+                            mt: 0.5,
+                          }}
+                        >
+                          The network or system has completely failed, severely
+                          impacting the organization or business. Emergency
+                          disaster recovery measures must be implemented
+                          immediately.
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                  arrow
+                  placement="right"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        backgroundColor: "white",
+                        color: "black",
+                        maxWidth: "350px",
+                        boxShadow: "0px 2px 8px rgba(0,0,0,0.15)",
+                        borderRadius: "8px",
+                        p: 1.5,
+                      },
+                    },
+                  }}
+                >
+                  <IconButton>
+                    <InfoOutlined sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
               <Box
                 sx={{
@@ -970,7 +1084,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       error={errors.expression && !part.functionofItem}
                       required
                       sx={{
-                        width: "10%",
+                        width: "12%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1007,7 +1121,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       label="Interval"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "11%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1067,7 +1181,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       label="Operation"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "13%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1119,7 +1233,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                         disabled={isFormDisabled}
                         error={errors.expression && !part.operator}
                         required
-                        label="Operator"
                         size="small"
                         sx={{
                           width: "8%",
@@ -1145,9 +1258,9 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                           fontSize: 12,
                           color: "red",
                           cursor: "pointer",
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
+                          // "&:hover": {
+                          //   textDecoration: "underline",
+                          // },
                         }}
                       >
                         <DeleteIcon />
@@ -1274,7 +1387,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       label="Function"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "12%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1310,7 +1423,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       label="Interval"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "11%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1366,7 +1479,7 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                       label="Operation"
                       size="small"
                       sx={{
-                        width: "10%",
+                        width: "13%",
                         backgroundColor: "white",
                         "& .MuiInputBase-input": {
                           fontSize: 14,
@@ -1414,7 +1527,6 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                         disabled={isFormDisabled}
                         error={errors.recoveryExpression && !part.operator}
                         required
-                        label="Operator"
                         size="small"
                         sx={{
                           width: "8%",
@@ -1440,9 +1552,9 @@ const AddTrigger: React.FC<AddTriggerProps> = ({
                           fontSize: 12,
                           color: "red",
                           cursor: "pointer",
-                          "&:hover": {
-                            textDecoration: "underline",
-                          },
+                          // "&:hover": {
+                          //   textDecoration: "underline",
+                          // },
                         }}
                       >
                         <DeleteIcon />
