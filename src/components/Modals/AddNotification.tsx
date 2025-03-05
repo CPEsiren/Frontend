@@ -417,6 +417,9 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       })
       .catch((err) => {
         console.error("LIFF initialization failed", err);
+      })
+      .finally(() => {
+        setIsInitializing(false);
       });
   }, []);
 
