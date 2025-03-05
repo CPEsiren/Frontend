@@ -95,7 +95,7 @@ const typographyProps = {
   fontSize: 14,
 };
 
-const ManageComponent = () => {
+const  ManageComponent = () => {
   const [devices, setDevices] = useState<IDevice[]>([]);
   const [groupedDevices, setGroupedDevices] = useState<GroupedDevices>({});
   const [loading, setLoading] = useState(true);
@@ -502,7 +502,7 @@ const ManageComponent = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",
+          backgroundColor: "#FFFFFB",
         }}
       >
         <Table
@@ -516,7 +516,7 @@ const ManageComponent = () => {
               borderBottom: "1px solid #dbdbdb",
             },
             "& .MuiTableRow-body:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
+              backgroundColor: "rgba(255, 0, 0, 0.71)",
             },
           }}
         >
@@ -551,10 +551,15 @@ const ManageComponent = () => {
           </TableHead>
           <TableBody>
             {devices.map((device) => (
-              <TableRow key={device._id} hover>
+               <TableRow
+               key={device._id}
+               sx={{
+                 "&:hover": {
+                   backgroundColor: "#EBF5FF"
+                 },
+               }}>
                 <TableCell
                   sx={{
-                    display: "block",
                     wordBreak: "break-word",
                     hyphens: "auto",
                   }}
@@ -579,9 +584,9 @@ const ManageComponent = () => {
                   <IconButton
                     size="small"
                     sx={{
-                      mr: 1,
+                      mr: 2,
                       "&:hover": {
-                        backgroundColor: "warning.light",
+                        backgroundColor: "#FFE1D7",
                       },
                     }}
                     onClick={() => handleEditClick(device)}
@@ -592,7 +597,7 @@ const ManageComponent = () => {
                     size="small"
                     sx={{
                       "&:hover": {
-                        backgroundColor: "error.light",
+                        backgroundColor: "#FFE3DF",
                       },
                     }}
                     onClick={() => handleDeleteClick(device)}
@@ -621,13 +626,30 @@ const ManageComponent = () => {
               sx={{ mb: 2 }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{ backgroundColor: "#f5f5f5" }}
+                expandIcon={<ExpandMoreIcon sx={{color:"#ffffff"}}/>}
+                sx={{ 
+                  backgroundColor: "#1f2b5d" 
+                
+                }}
               >
-                <Typography fontWeight="medium">
-                  {group.originalName.toUpperCase()} ({group.devices.length}{" "}
-                  {group.devices.length === 1 ? "device" : "devices"})
-                </Typography>
+                <Typography fontWeight="medium" sx={{ color: "#fff" }}>
+                {group.originalName.toUpperCase()} 
+                <Box
+                  component="span"
+                  sx={{
+                    border: "3px solid rgb(79, 93, 155)", 
+                    fontSize: "15px",
+                    borderRadius: "50px", 
+                    padding: "3px 8px", 
+                    color: "white", 
+                    marginLeft:"15px",
+                  }}
+                >
+                {group.devices.length}{" "}
+                {group.devices.length === 1 ? "device" : "devices"}
+              </Box>
+            </Typography>
+
               </AccordionSummary>
               <AccordionDetails>
                 {group.devices.length === 0 ? (

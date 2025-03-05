@@ -119,6 +119,7 @@ const EventComponent = () => {
         justifyContent="center"
         alignItems="center"
         minHeight="400px"
+    
       >
         <CircularProgress />
       </Box>
@@ -142,9 +143,9 @@ const EventComponent = () => {
               backgroundColor: "white",
               borderRadius: 3,
               // mt: 2,
-              display: "block", // Change from -webkit-box to block for better line break support
               wordBreak: "break-word", // Allow words to break if needed
               hyphens: "auto",
+         
             }}
           >
             <Table

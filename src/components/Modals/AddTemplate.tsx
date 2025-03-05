@@ -31,6 +31,8 @@ import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
+import { InfoOutlined } from "@mui/icons-material";
+
 import {
   ITemplate,
   ITriggerTemplate,
@@ -41,16 +43,17 @@ import {
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import NumberFormatTextField from "../NumberFormatTextField";
 
 interface AddTemplateProps {
   onClose: () => void;
   onSuccess?: (message: string, refreshCallback?: () => void) => void; // Updated with optional refresh callback
 }
 const functionofItem = [
-  { value: "avg", label: "avg()" },
-  { value: "min", label: "min()" },
-  { value: "max", label: "max()" },
-  { value: "last", label: "last()" },
+  { value: "avg", label: "Average" },
+  { value: "min", label: "Minimum" },
+  { value: "max", label: "Maximum" },
+  { value: "last", label: "Lastest" },
 ];
 
 const operators = [
@@ -289,6 +292,18 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       setSnackbarOpen(true);
       return;
     }
+
+    // Reset error states when switching to trigger tab
+    if (newValue === "trigger") {
+      setErrorsFieldTrigger({
+        trigger_name: false,
+        severity: false,
+        expression: false,
+        ok_eventGen: false,
+        recoveryExpression: false,
+      });
+    }
+
     setActiveTab(newValue);
   };
 
@@ -502,11 +517,19 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       recoveryExpression:
         ok_eventGen === "resolved expression" && !recoveryExpression,
     };
-    const isTemplateNameValid = template_name.trim() !== "";
 
     setErrorsFieldTrigger(newErrors);
-    return isTemplateNameValid;
-  }, [template_name]);
+
+    const isTemplateNameValid = template_name.trim() !== "";
+    return isTemplateNameValid && !Object.values(newErrors).some((err) => err);
+  }, [
+    trigger_name,
+    severity,
+    expression,
+    ok_eventGen,
+    recoveryExpression,
+    template_name,
+  ]);
 
   useEffect(() => {
     setIsFormValid(validateForm());
@@ -514,14 +537,42 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
 
   const handleAddTrigger = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    handleSubmitTrigger(e as unknown as React.FormEvent<HTMLFormElement>);
-  };
 
-  const handleSubmitTrigger = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    if (!validateTriggerForm()) {
+      // Show error message based on which validation failed
+      const expressionMissing = expressionParts.some(
+        (part) =>
+          !part.item ||
+          !part.operation ||
+          !part.value ||
+          !part.functionofItem ||
+          (part.functionofItem !== "last" && !part.duration)
+      );
 
-    if (!validateForm()) {
-      alert("Please fill in all required fields");
+      const recoveryMissing =
+        ok_eventGen === "resolved expression" &&
+        recoveryParts.some(
+          (part) =>
+            !part.item ||
+            !part.operation ||
+            !part.value ||
+            !part.functionofItem ||
+            (part.functionofItem !== "last" && !part.duration)
+        );
+
+      let errorMessage = "Please fill in all required fields";
+
+      if (expressionMissing) {
+        errorMessage =
+          "All expression fields are required. Please complete all expression fields.";
+      } else if (recoveryMissing) {
+        errorMessage =
+          "All recovery expression fields are required. Please complete all recovery expression fields.";
+      }
+
+      setSnackbarMessage(errorMessage);
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
       return;
     }
 
@@ -542,7 +593,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
           functionofItem: part.functionofItem,
           duration: part.duration,
         })),
-        // Store recoveryParts as expressionRecoveryPart in the model
         expressionRecoveryPart: recoveryParts.map((part) => ({
           item: part.item,
           operation: part.operation,
@@ -554,6 +604,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
       },
     ]);
 
+    // Reset form fields
     setTrigger_name("");
     setSeverity("");
     setExpression("");
@@ -580,6 +631,11 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
         duration: "15m",
       },
     ]);
+
+    // Show success message
+    setSnackbarMessage("Trigger added successfully");
+    setSnackbarSeverity("success");
+    setSnackbarOpen(true);
   };
 
   const handleDeleteTrigger = (index: number) => {
@@ -589,6 +645,47 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
   };
 
   const [isFormValid, setIsFormValid] = useState(false);
+
+  const validateTriggerForm = () => {
+    // Check if expression parts have all required fields
+    const expressionPartsValid = expressionParts.every((part) => {
+      return (
+        part.item &&
+        part.operation &&
+        part.value &&
+        part.functionofItem &&
+        (part.functionofItem === "last" || part.duration)
+      );
+    });
+
+    // Check if recovery parts have all required fields (when ok_eventGen is "resolved expression")
+    const recoveryPartsValid =
+      ok_eventGen !== "resolved expression" ||
+      recoveryParts.every((part) => {
+        return (
+          part.item &&
+          part.operation &&
+          part.value &&
+          part.functionofItem &&
+          (part.functionofItem === "last" || part.duration)
+        );
+      });
+
+    // Create error object
+    const newErrors = {
+      trigger_name: !trigger_name,
+      severity: !severity,
+      expression: !expressionPartsValid,
+      ok_eventGen: !ok_eventGen,
+      recoveryExpression:
+        ok_eventGen === "resolved expression" && !recoveryPartsValid,
+    };
+
+    setErrorsFieldTrigger(newErrors);
+
+    // Return true only if all validations pass
+    return !Object.values(newErrors).some((error) => error);
+  };
 
   return (
     <Box sx={{ p: 0, width: "100%" }}>
@@ -724,12 +821,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 item_name: e.target.value,
                               })
                             }
-                            error={errorFieldItem.item_name}
-                            helperText={
-                              errorFieldItem.item_name
-                                ? "Item name is required"
-                                : ""
-                            }
                           />
                         </TableCell>
                         <TableCell>
@@ -742,10 +833,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 ...item,
                                 oid: e.target.value,
                               })
-                            }
-                            error={errorFieldItem.oid}
-                            helperText={
-                              errorFieldItem.oid ? "OID is required" : ""
                             }
                           />
                         </TableCell>
@@ -768,10 +855,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 fontSize: 14,
                               },
                             }}
-                            error={errorFieldItem.type}
-                            helperText={
-                              errorFieldItem.type ? "Type is required" : ""
-                            }
                           >
                             <MenuItem value="counter">Counter</MenuItem>
                             <MenuItem value="integer">Integer</MenuItem>
@@ -787,10 +870,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 unit: e.target.value,
                               })
                             }
-                            error={errorFieldItem.unit}
-                            helperText={
-                              errorFieldItem.unit ? "Unit is required" : ""
-                            }
                           />
                         </TableCell>
                         <TableCell>
@@ -803,12 +882,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 ...item,
                                 interval: parseInt(e.target.value, 10),
                               })
-                            }
-                            error={errorFieldItem.interval}
-                            helperText={
-                              errorFieldItem.interval
-                                ? "Interval is required"
-                                : ""
                             }
                           />
                         </TableCell>
@@ -990,12 +1063,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                     {...textFieldProps}
                     value={trigger_name}
                     onChange={(e) => setTrigger_name(e.target.value)}
-                    error={errorFieldTrigger.trigger_name}
-                    helperText={
-                      errorFieldTrigger.trigger_name
-                        ? "Trigger name is required"
-                        : ""
-                    }
                   />
                 </Box>
 
@@ -1061,7 +1128,121 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                     <Typography sx={{ ml: 1 }} {...typographyProps}>
                       Severity
                     </Typography>
+                    <Tooltip
+                      title={
+                        <Box sx={{ p: 1 }}>
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#FFA500"
+                            >
+                              Warning
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Moderate - Requires Monitoring
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              There is a potential issue, but it has not yet
+                              directly impacted network operations. Monitoring
+                              is required, and preventive action may be needed
+                              to prevent escalation.
+                            </Typography>
+                          </Box>
+
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#FF0000"
+                            >
+                              Critical
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Severe - Immediate Action Required
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              The issue is affecting network operations,
+                              potentially causing service disruptions or
+                              failures. Immediate action is required to minimize
+                              damage.
+                            </Typography>
+                          </Box>
+
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              color="#8B0000"
+                            >
+                              Disaster
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ ml: 1, fontSize: 13 }}
+                            >
+                              Catastrophic - Full System Failure
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                display: "block",
+                                color: "text.secondary",
+                                mt: 0.5,
+                              }}
+                            >
+                              The network or system has completely failed,
+                              severely impacting the organization or business.
+                              Emergency disaster recovery measures must be
+                              implemented immediately.
+                            </Typography>
+                          </Box>
+                        </Box>
+                      }
+                      arrow
+                      placement="right"
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            backgroundColor: "white",
+                            color: "black",
+                            maxWidth: "350px",
+                            boxShadow: "0px 2px 8px rgba(0,0,0,0.15)",
+                            borderRadius: "8px",
+                            p: 1.5,
+                          },
+                        },
+                      }}
+                    >
+                      <IconButton>
+                        <InfoOutlined sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
+
                   <Box
                     sx={{
                       display: "flex",
@@ -1106,11 +1287,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                       </Button>
                     ))}
                   </Box>
-                  {errorFieldTrigger.severity && (
-                    <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
-                      Severity is required
-                    </Typography>
-                  )}
                 </Box>
 
                 {/* Expression field */}
@@ -1128,7 +1304,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                     <Typography sx={{ ml: 1, mr: 2 }} {...typographyProps}>
                       Expression
                     </Typography>
-
                     <Button
                       onClick={handleAddExpression}
                       sx={{
@@ -1145,7 +1320,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                       + Expression
                     </Button>
                   </Box>
-
                   <Box
                     sx={{
                       display: "flex",
@@ -1177,8 +1351,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           }
                           label="Function"
                           size="small"
+                          required
                           sx={{
-                            width: "10%",
+                            width: "12%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1191,11 +1366,11 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             </MenuItem>
                           ))}
                         </TextField>
+
                         {/* Duration section */}
                         <TextField
                           select
                           value={part.duration}
-                          disabled={part.functionofItem === "last"}
                           onChange={(e) =>
                             handleExpressionPartChange(
                               index,
@@ -1203,25 +1378,24 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
+                          disabled={part.functionofItem === "last"}
+                          required={part.functionofItem !== "last"}
                           label="Interval"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "11%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
                             },
                           }}
                         >
-                          <MenuItem key={1} value={"15m"}>
-                            15m
-                          </MenuItem>
-                          <MenuItem key={2} value={"30m"}>
-                            30m
-                          </MenuItem>
-                          <MenuItem key={3} value={"60m"}>
-                            60m{" "}
-                          </MenuItem>
+                          <MenuItem value="1m">1m</MenuItem>
+                          <MenuItem value="5m">5m</MenuItem>
+                          <MenuItem value="10m">10m</MenuItem>
+                          <MenuItem value="15m">15m</MenuItem>
+                          <MenuItem value="30m">30m</MenuItem>
+                          <MenuItem value="1h">1h</MenuItem>
                         </TextField>
 
                         {/* Item Selection */}
@@ -1235,7 +1409,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
-                          error={errorFieldTrigger.expression}
+                          required
                           size="small"
                           label="Item"
                           sx={{
@@ -1246,8 +1420,8 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             },
                           }}
                         >
-                          {items.map((item, index) => (
-                            <MenuItem key={index} value={item.item_name}>
+                          {items.map((item, idx) => (
+                            <MenuItem key={idx} value={item.item_name}>
                               {item.item_name}
                             </MenuItem>
                           ))}
@@ -1264,10 +1438,11 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
+                          required
                           label="Operation"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "13%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1281,7 +1456,8 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           ))}
                         </TextField>
 
-                        <TextField
+                        {/* Value field */}
+                        <NumberFormatTextField
                           value={part.value}
                           onChange={(e) =>
                             handleExpressionPartChange(
@@ -1290,6 +1466,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
+                          required
                           label="Value"
                           size="small"
                           sx={{
@@ -1313,6 +1490,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 e.target.value
                               )
                             }
+                            required
                             label="Operator"
                             size="small"
                             sx={{
@@ -1339,9 +1517,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               fontSize: 12,
                               color: "red",
                               cursor: "pointer",
-                              "&:hover": {
-                                textDecoration: "underline",
-                              },
                             }}
                           >
                             <DeleteIcon />
@@ -1370,6 +1545,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                       OK event generation
                     </Typography>
                   </Box>
+
                   <Box
                     sx={{
                       display: "flex",
@@ -1416,11 +1592,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                       </Button>
                     ))}
                   </Box>
-                  {errorFieldTrigger.severity && (
-                    <Typography color="error" sx={{ fontSize: 12, mt: 1 }}>
-                      OK event generation is required
-                    </Typography>
-                  )}
                 </Box>
 
                 {/* Recovery Expression field */}
@@ -1457,10 +1628,25 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         + Resolved Expression
                       </Button>
                     </Box>
+
+                    {errorFieldTrigger.recoveryExpression && (
+                      <Typography
+                        color="error"
+                        sx={{ fontSize: 12, ml: 4, mt: 1 }}
+                      >
+                        All recovery expression fields are required
+                      </Typography>
+                    )}
+
                     {recoveryParts.map((part, index) => (
                       <Box
                         key={index}
-                        sx={{ display: "flex", gap: 1.5, alignItems: "center" }}
+                        sx={{
+                          display: "flex",
+                          gap: 1.5,
+                          alignItems: "center",
+                          width: 1,
+                        }}
                       >
                         {/* functionofitem section */}
                         <TextField
@@ -1475,8 +1661,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           }
                           label="Function"
                           size="small"
+                          required
                           sx={{
-                            width: "10%",
+                            width: "12%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1492,6 +1679,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TextField
                           select
                           disabled={part.functionofItem === "last"}
+                          required={part.functionofItem !== "last"}
                           value={part.duration}
                           onChange={(e) =>
                             handleRecoveryPartChange(
@@ -1503,28 +1691,26 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           label="Interval"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "11%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
                             },
                           }}
                         >
-                          <MenuItem key={1} value={"15m"}>
-                            15m
-                          </MenuItem>
-                          <MenuItem key={2} value={"30m"}>
-                            30m
-                          </MenuItem>
-                          <MenuItem key={3} value={"60m"}>
-                            60m{" "}
-                          </MenuItem>
+                          <MenuItem value="1m">1m</MenuItem>
+                          <MenuItem value="5m">5m</MenuItem>
+                          <MenuItem value="10m">10m</MenuItem>
+                          <MenuItem value="15m">15m</MenuItem>
+                          <MenuItem value="30m">30m</MenuItem>
+                          <MenuItem value="1h">1h</MenuItem>
                         </TextField>
 
                         {/* Item Selection */}
                         <TextField
                           select
                           value={part.item}
+                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1532,7 +1718,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
-                          error={errorFieldTrigger.expression}
                           size="small"
                           label="Item"
                           sx={{
@@ -1553,6 +1738,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         {/* Operation Selection */}
                         <TextField
                           select
+                          required
                           value={part.operation}
                           onChange={(e) =>
                             handleRecoveryPartChange(
@@ -1564,7 +1750,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           label="Operation"
                           size="small"
                           sx={{
-                            width: "10%",
+                            width: "13%",
                             backgroundColor: "white",
                             "& .MuiInputBase-input": {
                               fontSize: 14,
@@ -1578,8 +1764,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           ))}
                         </TextField>
 
-                        <TextField
+                        <NumberFormatTextField
                           value={part.value}
+                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1612,6 +1799,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             }
                             label="Operator"
                             size="small"
+                            required
                             sx={{
                               width: "8%",
                               backgroundColor: "white",

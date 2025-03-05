@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Button,
-  Grid,
   Typography,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Paper,
-  IconButton,
+
 } from "@mui/material";
 import { Box } from "@mui/system";
-import { Pencil, Trash2 } from "lucide-react";
 import useWindowSize from "../hooks/useWindowSize";
 import ManageComponent from "../components/DeviceManageComponent";
 import Usermanagemnet from "../components/UserManagement";
@@ -63,18 +56,19 @@ const Management: React.FC = () => {
         }}
       >
         <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            overflowY: "auto",
-            backgroundColor: "#FFFFFB",
-            borderRadius: 3,
-            py: 2,
-            mb: 5
-          }}
+         sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          overflowY: "auto",
+          backgroundColor: "transparent",
+          borderRadius: 3,
+          border: "7px solid rgb(255, 255, 255)", 
+          py: 2,
+          mb: 5,
+         }}
         >
           <ManageComponent />
         </Box>
@@ -104,12 +98,10 @@ const Management: React.FC = () => {
 
           <Box
             sx={{
-              width: "100%",
+              width: 1,
               marginTop: 2,
               height: "auto",
               display: "flex",
-              paddingBottom: 5,
-              
             }}
           >
             <Box
@@ -123,10 +115,7 @@ const Management: React.FC = () => {
                 backgroundColor: "#FFFFFB",
                 borderRadius: 3,
                 py: 2,
-                px: 3,
-                
-                // paddingLeft: 3,
-                // paddingRight: 3,
+                mb: 5,
               }}
             >
               <Usermanagemnet />
