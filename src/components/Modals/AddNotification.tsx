@@ -410,16 +410,17 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     liff.init({ liffId: `${import.meta.env.VITE_LINE_LIFF_ID}` });
     liff.ready
       .then(() => {
+        console.log("LIFF initialization successful");
         if (!liff.isLoggedIn()) {
+          console.log("User not logged in, initiating login");
           liff.login();
+        } else {
+          console.log("User already logged in");
         }
         fetchLineProfile();
       })
       .catch((err) => {
         console.error("LIFF initialization failed", err);
-      })
-      .finally(() => {
-        setIsInitializing(false);
       });
   }, []);
 
