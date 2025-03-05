@@ -555,7 +555,7 @@ const  ManageComponent = () => {
                key={device._id}
                sx={{
                  "&:hover": {
-                   backgroundColor: "#F8FBFF"
+                   backgroundColor: "#EBF5FF"
                  },
                }}>
                 <TableCell

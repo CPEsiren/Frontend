@@ -626,51 +626,7 @@ const TriggerComponent = ({
     }
   };
 
-  const renderTriggerTable = (triggers: ITrigger[]) => {
-    return (
-      <TableContainer
-        component={Paper}
-        elevation={0}
-        sx={{
-          backgroundColor: "transparent",
-        }}
-      >
-        <Table
-          sx={{
-            width: 1,
-            "& .MuiTableCell-root": {
-              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
-              padding: "16px",
-            },
-            "& .MuiTableCell-head": {
-              borderBottom: "1px solid #dbdbdb",
-            },
-            "& .MuiTableRow-body:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
-          }}
-        >
-          <TableHead sx={{ backgroundColor: "#ffffff" }}>
-            <TableRow>
-              <TableCell sx={{ color: "black" }}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  Trigger Name
-                </Typography>
-              </TableCell>
-              {/* Other table headers remain the same */}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {triggers.map((trigger) => (
-              <TableRow key={trigger._id} hover>
-                {/* Table row content remains the same */}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  };
+
 
   if (loading) {
     return (
@@ -696,13 +652,14 @@ const TriggerComponent = ({
               key={group.host_id._id}
               // expanded={expandedGroup === group.host_id._id}
               onChange={handleAccordionChange(group.host_id._id)}
-              sx={{ mb: 2 }}
+              sx={{ mb: 2}}
+            
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{ backgroundColor: "#f5f5f5" }}
+                expandIcon={<ExpandMoreIcon sx={{color:"white"}}/>}
+                sx={{ backgroundColor: "#1f2b5d" }}
               >
-                <Typography fontWeight="medium">
+                <Typography fontWeight="medium" sx={{ color: "white" }}>
                   {group.host_id.hostname.toUpperCase()} (
                   {group.triggers.length}{" "}
                   {group.triggers.length === 1 ? "trigger" : "triggers"})
@@ -774,7 +731,13 @@ const TriggerComponent = ({
                       </TableHead>
                       <TableBody>
                         {group.triggers.map((trigger) => (
-                          <TableRow key={trigger._id} hover>
+                          <TableRow key={trigger._id} 
+                          sx={{
+                            "&:hover": {
+                              backgroundColor: "#EBF5FF"
+                            },
+                          }}
+                          >
                             <TableCell
                               sx={{
                                 wordBreak: "break-word",
@@ -907,7 +870,7 @@ const TriggerComponent = ({
                                   alignItems: "center",
                                   justifyContent: "center",
                                   "&:hover": {
-                                    backgroundColor: "rgba(239, 239, 255, 0.1)",
+                                    backgroundColor: "rgb(239, 239, 255)",
                                   },
                                 }}
                               >
