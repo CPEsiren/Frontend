@@ -313,6 +313,15 @@ const Templates: React.FC = () => {
   };
 
   const handleClose = () => {
+    setTrigger_name("");
+    setSeverity("");
+    setExpression("");
+    setRecoveryExpression("");
+    setOk_eventGen("");
+    setThresholdBreachDuration(0);
+    setExpressionParts([]);
+    setRecoveryParts([]);
+
     setModalOpen(false);
     setAnchorEl(null);
   };
@@ -324,7 +333,10 @@ const Templates: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     // Don't allow switching to the Trigger tab (index 2) if there are no items
-    if (newValue === 2 && (!editingTemplate?.items || editingTemplate.items.length === 0)) {
+    if (
+      newValue === 2 &&
+      (!editingTemplate?.items || editingTemplate.items.length === 0)
+    ) {
       return;
     }
     setActiveTab(newValue);
@@ -999,19 +1011,20 @@ const Templates: React.FC = () => {
               sx={{ px: 3, backgroundColor: "#FFFFFB", mt: -2 }}
             >
               <Box component="form">
-              <Tabs value={activeTab} onChange={handleTabChange}>
-  <Tab label="Template" />
-  <Tab label="Item" />
-  {!editingTemplate?.items || editingTemplate.items.length === 0 ? (
-    <Tooltip title="Add at least one item before creating triggers">
-      <Box component="span" sx={{ display: "inline-block" }}>
-        <Tab label="Trigger" disabled={true} />
-      </Box>
-    </Tooltip>
-  ) : (
-    <Tab label="Trigger" />
-  )}
-</Tabs>
+                <Tabs value={activeTab} onChange={handleTabChange}>
+                  <Tab label="Template" />
+                  <Tab label="Item" />
+                  {!editingTemplate?.items ||
+                  editingTemplate.items.length === 0 ? (
+                    <Tooltip title="Add at least one item before creating triggers">
+                      <Box component="span" sx={{ display: "inline-block" }}>
+                        <Tab label="Trigger" disabled={true} />
+                      </Box>
+                    </Tooltip>
+                  ) : (
+                    <Tab label="Trigger" />
+                  )}
+                </Tabs>
                 {activeTab === 0 && (
                   <Box
                     sx={{
@@ -2185,7 +2198,16 @@ const Templates: React.FC = () => {
                                 sx={{
                                   mr: 1,
                                   mb: 1,
-                                  backgroundColor: "#e0e0e0",
+                                  ...(trigger.severity === "critical" && {
+                                    backgroundColor: "#FF0000",
+                                  }),
+                                  ...(trigger.severity === "warning" && {
+                                    backgroundColor: "#FFA500",
+                                  }),
+                                  ...(trigger.severity === "disaster" && {
+                                    backgroundColor: "#8B0000",
+                                  }),
+                                  color: "#ffffff",
                                 }}
                               />
                               <Chip
