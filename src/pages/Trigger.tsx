@@ -180,17 +180,17 @@ const Triggers = () => {
       >
         <Box
           sx={{
-            backgroundColor: "#FFFFFB",
             flex: 1,
             display: "flex",
-            borderRadius: 3,
             flexDirection: "column",
             justifyContent: windowSize.width >= 1100 ? "center" : "start",
             alignItems: "center",
             minHeight: "fit-content",
-            py: 3,
-            px: 3,
-            mb: 8,
+            backgroundColor: "transparent",
+            borderRadius: 3,
+            border: "7px solid rgb(255, 255, 255)", 
+            py: 2,
+            mb: 5,
           }}
         >
           {windowSize.width < 1100 && (
