@@ -2022,7 +2022,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="outlined"
-              disabled={items.length === 0 && template_name === ""}
+              disabled={items.length === 0 || template_name === ""}
               sx={{
                 fontSize: 14,
                 color: "white",
