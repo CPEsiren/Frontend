@@ -742,7 +742,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                 </Box>
                 <TextField
                   {...textFieldProps}
-                  required
                   value={template_name}
                   onChange={(e) => setTemplateName(e.target.value)}
                 />
@@ -769,7 +768,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                 </Box>
                 <TextField
                   {...textFieldProps}
-                  required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
@@ -811,7 +809,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TableCell>
                           <TextField
                             {...textFieldProps}
-                            required
                             value={item.item_name}
                             onChange={(e) =>
                               setItem({
@@ -824,7 +821,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TableCell>
                           <TextField
                             {...textFieldProps}
-                            required
                             value={item.oid}
                             onChange={(e) =>
                               setItem({
@@ -1483,7 +1479,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 e.target.value
                               )
                             }
-                            required
                             label="Operator"
                             size="small"
                             sx={{
@@ -1654,7 +1649,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           }
                           label="Function"
                           size="small"
-                          required
                           sx={{
                             width: "12%",
                             backgroundColor: "white",
@@ -1703,7 +1697,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TextField
                           select
                           value={part.item}
-                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1731,7 +1724,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         {/* Operation Selection */}
                         <TextField
                           select
-                          required
                           value={part.operation}
                           onChange={(e) =>
                             handleRecoveryPartChange(
@@ -1759,7 +1751,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
 
                         <NumberFormatTextField
                           value={part.value}
-                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1792,7 +1783,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             }
                             label="Operator"
                             size="small"
-                            required
                             sx={{
                               width: "8%",
                               backgroundColor: "white",
@@ -2032,16 +2022,22 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="outlined"
-              disabled={!isFormValid}
+              disabled={items.length === 0 && template_name === ""}
               sx={{
                 fontSize: 14,
                 color: "white",
-                bgcolor: isFormValid ? "#0281F2" : "#cccccc",
+                bgcolor:
+                  !(items.length === 0) && !(template_name === "")
+                    ? "#0281F2"
+                    : "#cccccc",
                 borderColor: "white",
                 borderRadius: 2,
                 "&:hover": {
                   color: "white",
-                  bgcolor: isFormValid ? "#0274d9" : "#cccccc",
+                  bgcolor:
+                    !(items.length === 0) && !(template_name === "")
+                      ? "#0274d9"
+                      : "#cccccc",
                   borderColor: "white",
                 },
               }}
