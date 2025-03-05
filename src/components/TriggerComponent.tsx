@@ -28,11 +28,17 @@ import {
   Menu,
   Fade,
   Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
 } from "@mui/material";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import React from "react";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 interface GroupedTriggers {
   triggers: ITrigger[];
   host_id: {
@@ -92,6 +98,8 @@ const TriggerComponent = ({
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedGroup, setExpandedGroup] = useState<string | false>(false);
+
   const typographyProps = {
     fontSize: 14,
   };
@@ -114,6 +122,10 @@ const TriggerComponent = ({
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
+  const handleAccordionChange =
+    (groupId: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpandedGroup(isExpanded ? groupId : false);
+    };
 
   //All Trigger Data
   const [DataGroupByHost, setDataGroupByHost] = useState<GroupedTriggers[]>([]);
@@ -133,7 +145,12 @@ const TriggerComponent = ({
       );
       if (response.data.status === "success" && response.data.data) {
         const DataIndexHost = response.data.data;
-        setDataGroupByHost(DataIndexHost); // Now we store the complete item objects
+        setDataGroupByHost(DataIndexHost);
+
+        // Set the first group as expanded by default if there are groups
+        if (DataIndexHost.length > 0) {
+          setExpandedGroup(DataIndexHost[0].host_id._id);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -304,12 +321,6 @@ const TriggerComponent = ({
     setEditDialogOpen(true);
     fetchItems(trigger.host_id);
   };
-
-  // useEffect(() => {
-  //   // console.log("Dialog Opened with Trigger:", selectedTrigger);
-  // }, [editDialogOpen]);
-
-  //Delete Trigger
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [removeIdTrigger, setRemoveIdTrigger] = useState("");
   const [removeTriggerName, setRemoveTriggerName] = useState("");
@@ -322,7 +333,6 @@ const TriggerComponent = ({
     if (!removeIdTrigger) return;
 
     try {
-      // await axios.delete(`http://127.0.0.1:3000/trigger/${removeIdTrigger}`);
       await fetch(
         `${import.meta.env.VITE_API_URL}/trigger/${removeIdTrigger}`,
         {
@@ -413,9 +423,6 @@ const TriggerComponent = ({
       console.error("No editIdTrigger found!");
       return;
     }
-
-    // console.log("Submitting edit for trigger:", editIdTrigger); // Debug log
-
     setFormLoading(true);
     try {
       // Format expression parts for submission
@@ -519,6 +526,52 @@ const TriggerComponent = ({
     }
   };
 
+  const renderTriggerTable = (triggers: ITrigger[]) => {
+    return (
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          backgroundColor: "transparent",
+        }}
+      >
+        <Table
+          sx={{
+            width: 1,
+            "& .MuiTableCell-root": {
+              borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+              padding: "16px",
+            },
+            "& .MuiTableCell-head": {
+              borderBottom: "1px solid #dbdbdb",
+            },
+            "& .MuiTableRow-body:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.04)",
+            },
+          }}
+        >
+          <TableHead sx={{ backgroundColor: "#ffffff" }}>
+            <TableRow>
+              <TableCell sx={{ color: "black" }}>
+                <Typography variant="subtitle1" fontWeight="medium">
+                  Trigger Name
+                </Typography>
+              </TableCell>
+              {/* Other table headers remain the same */}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {triggers.map((trigger) => (
+              <TableRow key={trigger._id} hover>
+                {/* Table row content remains the same */}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   if (loading) {
     return (
       <Box
@@ -537,1176 +590,1111 @@ const TriggerComponent = ({
   return (
     <>
       <Container maxWidth={false}>
-        {DataGroupByHost.length === 0 ? (
-          <Box sx={{ p: 0, textAlign: "center" }}>
-            <Typography variant="body1">No triggers found</Typography>
-          </Box>
-        ) : (
-          <Box sx={{ width: 1, justifyContent: "center" }}>
-            {DataGroupByHost.map((group, index) => (
-              <Box key={index} sx={{ mb: 4, mt: 4 }}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="h6"
+        <Box sx={{ mb: 3, mt: 3 }}>
+          {DataGroupByHost.map((group) => (
+            <Accordion
+              key={group.host_id._id}
+              // expanded={expandedGroup === group.host_id._id}
+              onChange={handleAccordionChange(group.host_id._id)}
+              sx={{ mb: 2 }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{ backgroundColor: "#f5f5f5" }}
+              >
+                <Typography fontWeight="medium">
+                  {group.host_id.hostname.toUpperCase()} (
+                  {group.triggers.length}{" "}
+                  {group.triggers.length === 1 ? "trigger" : "triggers"})
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {group.triggers.length === 0 ? (
+                  <Paper sx={{ p: 3, textAlign: "center" }}>
+                    <Typography variant="body1">
+                      No triggers for this host
+                    </Typography>
+                  </Paper>
+                ) : (
+                  <TableContainer
+                    component={Paper}
+                    elevation={0}
                     sx={{
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "#242d5d",
-                      borderRadius: "80px",
-                      color: "white",
-                      fontWeight: "semi-bold",
-                      minWidth: "100px",
-                      textAlign: "center",
-                      py: 1.5,
-                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                      width: "100%",
-                      display: "block", // Change from -webkit-box to block for better line break support
-                      wordBreak: "break-word", // Allow words to break if needed
-                      hyphens: "auto",
+                      backgroundColor: "transparent",
                     }}
                   >
-                    {group.host_id.hostname}
-                  </Typography>
-                </Box>
-
-                <TableContainer
-                  component={Paper}
-                  sx={{
-                    boxShadow: "none",
-                    "& .MuiPaper-root": { boxShadow: "none" },
-                    backgroundColor: "transparent",
-                    mb: 10,
-                    border: "2px solid white",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    width: "100%", // Ensure the container takes full width
-                  }}
-                >
-                  <Table
-                    sx={{
-                      width: "100%", // Make sure table takes 100% of container width
-                      tableLayout: "fixed", // Fixed layout helps with column distribution
-                      "& .MuiTable-root": {
-                        borderCollapse: "separate",
-                        borderSpacing: 0,
-                      },
-                      "& .MuiTableCell-root": {
-                        borderBottom: "none",
-                        whiteSpace: "normal", // Allow text to wrap
-                        wordBreak: "break-word",
-                      },
-                      "& .MuiTableBody-root .MuiTableRow-root": {
-                        "&:nth-of-type(odd)": { backgroundColor: "#f6f8ff" },
-                        "&:hover": {
-                          backgroundColor: "#ebf1ff",
-                          transition: "background-color 0.3s ease",
-                          cursor: "pointer",
+                    <Table
+                      sx={{
+                        width: 1,
+                        "& .MuiTableCell-root": {
+                          borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
+                          padding: "16px",
                         },
-                      },
-                    }}
-                  >
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "15%", // Set explicit width for this column
-                          }}
-                        >
-                          Trigger Name
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "10%",
-                          }}
-                        >
-                          Severity
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "35%", // Give more space to expression column
-                          }}
-                        >
-                          Expression
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "20%",
-                          }}
-                        >
-                          OK event generation
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "10%",
-                          }}
-                        >
-                          Status
-                        </TableCell>
-                        <TableCell
-                          align="center"
-                          sx={{
-                            fontSize: "1rem",
-                            fontWeight: "medium",
-                            width: "10%",
-                          }}
-                        >
-                          ⚙️
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-
-                    <TableBody>
-                      {group.triggers.map((trigger, index) => (
-                        <TableRow key={trigger._id || index}>
-                          {/* Trigger Name */}
-                          <TableCell>{trigger.trigger_name}</TableCell>
-                          {/* Severity */}
-                          <TableCell
-                            sx={{
-                              color: (() => {
-                                switch (trigger.severity.toLowerCase()) {
-                                  case "warning":
-                                    return "#FFA500";
-                                  case "critical":
-                                    return "#FF0000";
-                                  case "disaster":
-                                    return "#8B0000";
-                                  default:
-                                    return "inherit";
-                                }
-                              })(),
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {trigger.severity}
+                        "& .MuiTableCell-head": {
+                          borderBottom: "1px solid #dbdbdb",
+                        },
+                        "& .MuiTableRow-body:hover": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        },
+                      }}
+                    >
+                      <TableHead sx={{ backgroundColor: "#ffffff" }}>
+                        <TableRow>
+                          <TableCell sx={{ color: "black" }}>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              Trigger Name
+                            </Typography>
                           </TableCell>
-
-                          {/* Expression */}
+                          <TableCell sx={{ color: "black" }}>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              Severity
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "black" }}>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              Expression
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "black" }}>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              OK event generation
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center" sx={{ color: "black" }}>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              Status
+                            </Typography>
+                          </TableCell>
                           <TableCell
                             align="center"
-                            sx={{
-                              maxWidth: "300px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
+                            sx={{ color: "black" }}
                           >
-                            <Tooltip
-                              title={trigger.expression}
-                              arrow
-                              placement="top"
-                              componentsProps={{
-                                tooltip: {
-                                  sx: {
-                                    backgroundColor: "white",
-                                    color: "black",
-                                    padding: "10px",
-                                    borderRadius: "8px",
-                                    boxShadow:
-                                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                    maxWidth: "400px",
-                                    fontSize: "14px",
-                                  },
-                                },
-                              }}
-                            >
-                              <Typography
-                                sx={{ cursor: "pointer", fontSize: "14px" }}
-                              >
-                                {trigger.expression}
-                              </Typography>
-                            </Tooltip>
-                          </TableCell>
-
-                          {/* Ok event generation */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              maxWidth: "300px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            <Tooltip
-                              title={
-                                trigger.ok_event_generation.toLowerCase() ===
-                                "resolved expression" ? (
-                                  <Box>{trigger.recovery_expression}</Box>
-                                ) : (
-                                  ""
-                                )
-                              }
-                              arrow
-                              placement="top"
-                              componentsProps={{
-                                tooltip: {
-                                  sx: {
-                                    backgroundColor: "white",
-                                    color: "black",
-                                    padding: "10px",
-                                    borderRadius: "8px",
-                                    boxShadow:
-                                      "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                                    maxWidth: "400px",
-                                    fontSize: "14px",
-                                  },
-                                },
-                              }}
-                            >
-                              <Typography
-                                sx={{
-                                  cursor: "pointer",
-                                  fontSize: "16px",
-                                }}
-                              >
-                                {trigger.ok_event_generation.toLocaleUpperCase()}
-                              </Typography>
-                            </Tooltip>
-                          </TableCell>
-
-                          {/* Status */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              color: trigger.enabled ? "green" : "red",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {trigger.enabled ? "Enabled" : "Disabled"}
-                          </TableCell>
-
-                          {/* Manage */}
-                          <TableCell
-                            align="center"
-                            sx={{
-                              display: "flex",
-                              justifyContent: "center",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Button
-                              aria-controls={`fade-menu-${trigger._id}`}
-                              aria-haspopup="true"
-                              onClick={(event) =>
-                                handleMenuClick(event, trigger)
-                              }
-                              sx={{
-                                borderRadius: "50%",
-                                width: "40px",
-                                height: "40px",
-                                minWidth: "unset",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                "&:hover": {
-                                  backgroundColor: "rgba(239, 239, 255, 0.1)",
-                                },
-                              }}
-                            >
-                              <MoreVertIcon
-                                sx={{ fontSize: 24, color: "#242d5d" }}
-                              />
-                            </Button>
+                            <Typography variant="subtitle1" fontWeight="medium">
+                              Actions
+                            </Typography>
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {group.triggers.map((trigger) => (
+                          <TableRow key={trigger._id} hover>
+                            <TableCell
+                              sx={{
+                                display: "block",
+                                wordBreak: "break-word",
+                                hyphens: "auto",
+                              }}
+                            >
+                              <Typography variant="body2">
+                                {trigger.trigger_name}
+                              </Typography>
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                color: (() => {
+                                  switch (trigger.severity.toLowerCase()) {
+                                    case "warning":
+                                      return "#FFA500";
+                                    case "critical":
+                                      return "#FF0000";
+                                    case "disaster":
+                                      return "#8B0000";
+                                    default:
+                                      return "inherit";
+                                  }
+                                })(),
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {trigger.severity}
+                            </TableCell>
+                            <TableCell
+                              align="center"
+                              sx={{
+                                maxWidth: "300px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <Tooltip
+                                title={trigger.expression}
+                                arrow
+                                placement="top"
+                                componentsProps={{
+                                  tooltip: {
+                                    sx: {
+                                      backgroundColor: "white",
+                                      color: "black",
+                                      padding: "10px",
+                                      borderRadius: "8px",
+                                      boxShadow:
+                                        "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                                      maxWidth: "400px",
+                                      fontSize: "14px",
+                                    },
+                                  },
+                                }}
+                              >
+                                <Typography
+                                  sx={{ cursor: "pointer", fontSize: "14px" }}
+                                >
+                                  {trigger.expression}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell
+                              align="center"
+                              sx={{
+                                maxWidth: "300px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <Tooltip
+                                title={
+                                  trigger.ok_event_generation.toLowerCase() ===
+                                  "resolved expression" ? (
+                                    <Box>{trigger.recovery_expression}</Box>
+                                  ) : (
+                                    ""
+                                  )
+                                }
+                                arrow
+                                placement="top"
+                                componentsProps={{
+                                  tooltip: {
+                                    sx: {
+                                      backgroundColor: "white",
+                                      color: "black",
+                                      padding: "10px",
+                                      borderRadius: "8px",
+                                      boxShadow:
+                                        "0px 4px 10px rgba(0, 0, 0, 0.2)",
+                                      maxWidth: "400px",
+                                      fontSize: "14px",
+                                    },
+                                  },
+                                }}
+                              >
+                                <Typography
+                                  sx={{ cursor: "pointer", fontSize: "16px" }}
+                                >
+                                  {trigger.ok_event_generation.toLocaleUpperCase()}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell
+                              align="center"
+                              sx={{
+                                color: trigger.enabled ? "green" : "red",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {trigger.enabled ? "Enabled" : "Disabled"}
+                            </TableCell>
+                            <TableCell align="center">
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  mr: 1,
+                                  "&:hover": {
+                                    backgroundColor: "warning.light",
+                                  },
+                                }}
+                                onClick={() => handleEditClick(trigger)}
+                              >
+                                <EditNoteIcon sx={{ color: "warning.main" }} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                sx={{
+                                  "&:hover": {
+                                    backgroundColor: "error.light",
+                                  },
+                                }}
+                                onClick={() => handleDeleteClick(trigger)}
+                              >
+                                <DeleteIcon sx={{ color: "error.main" }} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </Box>
 
-                {/* Menu (outside the table) */}
-                <Menu
-                  id="fade-menu"
-                  MenuListProps={{
-                    "aria-labelledby": "fade-button",
-                  }}
-                  anchorEl={anchorEl}
-                  open={open}
-                  onClose={handleClose}
-                  TransitionComponent={Fade}
-                  sx={{
-                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                    "& .MuiMenu-paper": {
-                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                    },
-                  }}
-                >
-                  {/* Edit */}
-                  <MenuItem
-                    onClick={() => {
-                      if (selectedTrigger) {
-                        handleEditClick(selectedTrigger);
-                      }
-                      handleClose();
-                    }}
-                    sx={{ display: "flex", alignItems: "center" }}
-                  >
-                    <EditNoteIcon
-                      sx={{ color: "warning.main", fontSize: 20 }}
-                    />
-                    <Typography
-                      sx={{
-                        fontSize: 14,
-                        color: "black",
-                        marginLeft: 1,
-                      }}
-                    >
-                      Edit
-                    </Typography>
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      if (selectedTrigger && onDuplicateTrigger) {
-                        onDuplicateTrigger(selectedTrigger);
-                      }
-                      handleClose();
-                    }}
-                    sx={{ display: "flex", alignItems: "center" }}
-                  >
-                    <ContentCopyIcon
-                      sx={{ color: "warning.main", fontSize: 20 }}
-                    />
-                    <Typography
-                      sx={{
-                        fontSize: 14,
-                        color: "black",
-                        marginLeft: 1,
-                      }}
-                    >
-                      Duplicate
-                    </Typography>
-                  </MenuItem>
-
-                  {/* Delete */}
-                  <MenuItem
-                    onClick={() => {
-                      if (selectedTrigger) {
-                        handleDeleteClick(selectedTrigger);
-                      }
-                      handleClose();
-                    }}
-                    sx={{ display: "flex", alignItems: "center" }}
-                  >
-                    <DeleteIcon sx={{ color: "error.main", fontSize: 20 }} />
-                    <Typography
-                      sx={{
-                        fontSize: 14,
-                        color: "black",
-                        marginLeft: 1,
-                      }}
-                    >
-                      Delete
-                    </Typography>
-                  </MenuItem>
-                </Menu>
-              </Box>
-            ))}
-
-            {/* Edit Dialog */}
-            <Dialog
-              open={editDialogOpen}
-              onClose={() => setEditDialogOpen(false)}
-              maxWidth="lg"
-              fullWidth
+        {/* Menu (outside the table) */}
+        <Menu
+          id="fade-menu"
+          MenuListProps={{
+            "aria-labelledby": "fade-button",
+          }}
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          TransitionComponent={Fade}
+          sx={{
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            "& .MuiMenu-paper": {
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            },
+          }}
+        >
+          {/* Edit */}
+          <MenuItem
+            onClick={() => {
+              if (selectedTrigger) {
+                handleEditClick(selectedTrigger);
+              }
+              handleClose();
+            }}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <EditNoteIcon sx={{ color: "warning.main", fontSize: 20 }} />
+            <Typography
+              sx={{
+                fontSize: 14,
+                color: "black",
+                marginLeft: 1,
+              }}
             >
-              <DialogTitle>Edit Trigger</DialogTitle>
-              <DialogContent>
-                <Paper elevation={0} sx={{ p: 2, backgroundColor: "#FFFFFB" }}>
+              Edit
+            </Typography>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => {
+              if (selectedTrigger && onDuplicateTrigger) {
+                onDuplicateTrigger(selectedTrigger);
+              }
+              handleClose();
+            }}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <ContentCopyIcon sx={{ color: "warning.main", fontSize: 20 }} />
+            <Typography
+              sx={{
+                fontSize: 14,
+                color: "black",
+                marginLeft: 1,
+              }}
+            >
+              Duplicate
+            </Typography>
+          </MenuItem>
+
+          {/* Delete */}
+          <MenuItem
+            onClick={() => {
+              if (selectedTrigger) {
+                handleDeleteClick(selectedTrigger);
+              }
+              handleClose();
+            }}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <DeleteIcon sx={{ color: "error.main", fontSize: 20 }} />
+            <Typography
+              sx={{
+                fontSize: 14,
+                color: "black",
+                marginLeft: 1,
+              }}
+            >
+              Delete
+            </Typography>
+          </MenuItem>
+        </Menu>
+
+        {/* Edit Dialog */}
+        <Dialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="lg"
+          fullWidth
+        >
+          <DialogTitle>Edit Trigger</DialogTitle>
+          <DialogContent>
+            <Paper elevation={0} sx={{ p: 2, backgroundColor: "#FFFFFB" }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                {/* Trigger Name field */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Box
                     sx={{
-                      mt: 2,
                       display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
+                      alignItems: "center",
+                      minWidth: 150,
                     }}
                   >
-                    {/* Trigger Name field */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
-                        }}
-                      >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          Trigger Name
-                        </Typography>
-                      </Box>
-                      <TextField
-                        name="trigger_name"
-                        {...textFieldProps}
-                        value={editTriggerName}
-                        onChange={(e) => setEditTriggerName(e.target.value)}
-                        fullWidth
-                        required
-                      />
-                    </Box>
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      Trigger Name
+                    </Typography>
+                  </Box>
+                  <TextField
+                    name="trigger_name"
+                    {...textFieldProps}
+                    value={editTriggerName}
+                    onChange={(e) => setEditTriggerName(e.target.value)}
+                    fullWidth
+                    required
+                  />
+                </Box>
 
-                    {/* Threshold Breach Duration selection field */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
+                {/* Threshold Breach Duration selection field */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minWidth: 150,
+                      width: "13%",
+                    }}
+                  >
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      Threshold Breach Duration
+                    </Typography>
+                  </Box>
+                  <TextField
+                    select
+                    value={ThresholdBreachDuration}
+                    onChange={(e) =>
+                      setThresholdBreachDuration(parseInt(e.target.value))
+                    }
+                    size="small"
+                    sx={{
+                      backgroundColor: "white",
+                      "&.MuiInputBase-input": {
+                        fontSize: 14,
+                      },
+                    }}
+                  >
+                    <MenuItem value={0}>Real-Time</MenuItem>
+                    {[...Array(6)].map((_, index) => (
+                      <MenuItem
+                        key={index + 1}
+                        value={(index * 5 + 5) * 60 * 1000}
+                      >
+                        {index * 5 + 5} minute.
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
+
+                {/* Severity field */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minWidth: 150,
+                    }}
+                  >
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      Severity
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      maxWidth: "calc(100% - 150px)",
+                      gap: 1,
+                    }}
+                  >
+                    {[
+                      { level: "Warning", color: "#FFA500" },
+                      { level: "Critical", color: "#FF0000" },
+                      { level: "Disaster", color: "#8B0000" },
+                    ].map(({ level, color }) => (
+                      <Button
+                        key={level}
+                        variant={
+                          editSeverity === level.toLowerCase()
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => setEditSeverity(level.toLowerCase())}
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
-                          width: "13%",
+                          fontSize: 12,
+                          minWidth: "auto",
+                          flex: "1 0 auto",
+                          color:
+                            editSeverity === level.toLowerCase()
+                              ? "white"
+                              : color,
+                          backgroundColor:
+                            editSeverity === level.toLowerCase()
+                              ? color
+                              : "transparent",
+                          borderColor: color,
+                          "&:hover": {
+                            backgroundColor:
+                              editSeverity === level.toLowerCase()
+                                ? color
+                                : `${color}22`,
+                          },
                         }}
                       >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          Threshold Breach Duration
-                        </Typography>
-                      </Box>
+                        {level}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Expression field */}
+                <Box sx={{ gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minWidth: 150,
+                    }}
+                  >
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      Expression
+                    </Typography>
+                    <Button
+                      onClick={handleAddExpression}
+                      sx={{
+                        ml: 3,
+                        fontSize: 12,
+                        color: "blue",
+                        cursor: "pointer",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                    >
+                      Add Expression
+                    </Button>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
+                  {expressionParts.map((part, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        gap: 1.5,
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* functionofitem section */}
                       <TextField
                         select
-                        value={ThresholdBreachDuration}
+                        value={part.functionofItem}
                         onChange={(e) =>
-                          setThresholdBreachDuration(parseInt(e.target.value))
+                          handleExpressionPartChange(
+                            index,
+                            "functionofItem",
+                            e.target.value
+                          )
                         }
+                        label="Function"
                         size="small"
                         sx={{
+                          width: "10%",
                           backgroundColor: "white",
-                          "&.MuiInputBase-input": {
+                          "& .MuiInputBase-input": {
                             fontSize: 14,
                           },
                         }}
                       >
-                        <MenuItem value={0}>Real-Time</MenuItem>
-                        {[...Array(6)].map((_, index) => (
-                          <MenuItem
-                            key={index + 1}
-                            value={(index * 5 + 5) * 60 * 1000}
-                          >
-                            {index * 5 + 5} minute.
+                        {functionofItem.map((fn) => (
+                          <MenuItem key={fn.value} value={fn.value}>
+                            {fn.label}
                           </MenuItem>
                         ))}
                       </TextField>
-                    </Box>
 
-                    {/* Severity field */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
+                      {/* Duration section */}
+                      <TextField
+                        value={part.duration}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "duration",
+                            e.target.value
+                          )
+                        }
+                        disabled={part.functionofItem === "last"}
+                        select
+                        label="Interval"
+                        size="small"
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
                         }}
                       >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          Severity
-                        </Typography>
-                      </Box>
-                      <Box
+                        <MenuItem value="15m">15m</MenuItem>
+                        <MenuItem value="30m">30m</MenuItem>
+                        <MenuItem value="1h">1h</MenuItem>
+                      </TextField>
+
+                      {/* Item Selection */}
+                      <TextField
+                        select
+                        value={part.item}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "item",
+                            e.target.value
+                          )
+                        }
+                        size="small"
+                        label="Item"
                         sx={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          maxWidth: "calc(100% - 150px)",
-                          gap: 1,
+                          width: "40%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
                         }}
                       >
-                        {[
-                          { level: "Warning", color: "#FFA500" },
-                          { level: "Critical", color: "#FF0000" },
-                          { level: "Disaster", color: "#8B0000" },
-                        ].map(({ level, color }) => (
-                          <Button
-                            key={level}
-                            variant={
-                              editSeverity === level.toLowerCase()
-                                ? "contained"
-                                : "outlined"
-                            }
-                            onClick={() => setEditSeverity(level.toLowerCase())}
-                            sx={{
-                              fontSize: 12,
-                              minWidth: "auto",
-                              flex: "1 0 auto",
-                              color:
-                                editSeverity === level.toLowerCase()
-                                  ? "white"
-                                  : color,
-                              backgroundColor:
-                                editSeverity === level.toLowerCase()
-                                  ? color
-                                  : "transparent",
-                              borderColor: color,
-                              "&:hover": {
-                                backgroundColor:
-                                  editSeverity === level.toLowerCase()
-                                    ? color
-                                    : `${color}22`,
-                              },
-                            }}
-                          >
-                            {level}
-                          </Button>
+                        {items.map((item) => (
+                          <MenuItem key={item._id} value={item.item_name}>
+                            {item.item_name}
+                          </MenuItem>
                         ))}
-                      </Box>
-                    </Box>
+                      </TextField>
 
-                    {/* Expression field */}
-                    <Box sx={{ gap: 2 }}>
-                      <Box
+                      {/* Operation Selection */}
+                      <TextField
+                        select
+                        value={part.operation}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "operation",
+                            e.target.value
+                          )
+                        }
+                        label="Operation"
+                        size="small"
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
                         }}
                       >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          Expression
-                        </Typography>
-                        <Button
-                          onClick={handleAddExpression}
+                        {operations.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+
+                      <TextField
+                        value={part.value}
+                        onChange={(e) =>
+                          handleExpressionPartChange(
+                            index,
+                            "value",
+                            e.target.value
+                          )
+                        }
+                        label="Value"
+                        size="small"
+                        sx={{
+                          width: "10%",
+                          backgroundColor: "white",
+                          "& .MuiInputBase-input": {
+                            fontSize: 14,
+                          },
+                        }}
+                      />
+
+                      {/* Operator Selection (show only if not the last row) */}
+                      {index < expressionParts.length - 1 && (
+                        <TextField
+                          select
+                          value={part.operator || "and"}
+                          onChange={(e) =>
+                            handleExpressionPartChange(
+                              index,
+                              "operator",
+                              e.target.value
+                            )
+                          }
+                          label="Operator"
+                          size="small"
                           sx={{
-                            ml: 3,
+                            width: "8%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          {operators.map((op) => (
+                            <MenuItem key={op.value} value={op.value}>
+                              {op.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      )}
+
+                      {/* Remove button (only show for rows after the first) */}
+                      {index > 0 && (
+                        <Typography
+                          onClick={() => handleRemoveExpression(index)}
+                          sx={{
                             fontSize: 12,
-                            color: "blue",
+                            color: "red",
                             cursor: "pointer",
                             "&:hover": {
                               textDecoration: "underline",
                             },
                           }}
                         >
-                          Add Expression
-                        </Button>
-                      </Box>
+                          Remove
+                        </Typography>
+                      )}
                     </Box>
+                  ))}
+                </Box>
 
+                {/* OK event generation */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minWidth: 150,
+                    }}
+                  >
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      OK event generation
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      maxWidth: "calc(100% - 150px)",
+                      gap: 1,
+                    }}
+                  >
+                    {[
+                      { level: "Expression", color: "#808080" },
+                      { level: "Resolved expression", color: "#808080" },
+                      { level: "None", color: "#808080" },
+                    ].map(({ level, color }) => (
+                      <Button
+                        key={level}
+                        variant={
+                          editOk_eve === level.toLowerCase()
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => {
+                          setEditOk_eve(level.toLowerCase());
+                        }}
+                        sx={{
+                          fontSize: 12,
+                          minWidth: "auto",
+                          flex: "1 0 auto",
+                          color:
+                            editOk_eve === level.toLowerCase()
+                              ? "white"
+                              : color,
+                          backgroundColor:
+                            editOk_eve === level.toLowerCase()
+                              ? color
+                              : "transparent",
+                          borderColor: color,
+                          "&:hover": {
+                            backgroundColor:
+                              editOk_eve === level.toLowerCase()
+                                ? color
+                                : `${color}22`,
+                          },
+                        }}
+                      >
+                        {level}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Recovery Expression field */}
+                {editOk_eve === "resolved expression" && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      mt: 1,
+                    }}
+                  >
                     <Box
                       sx={{
                         display: "flex",
-                        flexDirection: "column",
-                        gap: 2,
-                        mt: 1,
+                        justifyContent: "flex-start",
+                        mt: -2,
+                        mb: -1,
                       }}
                     >
-                      {expressionParts.map((part, index) => (
-                        <Box
-                          key={index}
+                      <Button
+                        onClick={handleAddRecovery}
+                        sx={{
+                          fontSize: 12,
+                          color: "blue",
+                          cursor: "pointer",
+                          "&:hover": {
+                            textDecoration: "underline",
+                          },
+                        }}
+                      >
+                        Add Resolved Expression
+                      </Button>
+                    </Box>
+                    {recoveryParts.map((part, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: "flex",
+                          gap: 1.5,
+                          alignItems: "center",
+                        }}
+                      >
+                        {/* functionofitem section */}
+                        <TextField
+                          select
+                          value={part.functionofItem}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "functionofItem",
+                              e.target.value
+                            )
+                          }
+                          label="Function"
+                          size="small"
                           sx={{
-                            display: "flex",
-                            gap: 1.5,
-                            alignItems: "center",
+                            width: "10%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
                           }}
                         >
-                          {/* functionofitem section */}
-                          <TextField
-                            select
-                            value={part.functionofItem}
-                            onChange={(e) =>
-                              handleExpressionPartChange(
-                                index,
-                                "functionofItem",
-                                e.target.value
-                              )
-                            }
-                            label="Function"
-                            size="small"
-                            sx={{
-                              width: "10%",
-                              backgroundColor: "white",
-                              "& .MuiInputBase-input": {
-                                fontSize: 14,
-                              },
-                            }}
-                          >
-                            {functionofItem.map((fn) => (
-                              <MenuItem key={fn.value} value={fn.value}>
-                                {fn.label}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                          {functionofItem.map((fn) => (
+                            <MenuItem key={fn.value} value={fn.value}>
+                              {fn.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                        {/* Duration section */}
+                        <TextField
+                          select
+                          value={part.duration}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "duration",
+                              e.target.value
+                            )
+                          }
+                          disabled={part.functionofItem === "last"}
+                          label="Interval"
+                          size="small"
+                          sx={{
+                            width: "10%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          <MenuItem value="15m">15m</MenuItem>
+                          <MenuItem value="30m">30m</MenuItem>
+                          <MenuItem value="1h">1h</MenuItem>
+                        </TextField>
 
-                          {/* Duration section */}
-                          <TextField
-                            value={part.duration}
-                            onChange={(e) =>
-                              handleExpressionPartChange(
-                                index,
-                                "duration",
-                                e.target.value
-                              )
-                            }
-                            disabled={part.functionofItem === "last"}
-                            select
-                            label="Interval"
-                            size="small"
-                            sx={{
-                              width: "10%",
-                              backgroundColor: "white",
-                              "& .MuiInputBase-input": {
-                                fontSize: 14,
-                              },
-                            }}
-                          >
-                            <MenuItem value="15m">15m</MenuItem>
-                            <MenuItem value="30m">30m</MenuItem>
-                            <MenuItem value="1h">1h</MenuItem>
-                          </TextField>
+                        {/* Item Selection */}
+                        <TextField
+                          select
+                          value={part.item}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "item",
+                              e.target.value
+                            )
+                          }
+                          size="small"
+                          label="Item"
+                          sx={{
+                            width: "40%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          {items.map((item) => (
+                            <MenuItem key={item._id} value={item.item_name}>
+                              {item.item_name}
+                            </MenuItem>
+                          ))}
+                        </TextField>
 
-                          {/* Item Selection */}
-                          <TextField
-                            select
-                            value={part.item}
-                            onChange={(e) =>
-                              handleExpressionPartChange(
-                                index,
-                                "item",
-                                e.target.value
-                              )
-                            }
-                            size="small"
-                            label="Item"
-                            sx={{
-                              width: "40%",
-                              backgroundColor: "white",
-                              "& .MuiInputBase-input": {
-                                fontSize: 14,
-                              },
-                            }}
-                          >
-                            {items.map((item) => (
-                              <MenuItem key={item._id} value={item.item_name}>
-                                {item.item_name}
-                              </MenuItem>
-                            ))}
-                          </TextField>
+                        {/* Operation Selection */}
+                        <TextField
+                          select
+                          value={part.operation}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "operation",
+                              e.target.value
+                            )
+                          }
+                          label="Operation"
+                          size="small"
+                          sx={{
+                            width: "10%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        >
+                          {operations.map((op) => (
+                            <MenuItem key={op.value} value={op.value}>
+                              {op.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
 
-                          {/* Operation Selection */}
+                        <TextField
+                          value={part.value}
+                          onChange={(e) =>
+                            handleRecoveryPartChange(
+                              index,
+                              "value",
+                              e.target.value
+                            )
+                          }
+                          label="Value"
+                          size="small"
+                          sx={{
+                            width: "10%",
+                            backgroundColor: "white",
+                            "& .MuiInputBase-input": {
+                              fontSize: 14,
+                            },
+                          }}
+                        />
+
+                        {/* Operator Selection (show only if not the last row) */}
+                        {index < recoveryParts.length - 1 && (
                           <TextField
                             select
-                            value={part.operation}
+                            value={part.operator || "and"}
                             onChange={(e) =>
-                              handleExpressionPartChange(
+                              handleRecoveryPartChange(
                                 index,
-                                "operation",
+                                "operator",
                                 e.target.value
                               )
                             }
-                            label="Operation"
+                            label="Operator"
                             size="small"
                             sx={{
-                              width: "10%",
+                              width: "8%",
                               backgroundColor: "white",
                               "& .MuiInputBase-input": {
                                 fontSize: 14,
                               },
                             }}
                           >
-                            {operations.map((op) => (
+                            {operators.map((op) => (
                               <MenuItem key={op.value} value={op.value}>
                                 {op.label}
                               </MenuItem>
                             ))}
                           </TextField>
+                        )}
 
-                          <TextField
-                            value={part.value}
-                            onChange={(e) =>
-                              handleExpressionPartChange(
-                                index,
-                                "value",
-                                e.target.value
-                              )
-                            }
-                            label="Value"
-                            size="small"
-                            sx={{
-                              width: "10%",
-                              backgroundColor: "white",
-                              "& .MuiInputBase-input": {
-                                fontSize: 14,
-                              },
-                            }}
-                          />
-
-                          {/* Operator Selection (show only if not the last row) */}
-                          {index < expressionParts.length - 1 && (
-                            <TextField
-                              select
-                              value={part.operator || "and"}
-                              onChange={(e) =>
-                                handleExpressionPartChange(
-                                  index,
-                                  "operator",
-                                  e.target.value
-                                )
-                              }
-                              label="Operator"
-                              size="small"
-                              sx={{
-                                width: "8%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            >
-                              {operators.map((op) => (
-                                <MenuItem key={op.value} value={op.value}>
-                                  {op.label}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                          )}
-
-                          {/* Remove button (only show for rows after the first) */}
-                          {index > 0 && (
-                            <Typography
-                              onClick={() => handleRemoveExpression(index)}
-                              sx={{
-                                fontSize: 12,
-                                color: "red",
-                                cursor: "pointer",
-                                "&:hover": {
-                                  textDecoration: "underline",
-                                },
-                              }}
-                            >
-                              Remove
-                            </Typography>
-                          )}
-                        </Box>
-                      ))}
-                    </Box>
-
-                    {/* OK event generation */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
-                        }}
-                      >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          OK event generation
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          maxWidth: "calc(100% - 150px)",
-                          gap: 1,
-                        }}
-                      >
-                        {[
-                          { level: "Expression", color: "#808080" },
-                          { level: "Resolved expression", color: "#808080" },
-                          { level: "None", color: "#808080" },
-                        ].map(({ level, color }) => (
-                          <Button
-                            key={level}
-                            variant={
-                              editOk_eve === level.toLowerCase()
-                                ? "contained"
-                                : "outlined"
-                            }
-                            onClick={() => {
-                              setEditOk_eve(level.toLowerCase());
-                            }}
+                        {/* Remove button (only show for rows after the first) */}
+                        {index > 0 && (
+                          <Typography
+                            onClick={() => handleRemoveRecovery(index)}
                             sx={{
                               fontSize: 12,
-                              minWidth: "auto",
-                              flex: "1 0 auto",
-                              color:
-                                editOk_eve === level.toLowerCase()
-                                  ? "white"
-                                  : color,
-                              backgroundColor:
-                                editOk_eve === level.toLowerCase()
-                                  ? color
-                                  : "transparent",
-                              borderColor: color,
-                              "&:hover": {
-                                backgroundColor:
-                                  editOk_eve === level.toLowerCase()
-                                    ? color
-                                    : `${color}22`,
-                              },
-                            }}
-                          >
-                            {level}
-                          </Button>
-                        ))}
-                      </Box>
-                    </Box>
-
-                    {/* Recovery Expression field */}
-                    {editOk_eve === "resolved expression" && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 2,
-                          mt: 1,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            mt: -2,
-                            mb: -1,
-                          }}
-                        >
-                          <Button
-                            onClick={handleAddRecovery}
-                            sx={{
-                              fontSize: 12,
-                              color: "blue",
+                              color: "red",
                               cursor: "pointer",
                               "&:hover": {
                                 textDecoration: "underline",
                               },
                             }}
                           >
-                            Add Resolved Expression
-                          </Button>
-                        </Box>
-                        {recoveryParts.map((part, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              display: "flex",
-                              gap: 1.5,
-                              alignItems: "center",
-                            }}
-                          >
-                            {/* functionofitem section */}
-                            <TextField
-                              select
-                              value={part.functionofItem}
-                              onChange={(e) =>
-                                handleRecoveryPartChange(
-                                  index,
-                                  "functionofItem",
-                                  e.target.value
-                                )
-                              }
-                              label="Function"
-                              size="small"
-                              sx={{
-                                width: "10%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            >
-                              {functionofItem.map((fn) => (
-                                <MenuItem key={fn.value} value={fn.value}>
-                                  {fn.label}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-                            {/* Duration section */}
-                            <TextField
-                              select
-                              value={part.duration}
-                              onChange={(e) =>
-                                handleRecoveryPartChange(
-                                  index,
-                                  "duration",
-                                  e.target.value
-                                )
-                              }
-                              disabled={part.functionofItem === "last"}
-                              label="Interval"
-                              size="small"
-                              sx={{
-                                width: "10%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            >
-                              <MenuItem value="15m">15m</MenuItem>
-                              <MenuItem value="30m">30m</MenuItem>
-                              <MenuItem value="1h">1h</MenuItem>
-                            </TextField>
-
-                            {/* Item Selection */}
-                            <TextField
-                              select
-                              value={part.item}
-                              onChange={(e) =>
-                                handleRecoveryPartChange(
-                                  index,
-                                  "item",
-                                  e.target.value
-                                )
-                              }
-                              size="small"
-                              label="Item"
-                              sx={{
-                                width: "40%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            >
-                              {items.map((item) => (
-                                <MenuItem key={item._id} value={item.item_name}>
-                                  {item.item_name}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-
-                            {/* Operation Selection */}
-                            <TextField
-                              select
-                              value={part.operation}
-                              onChange={(e) =>
-                                handleRecoveryPartChange(
-                                  index,
-                                  "operation",
-                                  e.target.value
-                                )
-                              }
-                              label="Operation"
-                              size="small"
-                              sx={{
-                                width: "10%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            >
-                              {operations.map((op) => (
-                                <MenuItem key={op.value} value={op.value}>
-                                  {op.label}
-                                </MenuItem>
-                              ))}
-                            </TextField>
-
-                            <TextField
-                              value={part.value}
-                              onChange={(e) =>
-                                handleRecoveryPartChange(
-                                  index,
-                                  "value",
-                                  e.target.value
-                                )
-                              }
-                              label="Value"
-                              size="small"
-                              sx={{
-                                width: "10%",
-                                backgroundColor: "white",
-                                "& .MuiInputBase-input": {
-                                  fontSize: 14,
-                                },
-                              }}
-                            />
-
-                            {/* Operator Selection (show only if not the last row) */}
-                            {index < recoveryParts.length - 1 && (
-                              <TextField
-                                select
-                                value={part.operator || "and"}
-                                onChange={(e) =>
-                                  handleRecoveryPartChange(
-                                    index,
-                                    "operator",
-                                    e.target.value
-                                  )
-                                }
-                                label="Operator"
-                                size="small"
-                                sx={{
-                                  width: "8%",
-                                  backgroundColor: "white",
-                                  "& .MuiInputBase-input": {
-                                    fontSize: 14,
-                                  },
-                                }}
-                              >
-                                {operators.map((op) => (
-                                  <MenuItem key={op.value} value={op.value}>
-                                    {op.label}
-                                  </MenuItem>
-                                ))}
-                              </TextField>
-                            )}
-
-                            {/* Remove button (only show for rows after the first) */}
-                            {index > 0 && (
-                              <Typography
-                                onClick={() => handleRemoveRecovery(index)}
-                                sx={{
-                                  fontSize: 12,
-                                  color: "red",
-                                  cursor: "pointer",
-                                  "&:hover": {
-                                    textDecoration: "underline",
-                                  },
-                                }}
-                              >
-                                Remove
-                              </Typography>
-                            )}
-                          </Box>
-                        ))}
+                            Remove
+                          </Typography>
+                        )}
                       </Box>
-                    )}
-
-                    {/* Enabled Switch */}
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          minWidth: 150,
-                        }}
-                      >
-                        <Typography color="error" {...typographyProps}>
-                          *
-                        </Typography>
-                        <Typography sx={{ ml: 1 }} {...typographyProps}>
-                          Enabled
-                        </Typography>
-                      </Box>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={editEnabled}
-                            onChange={(e) => setEditEnabled(e.target.checked)}
-                            sx={{
-                              "& .MuiSwitch-switchBase.Mui-checked": {
-                                color: "#4CAF50",
-                                "&:hover": {
-                                  backgroundColor: "#4CAF5022",
-                                },
-                              },
-                              "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
-                                {
-                                  backgroundColor: "#4CAF50",
-                                },
-                              "& .MuiSwitch-switchBase.Mui-disabled": {
-                                color: "#bdbdbd",
-                              },
-                              "& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track":
-                                {
-                                  backgroundColor: "#e0e0e0",
-                                },
-                            }}
-                          />
-                        }
-                        label=""
-                      />
-                    </Box>
+                    ))}
                   </Box>
-                </Paper>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => setEditDialogOpen(false)}
-                  disabled={formLoading}
-                  sx={{ color: "black" }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleEditSubmit}
-                  variant="contained"
-                  color="primary"
-                  disabled={formLoading}
-                >
-                  {formLoading ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    "Save Changes"
-                  )}
-                </Button>
-              </DialogActions>
-            </Dialog>
+                )}
 
-            {/* Delete Dialog */}
-            <Dialog
-              open={deleteDialogOpen}
-              onClose={() => setDeleteDialogOpen(false)}
+                {/* Enabled Switch */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      minWidth: 150,
+                    }}
+                  >
+                    <Typography color="error" {...typographyProps}>
+                      *
+                    </Typography>
+                    <Typography sx={{ ml: 1 }} {...typographyProps}>
+                      Enabled
+                    </Typography>
+                  </Box>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={editEnabled}
+                        onChange={(e) => setEditEnabled(e.target.checked)}
+                        sx={{
+                          "& .MuiSwitch-switchBase.Mui-checked": {
+                            color: "#4CAF50",
+                            "&:hover": {
+                              backgroundColor: "#4CAF5022",
+                            },
+                          },
+                          "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track":
+                            {
+                              backgroundColor: "#4CAF50",
+                            },
+                          "& .MuiSwitch-switchBase.Mui-disabled": {
+                            color: "#bdbdbd",
+                          },
+                          "& .MuiSwitch-switchBase.Mui-disabled + .MuiSwitch-track":
+                            {
+                              backgroundColor: "#e0e0e0",
+                            },
+                        }}
+                      />
+                    }
+                    label=""
+                  />
+                </Box>
+              </Box>
+            </Paper>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setEditDialogOpen(false)}
+              disabled={formLoading}
+              sx={{ color: "black" }}
             >
-              <DialogTitle>Confirm Delete</DialogTitle>
-              <DialogContent>
-                <Typography>
-                  Are you sure you want to delete the trigger "
-                  {removeTriggerName}"? This action cannot be undone.
-                </Typography>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  sx={{ color: "black" }}
-                  onClick={() => setDeleteDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDeleteConfirm}
-                  color="error"
-                  variant="contained"
-                >
-                  Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSubmit}
+              variant="contained"
+              color="primary"
+              disabled={formLoading}
+            >
+              {formLoading ? <CircularProgress size={24} /> : "Save Changes"}
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-            {/* Snackbar for notifications */}
-            <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={handleCloseSnackbar}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        {/* Delete Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete the trigger "{removeTriggerName}"?
+              This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              sx={{ color: "black" }}
+              onClick={() => setDeleteDialogOpen(false)}
             >
-              <Alert
-                onClose={handleCloseSnackbar}
-                severity={snackbar.severity}
-                variant="filled"
-              >
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
-          </Box>
-        )}
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteConfirm}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            variant="filled"
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
-      {/* </Box> */}
     </>
   );
 };
-
 export default TriggerComponent;
