@@ -29,6 +29,7 @@ import {
   Chip,
   Menu,
   Fade,
+  Tooltip,
 } from "@mui/material";
 import useWindowSize from "../hooks/useWindowSize";
 import AddTemplate from "../components/Modals/AddTemplate";
@@ -41,11 +42,13 @@ import {
   ItemTemplate,
   ITemplate,
   RecoveryPart,
+  Item,
 } from "../interface/InterfaceCollection";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteSweepIcon from "@mui/icons-material/DeleteSweep";
 import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import NumberFormatTextField from "../components/NumberFormatTextField";
 
 const functionofItem = [
   { value: "avg", label: "Average" },
@@ -66,6 +69,7 @@ const operations = [
   { value: "<", label: "<" },
   { value: "<=", label: "<=" },
 ];
+type NewTemplateItem = Omit<Item, "_id">;
 
 const Templates: React.FC = () => {
   const windowSize = useWindowSize();
@@ -74,6 +78,7 @@ const Templates: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
+  const [items, setItems] = useState<NewTemplateItem[]>([]);
 
   // Edit/Delete states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -175,7 +180,6 @@ const Templates: React.FC = () => {
       const result = await response.json();
       setTemplates(result.data);
     } catch (error) {
-    
     } finally {
       setLoading(false);
     }
@@ -319,6 +323,10 @@ const Templates: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    // Don't allow switching to the Trigger tab (index 2) if there are no items
+    if (newValue === 2 && (!editingTemplate?.items || editingTemplate.items.length === 0)) {
+      return;
+    }
     setActiveTab(newValue);
   };
 
@@ -991,11 +999,19 @@ const Templates: React.FC = () => {
               sx={{ px: 3, backgroundColor: "#FFFFFB", mt: -2 }}
             >
               <Box component="form">
-                <Tabs value={activeTab} onChange={handleTabChange}>
-                  <Tab label="Template" />
-                  <Tab label="Item" />
-                  <Tab label="Trigger" />
-                </Tabs>
+              <Tabs value={activeTab} onChange={handleTabChange}>
+  <Tab label="Template" />
+  <Tab label="Item" />
+  {!editingTemplate?.items || editingTemplate.items.length === 0 ? (
+    <Tooltip title="Add at least one item before creating triggers">
+      <Box component="span" sx={{ display: "inline-block" }}>
+        <Tab label="Trigger" disabled={true} />
+      </Box>
+    </Tooltip>
+  ) : (
+    <Tab label="Trigger" />
+  )}
+</Tabs>
                 {activeTab === 0 && (
                   <Box
                     sx={{
@@ -1598,7 +1614,7 @@ const Templates: React.FC = () => {
                                 label="Function"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "12%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -1626,7 +1642,7 @@ const Templates: React.FC = () => {
                                 label="Interval"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "11%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -1687,7 +1703,7 @@ const Templates: React.FC = () => {
                                 label="Operation"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "13%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -1701,7 +1717,7 @@ const Templates: React.FC = () => {
                                 ))}
                               </TextField>
 
-                              <TextField
+                              <NumberFormatTextField
                                 value={part.value}
                                 onChange={(e) =>
                                   handleExpressionPartChange(
@@ -1733,7 +1749,6 @@ const Templates: React.FC = () => {
                                       e.target.value
                                     )
                                   }
-                                  label="Operator"
                                   size="small"
                                   sx={{
                                     width: "8%",
@@ -1910,7 +1925,7 @@ const Templates: React.FC = () => {
                                 label="Function"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "12%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -1937,7 +1952,7 @@ const Templates: React.FC = () => {
                                 label="Interval"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "11%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -1998,7 +2013,7 @@ const Templates: React.FC = () => {
                                 label="Operation"
                                 size="small"
                                 sx={{
-                                  width: "10%",
+                                  width: "13%",
                                   backgroundColor: "white",
                                   "& .MuiInputBase-input": {
                                     fontSize: 14,
@@ -2012,7 +2027,7 @@ const Templates: React.FC = () => {
                                 ))}
                               </TextField>
 
-                              <TextField
+                              <NumberFormatTextField
                                 value={part.value}
                                 onChange={(e) =>
                                   handleRecoveryPartChange(
@@ -2044,7 +2059,6 @@ const Templates: React.FC = () => {
                                       e.target.value
                                     )
                                   }
-                                  label="Operator"
                                   size="small"
                                   sx={{
                                     width: "8%",

@@ -43,6 +43,7 @@ import {
   RecoveryPart,
 } from "../../interface/InterfaceCollection";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import NumberFormatTextField from "../NumberFormatTextField";
 
 interface AddTemplateProps {
   onClose: () => void;
@@ -1456,7 +1457,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         </TextField>
 
                         {/* Value field */}
-                        <TextField
+                        <NumberFormatTextField
                           value={part.value}
                           onChange={(e) =>
                             handleExpressionPartChange(
@@ -1763,7 +1764,7 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           ))}
                         </TextField>
 
-                        <TextField
+                        <NumberFormatTextField
                           value={part.value}
                           required
                           onChange={(e) =>
