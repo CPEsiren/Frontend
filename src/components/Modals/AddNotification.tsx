@@ -84,7 +84,6 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
   const [email, setemail] = useState("");
   const [activeTab, setActiveTab] = useState("noti");
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
 
   const handleCloseSnackbar = (): void => {
     setSnackbar({ ...snackbar, open: false });
@@ -404,51 +403,25 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     },
   }));
 
-  useEffect(() => {
-    // Initialize LIFF app
-    setIsInitializing(true);
-    liff.init({ liffId: `${import.meta.env.VITE_LINE_LIFF_ID}` });
-    liff.ready
-      .then(() => {
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        }
-        fetchLineProfile();
-      })
-      .catch((err) => {
-        console.error("LIFF initialization failed", err);
-      })
-      .finally(() => {
-        setIsInitializing(false);
-      });
-  }, []);
-
-  const fetchLineProfile = async () => {
-    setIsLoading(true);
-    try {
-      const profile = await liff.getProfile();
-      setLineUserId(profile.userId);
-      setProfileLine(profile.pictureUrl ?? Profile404);
-      setNameLine(profile.displayName);
-    } catch (err) {
-      console.error("Error fetching Line profile", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleLineLogin = async () => {
     setIsLoading(true);
-    if (!liff.isLoggedIn()) {
-      try {
-        await liff.login();
-      } catch (err) {
-        console.error("Line login failed", err);
-        setIsLoading(false);
+    liff.init({ liffId: `${import.meta.env.VITE_LINE_LIFF_ID}` });
+    liff.ready.then(() => {
+      if (!liff.isLoggedIn()) {
+        try {
+          liff.login();
+        } catch (err) {
+          console.error("Line login failed", err);
+          setIsLoading(false);
+        }
       }
-    } else {
-      await fetchLineProfile();
-    }
+      liff.getProfile().then((profile) => {
+        setLineUserId(profile.userId);
+        setProfileLine(profile.pictureUrl ?? Profile404);
+        setNameLine(profile.displayName);
+      });
+    });
+    setIsLoading(false);
   };
 
   //Line Logout
@@ -458,7 +431,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     setIsLoading(true);
     try {
       if (liff.isLoggedIn()) {
-        await liff.logout();
+        liff.logout();
         setLineUserId(null);
         setProfileLine(null);
         setNameLine(null);
@@ -856,7 +829,7 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
                   )}
                 </Box>
               )}
-              {(selectedChannel === "line" || isInitializing) && (
+              {selectedChannel === "line" && (
                 <Box
                   sx={{
                     mt: 2,
