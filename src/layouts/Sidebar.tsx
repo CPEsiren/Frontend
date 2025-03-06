@@ -60,14 +60,14 @@ const BaseItems: SidebarItem[] = [
     path: "/graphs",
     newIcon: "",
   },
-  {
+  //{
     // id: 7,
-    id: 6,
-    icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
-    name: "Contact Us",
-    path: "/contactus",
-    newIcon: "",
-  },
+  //   id: 6,
+  //   icon: <PeopleAltOutlinedIcon sx={{ fontSize: 20 }} />,
+  //   name: "Contact Us",
+  //   path: "/contactus",
+  //   newIcon: "",
+  // },
 ];
 
 // Additional items only admins can see

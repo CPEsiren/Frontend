@@ -112,11 +112,11 @@ const App = () => {
   return (
     <ThemeProvider theme={ThemeConfig}>
       <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           <Route
             path="/"
@@ -132,7 +132,7 @@ const App = () => {
               element={<ViewerRoute element={<ViewerDashboard />} />}
             />
             <Route path="/graphs" element={<Graphs />} />
-            <Route path="/contactus" element={<ContactUs />} />
+            {/* <Route path="/contactus" element={<ContactUs />} /> */}
             <Route
               path="/dashboard"
               element={
