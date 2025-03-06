@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Checkbox,
+  CircularProgress,
   Container,
   Divider,
   FormControl,
@@ -526,8 +527,13 @@ const Graphs: React.FC = () => {
   if (isLoading) {
     return (
       <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Typography>Loading data...</Typography>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="400px"
+        >
+          <CircularProgress />
         </Box>
       </Container>
     );

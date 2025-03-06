@@ -97,27 +97,28 @@ const Management: React.FC = () => {
           </Box>
 
           <Box
-            sx={{
-              width: 1,
-              marginTop: 2,
-              height: "auto",
-              display: "flex",
-            }}
-          >
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr",
-                justifyContent: "center",
-                alignItems: "center",
-                width: "100%",
-                overflowY: "auto",
-                backgroundColor: "#FFFFFB",
-                borderRadius: 3,
-                py: 2,
-                mb: 5,
-              }}
-            >
+        sx={{
+          width: 1,
+          marginTop: 2,
+          height: "auto",
+          display: "flex",
+        }}
+      >
+        <Box
+         sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          overflowY: "auto",
+          backgroundColor: "transparent",
+          borderRadius: 3,
+          border: "7px solid rgb(255, 255, 255)", 
+          py: 2,
+          mb: 5,
+         }}
+        >
               <Usermanagemnet />
             </Box>
           </Box>

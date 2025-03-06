@@ -193,6 +193,10 @@ const Templates: React.FC = () => {
     setEditingTemplate(template);
     setEditDialogOpen(true);
   };
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setActiveTab(0); // Reset tab to Template (first tab)
+  };
 
   const handleEditSubmit = async () => {
     if (!editingTemplate) return;
@@ -203,7 +207,7 @@ const Templates: React.FC = () => {
         ...editingTemplate,
         userRole: localStorage.getItem("userRole"),
         userName: localStorage.getItem("username"),
-        oldtemplate_name: editingTemplate.template_name, // Assuming you want to store the original name
+        oldtemplate_name: editingTemplate.template_name,
       };
 
       const response = await axios.put(
@@ -232,6 +236,7 @@ const Templates: React.FC = () => {
           refreshCallback: null,
         });
         setEditDialogOpen(false);
+        setActiveTab(0); // Reset tab to Template after successful edit
       }
     } catch (error) {
       console.error("Error updating template:", error);
@@ -982,7 +987,7 @@ const Templates: React.FC = () => {
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
+        onClose={handleCloseEditDialog}
         maxWidth="lg"
         fullWidth
       >
@@ -2310,7 +2315,7 @@ const Templates: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setEditDialogOpen(false)}
+            onClick={handleCloseEditDialog}
             disabled={formLoading}
             sx={{ color: "black" }}
           >

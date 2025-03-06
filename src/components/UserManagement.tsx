@@ -286,7 +286,7 @@ const UserManagement = () => {
         component={Paper}
         elevation={0}
         sx={{
-          backgroundColor: "transparent",
+          backgroundColor: "#FFFFFB",
         }}
       >
         <Table
@@ -296,32 +296,32 @@ const UserManagement = () => {
               borderBottom: "1px solid rgba(224, 224, 224, 0.4)",
               padding: "16px",
             },
-            "& .MuiTableRow-body:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.04)",
-            },
             "& .MuiTableCell-head": {
               borderBottom: "1px solid #dbdbdb",
+            },
+            "& .MuiTableRow-body:hover": {
+              backgroundColor: "rgba(255, 0, 0, 0.71)",
             },
           }}
         >
           <TableHead sx={{ backgroundColor: "#ffffff" }}>
             <TableRow>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Username
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Email
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Role
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ color: "black" }}>
                 <Typography variant="subtitle1" fontWeight="medium">
                   Action
                 </Typography>
@@ -381,7 +381,7 @@ const UserManagement = () => {
 
   return (
     <Container maxWidth={false}>
-      <Box sx={{ mb: 3,mt:3 }}>
+      <Box sx={{ mb: 3, mt: 3 }}>
         {roleGroups.map((groupKey) => {
           const group = groupedUsers[groupKey];
           return (
@@ -392,12 +392,27 @@ const UserManagement = () => {
               sx={{ mb: 2 }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                sx={{ backgroundColor: "#f5f5f5" }}
+                expandIcon={<ExpandMoreIcon sx={{ color: "#ffffff" }} />}
+                sx={{
+                  backgroundColor: "#1f2b5d",
+                }}
               >
-                <Typography fontWeight="medium">
-                  {group.originalName.toUpperCase()} ({group.users.length}{" "}
-                  {group.users.length === 1 ? "user" : "users"})
+                <Typography fontWeight="medium" sx={{ color: "#fff" }}>
+                  {group.originalName.toUpperCase()}
+                  <Box
+                    component="span"
+                    sx={{
+                      border: "3px solid rgb(79, 93, 155)",
+                      fontSize: "15px",
+                      borderRadius: "50px",
+                      padding: "3px 8px",
+                      color: "white",
+                      marginLeft: "15px",
+                    }}
+                  >
+                    {group.users.length}{" "}
+                    {group.users.length === 1 ? "user" : "users"}
+                  </Box>
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
