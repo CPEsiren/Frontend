@@ -199,14 +199,21 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
   // Helper function to check if a path matches, including alternative paths
   const isPathActive = (item: SidebarItem) => {
     const currentPath = location.pathname;
+  
+   
+    if (item.name === "Management" && (currentPath.includes("/trigger") || currentPath.includes("/event"))) {
+      return false; 
+    }
+  
+    // ตรวจสอบว่า path ของ item ตรงกับ path ที่ใช้งานหรือไม่
     return (
       (item.path && currentPath === item.path) ||
       (item.alternativePaths && item.alternativePaths.includes(currentPath)) ||
       item.subItems?.some((sub) => sub.path === currentPath) ||
-      (item.id === 5 &&
-        (currentPath.includes("trigger") || currentPath.includes("event")))
+      (item.id === 5 && (currentPath.includes("trigger") || currentPath.includes("event")))
     );
   };
+  
 
   return (
     <Stack direction="column" spacing="10px">
@@ -364,4 +371,4 @@ export default function Sidebar({ isHideSidebar }: SidebarProps) {
       ))}
     </Stack>
   );
-}
+} 
