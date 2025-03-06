@@ -13,9 +13,9 @@ export const getPageName = (pathname: string): string => {
     "Account",
     "Devices",
     "Graphs",
+    "Alerts",
     "Storages",
     "Management",
-    "Alerts",
     "Contact",
   ];
 

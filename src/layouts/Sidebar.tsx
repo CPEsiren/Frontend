@@ -104,13 +104,6 @@ const AdminItems: SidebarItem[] = [
   },
   {
     id: 4,
-    icon: <SettingsIcon sx={{ fontSize: 20 }} />,
-    name: "Management",
-    path: "/management",
-    newIcon: "",
-  },
-  {
-    id: 5,
     icon: <ErrorIcon sx={{ fontSize: 22 }} />,
     name: "Alerts",
     newIcon: "",
@@ -131,6 +124,14 @@ const AdminItems: SidebarItem[] = [
       },
     ],
   },
+  {
+    id: 5,
+    icon: <SettingsIcon sx={{ fontSize: 20 }} />,
+    name: "Management",
+    path: "/management",
+    newIcon: "",
+  },
+
   // {
   //   id: 6,
   //   icon: <BuildIcon sx={{ fontSize: 20 }} />,
