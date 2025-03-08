@@ -203,44 +203,19 @@ const Graphs: React.FC = () => {
   //Now Range Data
   const [rangeTime, setRangeTime] = useState<string>("15 m");
   const setTimeRange = () => {
-    switch (selectedLastTime) {
-      case "Last 15 Minutes":
-        setRangeTime("15 m");
-        break;
-      case "Last 30 Minutes":
-        setRangeTime("30 m");
-        break;
-      case "Last 1 Hour":
-        setRangeTime("1 h");
-        break;
-      case "Last 3 Hours":
-        setRangeTime("3 h");
-        break;
-      case "Last 6 Hours":
-        setRangeTime("6 h");
-        break;
-      case "Last 12 Hours": {
-        setRangeTime("12 h");
-        break;
-      }
-      case "Last 1 Day":
-        setRangeTime("1 d");
-        break;
-      case "Last 3 Days":
-        setRangeTime("3 d");
-        break;
-      case "Last 7 Days":
-        setRangeTime("7 d");
-        break;
-      case "Last 1 Month":
-        setRangeTime("1 M");
-        break;
-      case "Last 6 Months":
-        setRangeTime("6 M");
-        break;
-      default:
-        // If no match, don't change the date
-        return;
+    const itemDiff =
+      selectedDateTimeEnd.getTime() - selectedDateTimeStart.getTime();
+    const diff = Math.floor(itemDiff / 1000);
+    if (diff < 60) {
+      setRangeTime(`${diff} s`);
+    } else if (diff < 3600) {
+      setRangeTime(`${Math.floor(diff / 60)} m`);
+    } else if (diff < 86400) {
+      setRangeTime(`${Math.floor(diff / 3600)} h`);
+    } else if (diff < 2592000) {
+      setRangeTime(`${Math.floor(diff / 86400)} d`);
+    } else if (diff < 15768000) {
+      setRangeTime(`${Math.floor(diff / 2592000)} M`);
     }
   };
 
@@ -325,16 +300,6 @@ const Graphs: React.FC = () => {
     setTimeRange();
   };
 
-  // Add a reset filters function
-  // const handleResetFilters = () => {
-  //   const initialSelectedItems: SelectedItems = {};
-  //   data.forEach((item) => {
-  //     initialSelectedItems[item.item_id.item_name] = true;
-  //   });
-  //   setSelectedItems(initialSelectedItems);
-  //   localStorage.setItem("graphFilters", JSON.stringify(initialSelectedItems));
-  // };
-
   // Modify the reset button click handler to include filter reset
   const handleResetClick = () => {
     setSelectedLastTime(lastTime[0]);
@@ -346,7 +311,7 @@ const Graphs: React.FC = () => {
     setGraphsPerPage(5);
     setColumnsPerRow(1);
     setIsAuto(true);
-    // handleResetFilters(); // Reset filters to initial state
+    setRangeTime("15 m");
   };
 
   //Fetch Data
@@ -904,7 +869,7 @@ const Graphs: React.FC = () => {
                   elevation={3}
                   sx={{
                     p: 2,
-                    minheight: "500px",
+                    height: { xs: "400px", sm: "450px", md: "500px" },
                     display: "flex",
                     flexDirection: "column",
                     transition: "box-shadow 0.3s ease-in-out",
@@ -930,7 +895,14 @@ const Graphs: React.FC = () => {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1, overflow: "hidden", width: 1, p: 0 }}>
+                  <Box
+                    sx={{
+                      flexGrow: 1,
+                      overflow: "hidden",
+                      width: "100%",
+                      height: "calc(100% - 40px)",
+                    }}
+                  >
                     <MetricGraph item={item} selectedLastTime={rangeTime} />
                   </Box>
                 </Paper>
