@@ -14,7 +14,6 @@ const Event = () => {
             display: "flex",
             justifyContent: "flex-start",
             marginTop: 5,
-          
           }}
         >
           <Typography
@@ -29,11 +28,9 @@ const Event = () => {
       )}
       <Box
         sx={{
-          // width: 1,
           marginTop: 2,
           height: "auto",
           display: "flex",
-         
         }}
       >
         <Box
@@ -58,8 +55,6 @@ const Event = () => {
                 color: "#242D5D",
                 fontWeight: 400,
                 fontSize: 25,
-                // mt: "6rem",
-                // mb: "2rem",
               }}
             ></Typography>
           )}
