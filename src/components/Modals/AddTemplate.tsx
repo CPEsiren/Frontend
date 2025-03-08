@@ -509,27 +509,9 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
   };
 
   const validateForm = useCallback(() => {
-    const newErrors = {
-      trigger_name: !trigger_name,
-      severity: !severity,
-      expression: !expression,
-      ok_eventGen: !ok_eventGen,
-      recoveryExpression:
-        ok_eventGen === "resolved expression" && !recoveryExpression,
-    };
-
-    setErrorsFieldTrigger(newErrors);
-
     const isTemplateNameValid = template_name.trim() !== "";
-    return isTemplateNameValid && !Object.values(newErrors).some((err) => err);
-  }, [
-    trigger_name,
-    severity,
-    expression,
-    ok_eventGen,
-    recoveryExpression,
-    template_name,
-  ]);
+    return isTemplateNameValid;
+  }, []);
 
   useEffect(() => {
     setIsFormValid(validateForm());
@@ -687,6 +669,22 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
     return !Object.values(newErrors).some((error) => error);
   };
 
+  const handleDuplicateTrigger = (index: number) => {
+    const newTriggers = [...triggers];
+    const duplicatedTrigger = {
+      ...newTriggers[index],
+      trigger_name: `${newTriggers[index].trigger_name}`,
+    };
+    setTrigger_name(duplicatedTrigger.trigger_name);
+    setSeverity(duplicatedTrigger.severity);
+    setExpression(duplicatedTrigger.expression);
+    setRecoveryExpression(duplicatedTrigger.recovery_expression);
+    setOk_eventGen(duplicatedTrigger.ok_event_generation);
+    setThresholdBreachDuration(duplicatedTrigger.thresholdDuration);
+    setExpressionParts(duplicatedTrigger.expressionPart);
+    setRecoveryParts(duplicatedTrigger.expressionRecoveryPart);
+  };
+
   return (
     <Box sx={{ p: 0, width: "100%" }}>
       {windowSize.width > 600 && (
@@ -744,7 +742,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                 </Box>
                 <TextField
                   {...textFieldProps}
-                  required
                   value={template_name}
                   onChange={(e) => setTemplateName(e.target.value)}
                 />
@@ -771,7 +768,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                 </Box>
                 <TextField
                   {...textFieldProps}
-                  required
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
@@ -813,7 +809,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TableCell>
                           <TextField
                             {...textFieldProps}
-                            required
                             value={item.item_name}
                             onChange={(e) =>
                               setItem({
@@ -826,7 +821,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TableCell>
                           <TextField
                             {...textFieldProps}
-                            required
                             value={item.oid}
                             onChange={(e) =>
                               setItem({
@@ -1351,7 +1345,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           }
                           label="Function"
                           size="small"
-                          required
                           sx={{
                             width: "12%",
                             backgroundColor: "white",
@@ -1379,7 +1372,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             )
                           }
                           disabled={part.functionofItem === "last"}
-                          required={part.functionofItem !== "last"}
                           label="Interval"
                           size="small"
                           sx={{
@@ -1409,7 +1401,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
-                          required
                           size="small"
                           label="Item"
                           sx={{
@@ -1438,7 +1429,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
-                          required
                           label="Operation"
                           size="small"
                           sx={{
@@ -1466,7 +1456,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                               e.target.value
                             )
                           }
-                          required
                           label="Value"
                           size="small"
                           sx={{
@@ -1490,7 +1479,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                                 e.target.value
                               )
                             }
-                            required
                             label="Operator"
                             size="small"
                             sx={{
@@ -1661,7 +1649,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                           }
                           label="Function"
                           size="small"
-                          required
                           sx={{
                             width: "12%",
                             backgroundColor: "white",
@@ -1710,7 +1697,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         <TextField
                           select
                           value={part.item}
-                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1738,7 +1724,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         {/* Operation Selection */}
                         <TextField
                           select
-                          required
                           value={part.operation}
                           onChange={(e) =>
                             handleRecoveryPartChange(
@@ -1766,7 +1751,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
 
                         <NumberFormatTextField
                           value={part.value}
-                          required
                           onChange={(e) =>
                             handleRecoveryPartChange(
                               index,
@@ -1799,7 +1783,6 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                             }
                             label="Operator"
                             size="small"
-                            required
                             sx={{
                               width: "8%",
                               backgroundColor: "white",
@@ -1916,7 +1899,20 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         </Typography>
                         <Chip
                           label={`Severity : ${trigger.severity}`}
-                          sx={{ mr: 1, mb: 1, backgroundColor: "#e0e0e0" }}
+                          sx={{
+                            mr: 1,
+                            mb: 1,
+                            ...(trigger.severity === "critical" && {
+                              backgroundColor: "#FF0000",
+                            }),
+                            ...(trigger.severity === "warning" && {
+                              backgroundColor: "#FFA500",
+                            }),
+                            ...(trigger.severity === "disaster" && {
+                              backgroundColor: "#8B0000",
+                            }),
+                            color: "#ffffff",
+                          }}
                         />
                         <Chip
                           label={`OK Event : ${trigger.ok_event_generation}`}
@@ -1969,17 +1965,32 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
                         </Paper>
                       </Box>
 
-                      {/* Delete button */}
-                      <IconButton
-                        onClick={() => handleDeleteTrigger(index)}
-                        sx={{
-                          width: 30,
-                          color: "error.main",
-                          backgroundColor: "transparent",
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <Box sx={{ display: "flex", flexDirection: "column" }}>
+                        {/* Duplicate button */}
+                        <IconButton
+                          onClick={() => handleDuplicateTrigger(index)}
+                          sx={{
+                            width: 30,
+                            color: "primary.main",
+                            backgroundColor: "transparent",
+                            mr: 1,
+                          }}
+                        >
+                          <ContentCopyIcon />
+                        </IconButton>
+
+                        {/* Delete button */}
+                        <IconButton
+                          onClick={() => handleDeleteTrigger(index)}
+                          sx={{
+                            width: 30,
+                            color: "error.main",
+                            backgroundColor: "transparent",
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
                     </Box>
                   ))
                 )}
@@ -2011,16 +2022,22 @@ const AddTemplate: React.FC<AddTemplateProps> = ({ onClose, onSuccess }) => {
             <Button
               type="submit"
               variant="outlined"
-              disabled={!isFormValid}
+              disabled={items.length === 0 || template_name === ""}
               sx={{
                 fontSize: 14,
                 color: "white",
-                bgcolor: isFormValid ? "#0281F2" : "#cccccc",
+                bgcolor:
+                  !(items.length === 0) && !(template_name === "")
+                    ? "#0281F2"
+                    : "#cccccc",
                 borderColor: "white",
                 borderRadius: 2,
                 "&:hover": {
                   color: "white",
-                  bgcolor: isFormValid ? "#0274d9" : "#cccccc",
+                  bgcolor:
+                    !(items.length === 0) && !(template_name === "")
+                      ? "#0274d9"
+                      : "#cccccc",
                   borderColor: "white",
                 },
               }}
