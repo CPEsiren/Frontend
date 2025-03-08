@@ -177,7 +177,6 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
       setIsDefaultRecoveryMessage(false);
 
       onSave({ type: selectedChannel });
-      onClose();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setSnackbar({
@@ -191,6 +190,11 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
           message: "Error saving notification",
           severity: "error",
         });
+      }
+
+      // Logout from Line
+      if (liff.isLoggedIn()) {
+        liff.logout();
       }
     }
   };
@@ -410,7 +414,6 @@ const NotificationDialog: React.FC<NotificationDialogProps> = ({
     liff
       .init({ liffId: `${import.meta.env.VITE_LINE_LIFF_ID}` })
       .then(() => {
-        console.log("LIFF initialization successful");
         if (liff.isLoggedIn()) {
           fetchLineProfile();
         }

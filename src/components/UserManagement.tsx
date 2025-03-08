@@ -389,7 +389,18 @@ const UserManagement = () => {
               key={groupKey}
               // expanded={expandedGroup === groupKey}
               onChange={handleAccordionChange(groupKey)}
-              sx={{ mb: 2 }}
+              sx={{
+                mb: 2,
+                borderRadius: "6px",
+                overflow: "hidden",
+                "& .MuiPaper-root": {
+                  borderRadius: "12px",
+                },
+                "&::before": {
+                  display: "none",
+                },
+                boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.08)",
+              }}
             >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon sx={{ color: "#ffffff" }} />}

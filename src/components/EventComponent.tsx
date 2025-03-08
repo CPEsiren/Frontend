@@ -13,14 +13,29 @@ import {
   Box,
   Chip,
   TablePagination,
+  TextField,
+  Grid,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import InputAdornment from "@mui/material/InputAdornment";
 
 import { IEvent } from "../interface/InterfaceCollection";
 
 const EventComponent = () => {
-  const [events, setevents] = useState<IEvent[]>([]);
+  const [events, setEvents] = useState<IEvent[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<IEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Search states
+  const [deviceNameSearch, setDeviceNameSearch] = useState<string>("");
+  const [severityFilter, setSeverityFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -40,7 +55,8 @@ const EventComponent = () => {
         const result = await response.json();
 
         if (result.data && result.data.length > 0) {
-          setevents(result.data);
+          setEvents(result.data);
+          setFilteredEvents(result.data);
         } else {
           // console.log("No events found");
         }
@@ -56,6 +72,43 @@ const EventComponent = () => {
 
     fetchEvent();
   }, []);
+
+  // Filter events when search criteria change
+  useEffect(() => {
+    const filtered = events.filter((event) => {
+      // Device name filter (case insensitive)
+      const nameMatch = event.hostname
+        .toLowerCase()
+        .includes(deviceNameSearch.toLowerCase());
+
+      // Severity filter
+      const severityMatch =
+        severityFilter === "all" || event.severity === severityFilter;
+
+      // Status filter
+      const statusMatch =
+        statusFilter === "all" || event.status === statusFilter;
+
+      return nameMatch && severityMatch && statusMatch;
+    });
+
+    setFilteredEvents(filtered);
+    setPage(0); // Reset to first page when filters change
+  }, [deviceNameSearch, severityFilter, statusFilter, events]);
+
+  const handleDeviceNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setDeviceNameSearch(event.target.value);
+  };
+
+  const handleSeverityChange = (event: SelectChangeEvent) => {
+    setSeverityFilter(event.target.value);
+  };
+
+  const handleStatusChange = (event: SelectChangeEvent) => {
+    setStatusFilter(event.target.value);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -96,8 +149,10 @@ const EventComponent = () => {
     // Format as DD/MM/YYYY HH:mm:ss
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
+
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [page, setPage] = useState<number>(0);
+
   const handleChangePage = (
     _event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -119,7 +174,6 @@ const EventComponent = () => {
         justifyContent="center"
         alignItems="center"
         minHeight="400px"
-    
       >
         <CircularProgress />
       </Box>
@@ -128,13 +182,63 @@ const EventComponent = () => {
 
   return (
     <Container maxWidth={false}>
-      {events.length === 0 ? (
-        // <Paper sx={{ p: 3, textAlign: "center" }}>
+      {/* Search and Filter Bar */}
+      <Box sx={{ mb: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Search Device Name"
+              variant="outlined"
+              value={deviceNameSearch}
+              onChange={handleDeviceNameChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Severity</InputLabel>
+              <Select
+                value={severityFilter}
+                onChange={handleSeverityChange}
+                label="Severity"
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="warning">Warning</MenuItem>
+                <MenuItem value="critical">Critical</MenuItem>
+                <MenuItem value="disaster">Disaster</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={statusFilter}
+                onChange={handleStatusChange}
+                label="Status"
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="EVENT">Event</MenuItem>
+                <MenuItem value="PROBLEM">Problem</MenuItem>
+                <MenuItem value="RESOLVED">Resolved</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {filteredEvents.length === 0 ? (
         <Typography variant="body1" sx={{ textAlign: "center" }}>
           No events found
         </Typography>
       ) : (
-        // </Paper>
         <>
           <TableContainer
             component={Paper}
@@ -142,10 +246,8 @@ const EventComponent = () => {
             sx={{
               backgroundColor: "white",
               borderRadius: 3,
-              // mt: 2,
               wordBreak: "break-word", // Allow words to break if needed
               hyphens: "auto",
-         
             }}
           >
             <Table
@@ -219,11 +321,11 @@ const EventComponent = () => {
               </TableHead>
               <TableBody>
                 {(rowsPerPage > 0
-                  ? events.slice(
+                  ? filteredEvents.slice(
                       page * rowsPerPage,
                       page * rowsPerPage + rowsPerPage
                     )
-                  : events
+                  : filteredEvents
                 ).map((event) => {
                   return (
                     <TableRow
@@ -294,7 +396,7 @@ const EventComponent = () => {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
             component="div"
-            count={events.length}
+            count={filteredEvents.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}

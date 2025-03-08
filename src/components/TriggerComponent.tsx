@@ -626,8 +626,6 @@ const TriggerComponent = ({
     }
   };
 
-
-
   if (loading) {
     return (
       <Box
@@ -650,35 +648,42 @@ const TriggerComponent = ({
           {DataGroupByHost.map((group) => (
             <Accordion
               key={group.host_id._id}
-              // expanded={expandedGroup === group.host_id._id}
               onChange={handleAccordionChange(group.host_id._id)}
-              sx={{ mb: 2}}
-            
+              sx={{
+                mb: 2,
+                borderRadius: "6px",
+                overflow: "hidden",
+                "& .MuiPaper-root": {
+                  borderRadius: "12px",
+                },
+                "&::before": {
+                  display: "none",
+                },
+                boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.08)",
+              }}
             >
-             <AccordionSummary
+              <AccordionSummary
                 expandIcon={<ExpandMoreIcon sx={{ color: "white" }} />}
                 sx={{ backgroundColor: "#1f2b5d" }}
               >
                 <Typography fontWeight="medium" sx={{ color: "white" }}>
-                  {group.host_id.hostname.toUpperCase()} 
+                  {group.host_id.hostname.toUpperCase()}
                   <Box
                     component="span"
                     sx={{
-                      border: "3px solid rgb(79, 93, 155)", 
+                      border: "3px solid rgb(79, 93, 155)",
                       fontSize: "15px",
-                      borderRadius: "50px", 
-                      padding: "3px 8px", 
-                      color: "white", 
-                      marginLeft:"15px",
+                      borderRadius: "10px",
+                      padding: "3px 8px",
+                      color: "white",
+                      marginLeft: "15px",
                     }}
                   >
                     {group.triggers.length}{" "}
                     {group.triggers.length === 1 ? "trigger" : "triggers"}
                   </Box>
-                  
                 </Typography>
               </AccordionSummary>
-
               <AccordionDetails>
                 {group.triggers.length === 0 ? (
                   <Paper sx={{ p: 3, textAlign: "center" }}>
@@ -745,13 +750,13 @@ const TriggerComponent = ({
                       </TableHead>
                       <TableBody>
                         {group.triggers.map((trigger) => (
-                          <TableRow key={trigger._id} 
-                          sx={{
-                            "&:hover": {
-                              backgroundColor: "#EBF5FF"
-                              
-                            },
-                          }}
+                          <TableRow
+                            key={trigger._id}
+                            sx={{
+                              "&:hover": {
+                                backgroundColor: "#EBF5FF",
+                              },
+                            }}
                           >
                             <TableCell
                               sx={{
@@ -848,7 +853,6 @@ const TriggerComponent = ({
                                         "0px 4px 10px rgba(0, 0, 0, 0.2)",
                                       maxWidth: "400px",
                                       fontSize: "14px",
-                                      
                                     },
                                   },
                                 }}
@@ -1283,7 +1287,7 @@ const TriggerComponent = ({
                     <Typography color="error" {...typographyProps}>
                       *
                     </Typography>
-                    <Typography sx={{ ml: 1,mr:2 }} {...typographyProps}>
+                    <Typography sx={{ ml: 1, mr: 2 }} {...typographyProps}>
                       Expression
                     </Typography>
                     <Button
